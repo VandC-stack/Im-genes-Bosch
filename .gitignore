@@ -1,5 +1,75 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+# =========================
+# Entornos virtuales
+# =========================
+venv/
+.env/
+.env.*
+.python-version
+
+# =========================
+# Build / Distribución
+# =========================
 build/
 dist/
-__pycache__/
-*.pyc
+*.spec
+
+# =========================
+# PyInstaller temporales
+# =========================
+*.manifest
+*.toc
+
+# =========================
+# Configuración sensible
+# =========================
+config.json
+config.local.json
+settings.json
+
+# =========================
+# Cargas y archivos generados
+# =========================
+uploads/
 cache/
+logs/
+tmp/
+temp/
+
+# =========================
+# Ngrok
+# =========================
+ngrok.exe
+ngrok.yml
+
+# =========================
+# IDEs / Editores
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# =========================
+# Pruebas y reportes
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Otros
+# =========================
+*.log

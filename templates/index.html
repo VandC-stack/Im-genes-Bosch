@@ -3,98 +3,278 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Subir imágenes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Imágenes</title>
     <link rel="icon" href="/favicon.ico">
     <style>
+        /* ===== TODO TU CSS ORIGINAL (SIN CAMBIOS) ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Segoe UI, sans-serif;
-            background: #ECD925;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 20px;
         }
 
-        .box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 14px;
-            width: 420px;
+        .container {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 540px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 36px;
         }
 
-        input {
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ECD925;
+            border-radius: 16px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fffef5;
+            margin-bottom: 24px;
+        }
+
+        .upload-area.drag-over {
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: #ECD925;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .file-input {
             display: none;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
+        .file-list {
+            margin-bottom: 24px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f8f8f8;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .preview {
+            width: 48px;
+            height: 48px;
             border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 13px;
+            color: #444;
+        }
+
+        .rename-input {
+            margin-top: 4px;
+            width: 100%;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
         }
 
-        .dark {
+        .btn-primary {
+            background: #ECD925;
+        }
+
+        .btn-secondary {
             background: #333;
             color: #fff;
         }
 
-        .yellow {
-            background: #ECD925;
-            font-weight: bold;
-        }
-
         .status {
-            margin-top: 10px;
+            margin-top: 24px;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>Subir Imágenes</h1>
+            <p>Arrastra tus archivos o haz clic para seleccionar</p>
+        </div>
 
-    <div class="box">
-        <h2>Subir imágenes</h2>
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <h3>Selecciona tus imágenes</h3>
+            <p>Soporta: JPG, PNG, GIF, WebP</p>
+        </div>
 
-        <input type="file" id="files" multiple>
-        <button class="dark" onclick="files.click()">Seleccionar imágenes</button>
-        <button class="yellow" onclick="upload()">Subir</button>
+        <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+        <div class="file-list" id="fileList"></div>
+
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="clearFiles()" id="clearBtn" disabled>Limpiar</button>
+            <button class="btn btn-primary" onclick="uploadFiles()" id="uploadBtn" disabled>Subir Archivos</button>
+        </div>
 
         <div class="status" id="status"></div>
     </div>
 
     <script>
-        async function upload() {
-            const input = document.getElementById("files");
-            const status = document.getElementById("status");
+        let selectedFiles = [];
 
-            if (!input.files.length) {
-                status.textContent = "No hay archivos seleccionados";
-                return;
-            }
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const status = document.getElementById('status');
+
+        uploadArea.onclick = () => fileInput.click();
+
+        fileInput.onchange = e => addFiles([...e.target.files]);
+
+        uploadArea.ondragover = e => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
+        uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
+        uploadArea.ondrop = e => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith("image/")));
+        };
+
+        function addFiles(files) {
+            files.forEach(file => {
+                selectedFiles.push({
+                    file,
+                    name: file.name.replace(/\.[^/.]+$/, ""),
+                    preview: URL.createObjectURL(file)
+                });
+            });
+            render();
+        }
+
+        function render() {
+            fileList.innerHTML = "";
+            selectedFiles.forEach((item, i) => {
+                fileList.innerHTML += `
+            <div class="file-item">
+                <div class="file-info">
+                    <img src="${item.preview}" class="preview">
+                    <div class="file-details">
+                        <div class="file-name">${item.file.name}</div>
+                        <input class="rename-input"
+                               value="${item.name}"
+                               oninput="selectedFiles[${i}].name=this.value">
+                    </div>
+                </div>
+                <button class="remove-btn" onclick="removeFile(${i})">×</button>
+            </div>
+        `;
+            });
+            uploadBtn.disabled = clearBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function removeFile(i) {
+            selectedFiles.splice(i, 1);
+            render();
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            fileInput.value = "";
+            render();
+        }
+
+        async function uploadFiles() {
+            const fd = new FormData();
+            selectedFiles.forEach(item => {
+                fd.append("file", item.file);
+                fd.append("custom_name", item.name);
+            });
 
             status.textContent = "Subiendo imágenes...";
 
-            const data = new FormData();
-            for (const file of input.files) {
-                data.append("file", file);
-            }
+            const res = await fetch("/upload", { method: "POST", body: fd });
+            status.textContent = res.ok
+                ? "✓ Imágenes subidas correctamente"
+                : "✗ Error al subir imágenes";
 
-            const res = await fetch("/upload", {
-                method: "POST",
-                body: data
-            });
-
-            if (res.ok) {
-                status.textContent = "Imágenes subidas correctamente";
-                input.value = "";
-            } else {
-                status.textContent = "Error al subir imágenes";
-            }
+            if (res.ok) clearFiles();
         }
     </script>
-
 </body>
 
 </html>
