@@ -1,0 +1,2 @@
+Flask>=2.2,<3.0
+# Add other dependencies here if you extend the project

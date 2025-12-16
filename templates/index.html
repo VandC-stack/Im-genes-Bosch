@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Subir imágenes</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        body {
+            font-family: Segoe UI, sans-serif;
+            background: #ECD925;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 14px;
+            width: 420px;
+            text-align: center;
+        }
+
+        input {
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .dark {
+            background: #333;
+            color: #fff;
+        }
+
+        .yellow {
+            background: #ECD925;
+            font-weight: bold;
+        }
+
+        .status {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h2>Subir imágenes</h2>
+
+        <input type="file" id="files" multiple>
+        <button class="dark" onclick="files.click()">Seleccionar imágenes</button>
+        <button class="yellow" onclick="upload()">Subir</button>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        async function upload() {
+            const input = document.getElementById("files");
+            const status = document.getElementById("status");
+
+            if (!input.files.length) {
+                status.textContent = "No hay archivos seleccionados";
+                return;
+            }
+
+            status.textContent = "Subiendo imágenes...";
+
+            const data = new FormData();
+            for (const file of input.files) {
+                data.append("file", file);
+            }
+
+            const res = await fetch("/upload", {
+                method: "POST",
+                body: data
+            });
+
+            if (res.ok) {
+                status.textContent = "Imágenes subidas correctamente";
+                input.value = "";
+            } else {
+                status.textContent = "Error al subir imágenes";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
