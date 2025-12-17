@@ -3,25 +3,48 @@ import time
 import requests
 import sys
 import os
+import threading
 
 from app import app
 
 
 def get_base_path():
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         return sys._MEIPASS
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def start_ngrok(port=5000):
+def get_existing_ngrok_url():
+    try:
+        r = requests.get("http://127.0.0.1:4040/api/tunnels", timeout=2)
+        tunnels = r.json().get("tunnels", [])
+        if tunnels:
+            return tunnels[0]["public_url"]
+    except:
+        return None
+    return None
+
+
+def start_ngrok_async(port=5000):
+    """
+    Usa ngrok existente si ya está activo.
+    Solo inicia uno nuevo si no hay túnel.
+    """
+    existing_url = get_existing_ngrok_url()
+    if existing_url:
+        print("\nNgrok ya estaba activo.")
+        print("URL publica disponible:")
+        print(existing_url)
+        print("\nPanel publico de configuracion:")
+        print(f"{existing_url}/admin/ruta")
+        return
+
     base_path = get_base_path()
     ngrok_path = os.path.join(base_path, "ngrok.exe")
 
     if not os.path.exists(ngrok_path):
-        print("ERROR: ngrok.exe no encontrado")
-        print("Ruta buscada:", ngrok_path)
-        input("Presiona ENTER para cerrar...")
-        sys.exit(1)
+        print("[WARN] ngrok.exe no encontrado. Solo modo local.")
+        return
 
     print("Iniciando tunel publico (ngrok)...")
 
@@ -32,41 +55,39 @@ def start_ngrok(port=5000):
         creationflags=subprocess.CREATE_NO_WINDOW
     )
 
-    for _ in range(25):
+    for _ in range(30):
         try:
-            r = requests.get("http://127.0.0.1:4040/api/tunnels", timeout=2)
-            tunnels = r.json().get("tunnels", [])
-            if tunnels:
-                public_url = tunnels[0]["public_url"]
-
+            url = get_existing_ngrok_url()
+            if url:
                 print("\nURL PUBLICA DISPONIBLE:")
-                print(public_url)
+                print(url)
 
-                print("\nPanel de configuracion de ruta:")
-                print(f"{public_url}/admin/ruta")
-
-                print("\nEnvio de imagenes activo")
-                return public_url
+                print("\nPanel publico de configuracion:")
+                print(f"{url}/admin/ruta")
+                return
         except:
             time.sleep(1)
 
-    print("ERROR: No se pudo obtener la URL publica de ngrok")
-    input("Presiona ENTER para cerrar...")
-    sys.exit(1)
+    print("[WARN] No se pudo obtener URL publica de ngrok.")
+    print("[WARN] El servidor local sigue funcionando.")
 
 
 if __name__ == "__main__":
     print("Iniciando BosshUploader\n")
 
-    public_url = start_ngrok(port=5000)
+    threading.Thread(
+        target=start_ngrok_async,
+        daemon=True
+    ).start()
 
-    print("\nServidor local activo en http://localhost:5000")
-    print("Panel local de configuracion:")
+    print("Servidor local activo en:")
+    print("http://localhost:5000")
+
+    print("\nPanel local de configuracion:")
     print("http://localhost:5000/admin/ruta")
 
     print("\nCierra esta ventana para detener el servidor\n")
 
-    #  Flask multihilo (estable y rápido)
     app.run(
         host="0.0.0.0",
         port=5000,
