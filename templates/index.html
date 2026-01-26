@@ -56,6 +56,13 @@
             cursor: pointer;
             background: #fffef5;
             margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.drag-over {
+            background: #ECD925;
+            border-color: #d4c220;
+            transform: scale(1.02);
         }
 
         .upload-icon {
@@ -88,6 +95,15 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 14px;
+        }
+
+        .btn-link {
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            background: #ECD925;
+            color: #000;
+            margin-top: 12px;
         }
 
         .btn-secondary {
@@ -165,6 +181,7 @@
         <div class="actions">
             <button class="btn btn-secondary" onclick="openGallery()">Elegir imagen</button>
             <button class="btn btn-secondary" onclick="openCamera()">Tomar foto</button>
+            <button class="btn btn-primary" onclick="goToGallery()">Ver galería</button>
         </div>
 
         <div class="file-list" id="fileList"></div>
@@ -175,6 +192,8 @@
         </div>
 
         <div class="status" id="status"></div>
+
+        <a class="btn btn-link" href="/gallery">📷 Abrir galería</a>
     </div>
 
     <script>
@@ -185,6 +204,40 @@
         const uploadBtn = document.getElementById("uploadBtn");
         const clearBtn = document.getElementById("clearBtn");
         const status = document.getElementById("status");
+        const uploadArea = document.querySelector(".upload-area");
+
+        /* =============================
+           DRAG AND DROP
+           ============================= */
+        uploadArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.add("drag-over");
+        });
+
+        uploadArea.addEventListener("dragleave", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove("drag-over");
+        });
+
+        uploadArea.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove("drag-over");
+
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+
+            for (const file of files) {
+                const compressed = await compressImage(file);
+                selectedFiles.push({
+                    file: compressed,
+                    name: file.name.replace(/\.[^/.]+$/, ""),
+                    preview: URL.createObjectURL(compressed)
+                });
+            }
+            render();
+        });
 
         /* =============================
            CONTROL DE CÁMARA / GALERÍA
@@ -292,6 +345,10 @@
                 : "✗ Error al subir";
 
             if (res.ok) clearFiles();
+        }
+
+        function goToGallery() {
+            window.location.href = "/gallery";
         }
     </script>
 </body>
