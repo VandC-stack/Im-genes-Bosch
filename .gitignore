@@ -73,3 +73,4 @@ htmlcov/
 # Otros
 # =========================
 *.log
+upload_history.json
