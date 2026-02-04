@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1f1f1f 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: #141414;
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(236, 217, 37, 0.12);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #bdbdbd;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #cfcfcf;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ecd925;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ecd925 0%, #d4c320 100%);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .error {
+            background: rgba(255, 82, 82, 0.14);
+            color: #ff9a9a;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Iniciar sesión</h1>
+        <p>Accede para subir evidencias.</p>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <label for="username">Usuario</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+
+            <button class="btn" type="submit">Entrar</button>
+        </form>
+    </div>
+</body>
+
+</html>

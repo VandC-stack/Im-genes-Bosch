@@ -67,6 +67,18 @@
             flex-wrap: wrap;
         }
 
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
         a.btn,
         button.btn {
             text-decoration: none;
@@ -387,8 +399,10 @@
         <header>
             <div class="title"><span>📷</span>Galería</div>
             <div class="top-actions">
+                <div class="user-pill">👤 {{ session.username }}</div>
                 <a class="btn btn-ghost" href="/">← Volver a subir</a>
                 <a class="btn btn-primary" href="/admin/ruta">Configurar ruta</a>
+                <a class="btn btn-ghost" href="/logout">Cerrar sesión</a>
             </div>
         </header>
 

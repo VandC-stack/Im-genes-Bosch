@@ -38,6 +38,24 @@
             margin-bottom: 24px;
         }
 
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f6f6f6;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .user-bar a {
+            text-decoration: none;
+            color: #000;
+            font-weight: 600;
+        }
+
         .header h1 {
             font-size: 26px;
             margin-bottom: 6px;
@@ -165,6 +183,10 @@
 
 <body>
     <div class="container">
+        <div class="user-bar">
+            <span>Usuario: <strong>{{ username }}</strong></span>
+            <a href="/logout">Cerrar sesión</a>
+        </div>
         <div class="header">
             <h1>Subir Imágenes</h1>
             <p>Desde celular, tablet o computadora</p>
@@ -339,6 +361,11 @@
             status.textContent = "Subiendo imágenes optimizadas...";
 
             const res = await fetch("/upload", { method: "POST", body: fd });
+
+            if (res.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
 
             status.textContent = res.ok
                 ? "✓ Subida completada rápidamente"

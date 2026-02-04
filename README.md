@@ -4,12 +4,12 @@ Pequeña aplicación Flask para subir imágenes y configurar la carpeta de desti
 
 ## Descripción
 
-- Proyecto minimalista que permite subir imágenes (`png`, `jpg`, `jpeg`, `gif`) mediante `POST /upload` y cambiar la ruta de guardado vía `/admin/ruta`.
+- Proyecto minimalista que permite subir imágenes (`png`, `jpg`, `jpeg`, `gif`, `webp`) mediante `POST /upload`, con inicio de sesión por cliente y ruta de guardado por usuario.
 
 ## Contenido del repositorio
 
 - `app.py` : servidor Flask.
-- `config.json` : configuración simple (ruta de destino).
+- `config.json` : configuración (clientes, carpetas y ruta por defecto).
 - `templates/` : vistas HTML (`index.html`, `admin_ruta.html`).
 - `uploads/` : carpeta por defecto donde se guardan los archivos subidos.
 
@@ -45,16 +45,36 @@ ngrok te dará una URL pública que redirige a tu servidor local.
 
 **`config.json`**
 
-- Si no existe, la app usa `"uploads/"` por defecto.
+La app soporta múltiples clientes con usuario/contraseña y carpeta propia. Si no existe, usa `"uploads/"` por defecto.
 
-- Ejemplo mínimo de `config.json`:
+Ejemplo recomendado:
 
 ```json
 {
-  "destination_folder": "uploads/"
+  "destination_folder": "uploads/",
+  "clients": {
+    "cliente1": {
+      "password": "pbkdf2:sha256:260000$...",
+      "folder": "C:/Evidencias/Cliente1"
+    },
+    "cliente2": {
+      "password": "mi-clave-en-texto",
+      "folder": "C:/Evidencias/Cliente2"
+    }
+  }
 }
-
 ```
+
+> Sugerencia: usa hashes. Para generar uno:
+
+```powershell
+python - << 'PY'
+from werkzeug.security import generate_password_hash
+print(generate_password_hash("MiClaveSegura"))
+PY
+```
+
+El campo `destination_folder` se usa como respaldo si el usuario no tiene carpeta asignada.
 
 - Puedes cambiar la ruta desde la interfaz en `/admin/ruta` o editando `config.json`.
 **Notas y buenas prácticas**
