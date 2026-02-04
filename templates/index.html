@@ -157,6 +157,21 @@
             border: 1px solid #ccc;
         }
 
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff4b0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+        }
+
         .rename-input {
             flex: 1;
             padding: 6px;
@@ -198,7 +213,8 @@
         </div>
 
         <!-- INPUT PREPARADO PARA CÁMARA Y GALERÍA -->
-        <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+        <input type="file" id="fileInput" class="file-input" multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
 
         <div class="actions">
             <button class="btn btn-secondary" onclick="openGallery()">Elegir imagen</button>
@@ -216,9 +232,27 @@
         <div class="status" id="status"></div>
 
         <a class="btn btn-link" href="/gallery">📷 Abrir galería</a>
+        <a class="btn btn-link" href="/solicitudes" style="display: none;" id="btnSolicitudes">📋 Ver solicitudes</a>
     </div>
 
     <script>
+        // Mostrar botón de solicitudes solo para supervisores
+        fetch('/api/user-role')
+            .then(r => r.json())
+            .then(data => {
+                if (data.role === 'supervisor') {
+                    document.getElementById('btnSolicitudes').style.display = 'block';
+                }
+            })
+            .catch(() => { });
+    </script>
+
+    <script>
+        const allowedExtensions = [
+            "png", "jpg", "jpeg", "gif", "webp",
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv"
+        ];
+        const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
         let selectedFiles = [];
 
         const fileInput = document.getElementById("fileInput");
@@ -248,15 +282,27 @@
             e.stopPropagation();
             uploadArea.classList.remove("drag-over");
 
-            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+            const files = Array.from(e.dataTransfer.files).filter(isAllowedFile);
 
             for (const file of files) {
-                const compressed = await compressImage(file);
-                selectedFiles.push({
-                    file: compressed,
-                    name: file.name.replace(/\.[^/.]+$/, ""),
-                    preview: URL.createObjectURL(compressed)
-                });
+                if (isImageFile(file)) {
+                    const compressed = await compressImage(file);
+                    selectedFiles.push({
+                        file: compressed,
+                        name: file.name.replace(/\.[^/.]+$/, ""),
+                        preview: URL.createObjectURL(compressed),
+                        isImage: true,
+                        ext: getExtension(file.name)
+                    });
+                } else {
+                    selectedFiles.push({
+                        file,
+                        name: file.name.replace(/\.[^/.]+$/, ""),
+                        preview: null,
+                        isImage: false,
+                        ext: getExtension(file.name)
+                    });
+                }
             }
             render();
         });
@@ -312,24 +358,56 @@
            FLUJO PRINCIPAL
            ============================= */
         fileInput.onchange = async e => {
-            for (const file of e.target.files) {
-                const compressed = await compressImage(file);
+            const files = Array.from(e.target.files).filter(isAllowedFile);
+            for (const file of files) {
+                if (isImageFile(file)) {
+                    const compressed = await compressImage(file);
 
-                selectedFiles.push({
-                    file: compressed,
-                    name: file.name.replace(/\.[^/.]+$/, ""),
-                    preview: URL.createObjectURL(compressed)
-                });
+                    selectedFiles.push({
+                        file: compressed,
+                        name: file.name.replace(/\.[^/.]+$/, ""),
+                        preview: URL.createObjectURL(compressed),
+                        isImage: true,
+                        ext: getExtension(file.name)
+                    });
+                } else {
+                    selectedFiles.push({
+                        file,
+                        name: file.name.replace(/\.[^/.]+$/, ""),
+                        preview: null,
+                        isImage: false,
+                        ext: getExtension(file.name)
+                    });
+                }
             }
             render();
         };
 
+        function getExtension(filename) {
+            const parts = filename.split(".");
+            return parts.length > 1 ? parts.pop().toLowerCase() : "";
+        }
+
+        function isAllowedFile(file) {
+            const ext = getExtension(file.name);
+            return allowedExtensions.includes(ext);
+        }
+
+        function isImageFile(file) {
+            const ext = getExtension(file.name);
+            return file.type.startsWith("image/") || imageExtensions.includes(ext);
+        }
+
         function render() {
             fileList.innerHTML = "";
             selectedFiles.forEach((item, i) => {
+                const previewHtml = item.isImage
+                    ? `<img src="${item.preview}" class="preview">`
+                    : `<div class="file-icon">${item.ext || "file"}</div>`;
+
                 fileList.innerHTML += `
             <div class="file-item">
-                <img src="${item.preview}" class="preview">
+                ${previewHtml}
                 <input class="rename-input"
                        value="${item.name}"
                        oninput="selectedFiles[${i}].name=this.value">

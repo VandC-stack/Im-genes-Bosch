@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes - Supervisor</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title span {
+            width: 48px;
+            height: 48px;
+            background: #ecd925;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #ecd925;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ecd925;
+        }
+
+        .solicitudes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(236, 217, 37, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(236, 217, 37, 0.9);
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .card-badge.assigned {
+            background: rgba(76, 175, 80, 0.9);
+        }
+
+        .card-content {
+            padding: 14px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            word-break: break-word;
+            font-size: 13px;
+        }
+
+        .card-meta {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .select-tech {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .select-tech option {
+            background: #1a1a1a;
+            color: #f5f5f5;
+        }
+
+        .btn-assign {
+            padding: 8px 12px;
+            background: #ecd925;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-assign:hover {
+            background: #d4c320;
+        }
+
+        .empty {
+            padding: 48px 24px;
+            text-align: center;
+            color: #7a7a7a;
+            grid-column: 1 / -1;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background: rgba(236, 217, 37, 0.2);
+            border-color: #ecd925;
+        }
+
+        .page-btn.active {
+            background: #ecd925;
+            color: #000;
+            border-color: #ecd925;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 24px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .solicitudes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">
+                <span>📋</span>
+                Solicitudes de Imágenes
+            </div>
+            <div class="header-actions">
+                <div class="user-info">👤 Supervisor: <strong>{{ session.username }}</strong></div>
+                <a class="btn btn-primary" href="/admin">👥 Administrar Usuarios</a>
+                <a class="btn btn-secondary" href="/index">← Volver</a>
+                <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
+            </div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total de solicitudes</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Página actual</div>
+                <div class="stat-value">{{ page }} / {{ total_pages if total_pages > 0 else 1 }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Inspectores disponibles</div>
+                <div class="stat-value">{{ inspectors|length }}</div>
+            </div>
+        </div>
+
+        <div class="solicitudes-grid">
+            {% if images %}
+            {% for image in images %}
+            <div class="card">
+                <div class="card-image" style="background-image: url('{{ image.url }}');">
+                    <div class="card-badge {% if image.assigned_to %}assigned{% endif %}">
+                        {% if image.assigned_to %}✓ Asignada{% else %}Pendiente{% endif %}
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">{{ image.filename }}</div>
+                    <div class="card-meta">
+                        <div>📁 Cliente: <strong>{{ image.client }}</strong></div>
+                        <div>📅 {{ image.modified_iso }}</div>
+                        <div>💾 {{ (image.size / 1024)|round(1) }} KB</div>
+                    </div>
+                    {% if image.assigned_to %}
+                    <div class="card-meta" style="color: #4CAF50;">
+                        ✓ Asignada a: <strong>{{ image.assigned_to }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="card-actions">
+                        <select class="select-tech" id="tech-{{ loop.index }}">
+                            <option value="">-- Seleccionar inspector --</option>
+                            {% for inspector in inspectors %}
+                            <option value="{{ inspector }}" {% if image.assigned_to==inspector %}selected{% endif %}>
+                                {{ inspector }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn-assign" data-filename="{{ image.filename }}" data-client="{{ image.client }}"
+                            data-folder="{{ image.folder }}" data-index="{{ loop.index }}" onclick="assignImage(this)">
+                            {% if image.assigned_to %}Reasignar{% else %}Asignar{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty">
+                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                <p>No hay solicitudes de imágenes en este momento.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="page-info">
+            Mostrando {{ (page - 1) * per_page + 1 }} a {{ [page * per_page, total]|min }} de {{ total }} solicitudes
+        </div>
+
+        <div class="pagination">
+            {% if page > 1 %}
+            <a class="page-btn" href="/solicitudes?page=1">« Primera</a>
+            <a class="page-btn" href="/solicitudes?page={{ page - 1 }}">‹ Anterior</a>
+            {% else %}
+            <button class="page-btn disabled">« Primera</button>
+            <button class="page-btn disabled">‹ Anterior</button>
+            {% endif %}
+
+            {% set start_page = [1, page - 2]|max %}
+            {% set end_page = [total_pages + 1, page + 3]|min %}
+            {% for p in range(start_page, end_page) %}
+            {% if p == page %}
+            <button class="page-btn active">{{ p }}</button>
+            {% else %}
+            <a class="page-btn" href="/solicitudes?page={{ p }}">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %} <a class="page-btn" href="/solicitudes?page={{ page + 1 }}">Siguiente ›</a>
+                <a class="page-btn" href="/solicitudes?page={{ total_pages }}">Última »</a>
+                {% else %}
+                <button class="page-btn disabled">Siguiente ›</button>
+                <button class="page-btn disabled">Última »</button>
+                {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function assignImage(button) {
+            const filename = button.dataset.filename;
+            const client = button.dataset.client;
+            const folder = button.dataset.folder;
+            const index = button.dataset.index;
+            const select = document.getElementById(`tech-${index}`);
+            const inspector = select.value;
+
+            if (!inspector) {
+                alert("Selecciona un inspector");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/assign-image", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        filename: filename,
+                        client: client,
+                        folder: folder,
+                        inspector: inspector
+                    })
+                });
+
+                if (res.ok) {
+                    alert("✓ Imagen asignada a " + inspector);
+                    location.reload();
+                } else {
+                    alert("✗ Error al asignar");
+                }
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

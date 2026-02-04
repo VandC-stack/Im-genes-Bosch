@@ -205,6 +205,18 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
+        .thumb-file {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(236, 217, 37, 0.14);
+            color: #ecd925;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
         .meta {
             padding: 12px 12px 14px;
             display: grid;
@@ -400,8 +412,10 @@
             <div class="title"><span>📷</span>Galería</div>
             <div class="top-actions">
                 <div class="user-pill">👤 {{ session.username }}</div>
-                <a class="btn btn-ghost" href="/">← Volver a subir</a>
+                <a class="btn btn-ghost" href="/index">← Volver a subir</a>
+                {% if session.role|lower == 'supervisor' %}
                 <a class="btn btn-primary" href="/admin/ruta">Configurar ruta</a>
+                {% endif %}
                 <a class="btn btn-ghost" href="/logout">Cerrar sesión</a>
             </div>
         </header>
@@ -427,7 +441,9 @@
             </form>
             <div class="summary">
                 <span class="badge">{{ images|length }} imágenes visibles</span>
+                {% if session.role|lower == 'supervisor' %}
                 <span class="badge">Carpeta actual: {{ current_folder if current_folder else 'uploads' }}</span>
+                {% endif %}
             </div>
         </section>
 
@@ -435,13 +451,24 @@
             <div class="grid">
                 {% for image in images %}
                 <article class="card">
+                    {% if image.is_image %}
                     <div class="thumb" style="background-image:url('{{ image.url }}');"></div>
+                    {% else %}
+                    <div class="thumb thumb-file">{{ image.ext or 'archivo' }}</div>
+                    {% endif %}
                     <div class="meta">
                         <div class="name">{{ image.name }}</div>
+                        {% if image.client %}
+                        <div class="info">👤 Cliente: <strong>{{ image.client }}</strong></div>
+                        {% endif %}
                         <div class="info">Modificada: {{ image.modified_iso }}</div>
                         <div class="info">Tamaño: {{ (image.size / 1024)|round(1) }} KB</div>
                         <div class="card-actions">
+                            {% if image.is_image %}
                             <button type="button" class="chip" onclick="showPreview('{{ image.url }}')">Ver</button>
+                            {% else %}
+                            <a class="chip" href="{{ image.url }}" target="_blank">Abrir</a>
+                            {% endif %}
                             <a class="chip" href="{{ image.url }}" download>Descargar</a>
                         </div>
                     </div>

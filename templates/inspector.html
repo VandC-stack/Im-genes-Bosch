@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Inspector</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title span {
+            width: 48px;
+            height: 48px;
+            background: #ecd925;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #ecd925;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ecd925;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(236, 217, 37, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .card-file {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(236, 217, 37, 0.14);
+            color: #ecd925;
+            font-weight: 700;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(236, 217, 37, 0.9);
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            word-break: break-word;
+            font-size: 14px;
+        }
+
+        .card-meta {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .card-meta strong {
+            color: #f5f5f5;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f5f5f5;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background: rgba(236, 217, 37, 0.2);
+            border-color: #ecd925;
+        }
+
+        .empty {
+            padding: 48px 24px;
+            text-align: center;
+            color: #7a7a7a;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 24px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .tasks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">
+                <span>📋</span>
+                Mis Tareas Asignadas
+            </div>
+            <div class="header-actions">
+                <div class="user-info">👤 Inspector: <strong>{{ username }}</strong></div>
+                <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
+            </div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Tareas asignadas</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pendientes</div>
+                <div class="stat-value">{{ images|selectattr("status", "equalto", "pending")|list|length }}</div>
+            </div>
+        </div>
+
+        <div class="tasks-grid">
+            {% if images %}
+            {% for image in images %}
+            <div class="card">
+                {% if image.is_image %}
+                <div class="card-image" style="background-image: url('{{ image.url }}');">
+                    <div class="card-badge">{{ image.status }}</div>
+                </div>
+                {% else %}
+                <div class="card-image card-file">
+                    <span>{{ image.ext or 'file' }}</span>
+                </div>
+                {% endif %}
+                <div class="card-content">
+                    <div class="card-title">{{ image.filename }}</div>
+                    <div class="card-meta">
+                        <div>📁 Cliente: <strong>{{ image.client }}</strong></div>
+                        <div>👤 Asignado por: <strong>{{ image.assigned_by }}</strong></div>
+                        <div>📅 Asignado: {{ image.assigned_at[:10] if image.assigned_at else 'N/A' }}</div>
+                        <div>💾 Tamaño: {{ (image.size / 1024)|round(1) }} KB</div>
+                    </div>
+                    <div class="card-actions">
+                        {% if image.is_image %}
+                        <button type="button" class="btn-action" onclick="showPreview('{{ image.url }}')">👁️
+                            Ver</button>
+                        {% else %}
+                        <a class="btn-action" href="{{ image.url }}" target="_blank">📄 Abrir</a>
+                        {% endif %}
+                        <a class="btn-action" href="{{ image.url }}" download>⬇️ Descargar</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty">
+                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                <p>No tienes tareas asignadas en este momento.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal de preview -->
+    <div id="previewModal"
+        style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 24px;"
+        onclick="closePreview()">
+        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+            <img id="previewImg"
+                style="max-width: 100%; max-height: 90vh; border-radius: 12px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);"
+                alt="Preview">
+        </div>
+    </div>
+
+    <script>
+        function showPreview(url) {
+            const modal = document.getElementById('previewModal');
+            const img = document.getElementById('previewImg');
+            img.src = url;
+            modal.style.display = 'flex';
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('previewModal');
+            modal.style.display = 'none';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closePreview();
+        });
+    </script>
+</body>
+
+</html>
