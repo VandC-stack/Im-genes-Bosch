@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Imagen - Revisión</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title span {
+            width: 40px;
+            height: 40px;
+            background: #ecd925;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .image-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-container {
+            width: 100%;
+            max-height: 600px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 16px;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .image-info {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #aaa;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            color: #ecd925;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .status-accepted {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-info {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .status-info strong {
+            color: #ddd;
+        }
+
+        .comments-section {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .comment {
+            background: rgba(255, 255, 255, 0.06);
+            border-left: 3px solid #ecd925;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #ecd925;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comment-role {
+            font-size: 10px;
+            background: rgba(236, 217, 37, 0.2);
+            color: #ecd925;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .comment-text {
+            color: #ddd;
+            margin-bottom: 6px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .assignment-details {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.8;
+        }
+
+        .assignment-details strong {
+            color: #ddd;
+        }
+
+        .download-section {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-download {
+            width: 100%;
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #fff;
+            text-align: center;
+        }
+
+        .btn-download:hover {
+            background: #2563eb;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .image-container {
+                max-height: 400px;
+            }
+        }
+
+        /* Scrollbar personalizado */
+        .comments-section::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .comments-section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .comments-section::-webkit-scrollbar-thumb {
+            background: rgba(236, 217, 37, 0.3);
+            border-radius: 3px;
+        }
+
+        .comments-section::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 217, 37, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">
+                <span>📸</span>
+                <div>
+                    <div>Revisión de Imagen</div>
+                    <div style="font-size: 14px; color: #999; margin-top: 4px;">{{ filename }}</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="window.close()">← Volver</button>
+        </header>
+
+        <div class="main-content">
+            <!-- Sección de imagen -->
+            <div class="image-section">
+                <div class="image-container">
+                    <img src="/files-by-path?file_path={{ file_path|urlencode }}" alt="{{ filename }}"
+                        onerror="this.alt='No se pudo cargar la imagen'">
+                </div>
+                <div class="image-info">
+                    <div class="info-row">
+                        <span class="info-label">Nombre:</span>
+                        <span>{{ filename }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Cliente:</span>
+                        <span>{{ client }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ruta:</span>
+                        <span style="word-break: break-all; font-size: 11px;">{{ file_path }}</span>
+                    </div>
+                </div>
+                <div style="width: 100%; margin-top: 16px;">
+                    <a href="/files-by-path?file_path={{ file_path|urlencode }}" download class="btn btn-download">⬇️
+                        Descargar imagen</a>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Estado de Revisión -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Estado de Revisión</div>
+
+                    {% if status == 'accepted' %}
+                    <div class="status-badge status-accepted">✓ Aceptado</div>
+                    <div class="status-info">
+                        <strong>Estado:</strong> Imagen aprobada<br>
+                        <strong>Inspector:</strong> {{ assigned_to }}<br>
+                        {% if assigned_at %}
+                        <strong>Asignado:</strong> {{ assigned_at[:10] }}<br>
+                        {% endif %}
+                        {% if assigned_by %}
+                        <strong>Por:</strong> {{ assigned_by }}
+                        {% endif %}
+                    </div>
+                    {% elif status == 'rejected' %}
+                    <div class="status-badge status-rejected">✗ Rechazado</div>
+                    <div class="status-info">
+                        <strong>Estado:</strong> Imagen rechazada<br>
+                        <strong>Inspector:</strong> {{ assigned_to }}<br>
+                        Verifique los comentarios para más detalles.
+                    </div>
+                    {% else %}
+                    <div class="status-badge status-pending">⏳ Pendiente</div>
+                    <div class="status-info">
+                        <strong>Estado:</strong> Bajo revisión<br>
+                        <strong>Inspector:</strong> {{ assigned_to }}<br>
+                        {% if assigned_by %}
+                        <strong>Asignado por:</strong> {{ assigned_by }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Información de Asignación -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Detalles de Asignación</div>
+                    <div class="assignment-details">
+                        <div><strong>Inspector:</strong> {{ assigned_to }}</div>
+                        <div><strong>Asignado por:</strong> {{ assigned_by }}</div>
+                        <div><strong>Fecha:</strong> {{ assigned_at[:10] if assigned_at else 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Comentarios -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Comentarios ({{ comments|length }})</div>
+                    <div class="comments-section">
+                        {% if comments %}
+                        {% for comment in comments %}
+                        <div class="comment">
+                            <div class="comment-author">
+                                <span>{{ comment.author }}</span>
+                                <span class="comment-role">{{ comment.role }}</span>
+                            </div>
+                            <div class="comment-text">{{ comment.text }}</div>
+                            <div class="comment-time">
+                                {{ (comment.timestamp|datetime_format('%d/%m/%Y %H:%M')) if comment.timestamp else 'N/A'
+                                }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p style="color: #666; font-size: 12px; text-align: center; padding: 24px 12px;">
+                            No hay comentarios en esta revisión.
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filtro para datetime si no está disponible en Jinja2
+        // Esto es un fallback para formatear timestamps
+        document.querySelectorAll('.comment-time').forEach(el => {
+            const text = el.textContent.trim();
+            if (text && text.match(/\d{4}-\d{2}-\d{2}T/)) {
+                try {
+                    const date = new Date(text);
+                    el.textContent = date.toLocaleString('es-ES');
+                } catch (e) {
+                    // Mantener el formato original si hay error
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

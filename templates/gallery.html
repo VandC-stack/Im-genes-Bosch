@@ -463,9 +463,12 @@
                         {% endif %}
                         <div class="info">Modificada: {{ image.modified_iso }}</div>
                         <div class="info">Tamaño: {{ (image.size / 1024)|round(1) }} KB</div>
+                        <div class="info" id="status-{{ loop.index }}" style="display: none; font-weight: 600;"></div>
                         <div class="card-actions">
                             {% if image.is_image %}
                             <button type="button" class="chip" onclick="showPreview('{{ image.url }}')">Ver</button>
+                            <button type="button" class="chip"
+                                onclick="viewImageStatus('{{ image.name }}')">Estado</button>
                             {% else %}
                             <a class="chip" href="{{ image.url }}" target="_blank">Abrir</a>
                             {% endif %}
@@ -473,32 +476,62 @@
                         </div>
                     </div>
                 </article>
-                {% else %}
-                <div class="empty">No se encontraron imágenes con este filtro.</div>
-                {% endfor %}
+                <script>
+                    // Cargar estado de la imagen
+                    (async function () {
+                        try {
+                            const res = await fetch(`/api/image-status?filename={{ image.name|urlencode }}`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                const statusEl = document.getElementById('status-{{ loop.index }}');
+                                if (statusEl) {
+                                    statusEl.style.display = 'block';
+                                    let statusText = '⏳ Pendiente';
+                                    let statusColor = '#fbbf24';
+                                    if (data.status === 'accepted') {
+                                        statusText = '✓ Aceptada';
+                                        statusColor = '#10b981';
+                                    } else if (data.status === 'rejected') {
+                                        statusText = '✗ Rechazada';
+                                        statusColor = '#ef4444';
+                                    }
+                                    statusEl.textContent = 'Estado: ' + statusText;
+                                    statusEl.style.color = statusColor;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error loading image status:', e);
+                        }
+                    })();
+                </script>
             </div>
-        </section>
+            </article>
+            {% else %}
+            <div class="empty">No se encontraron imágenes con este filtro.</div>
+            {% endfor %}
+    </div>
+    </section>
 
-        <section class="panel history">
-            <h3><span>⏱</span> Historial de subidas (últimas 100)</h3>
-            <ul class="history-list">
-                {% for item in history %}
-                <li class="history-item">
-                    <div class="history-top">
-                        <div class="history-name">{{ item.filename }}</div>
-                        <div class="history-meta">Subido: {{ item.uploaded_at }}</div>
-                    </div>
-                    <div class="history-path">Destino: {{ item.folder }}</div>
-                    {% if item.url %}
-                    <div class="history-meta"><a class="chip" href="{{ item.url }}" target="_blank">Ver archivo</a>
-                    </div>
-                    {% endif %}
-                </li>
-                {% else %}
-                <li class="history-item empty">Sin historial todavía.</li>
-                {% endfor %}
-            </ul>
-        </section>
+    <section class="panel history">
+        <h3><span>⏱</span> Historial de subidas (últimas 100)</h3>
+        <ul class="history-list">
+            {% for item in history %}
+            <li class="history-item">
+                <div class="history-top">
+                    <div class="history-name">{{ item.filename }}</div>
+                    <div class="history-meta">Subido: {{ item.uploaded_at }}</div>
+                </div>
+                <div class="history-path">Destino: {{ item.folder }}</div>
+                {% if item.url %}
+                <div class="history-meta"><a class="chip" href="{{ item.url }}" target="_blank">Ver archivo</a>
+                </div>
+                {% endif %}
+            </li>
+            {% else %}
+            <li class="history-item empty">Sin historial todavía.</li>
+            {% endfor %}
+        </ul>
+    </section>
     </div>
 
     <div id="previewModal" class="preview-modal" aria-modal="true" role="dialog" aria-label="Vista previa">
@@ -520,6 +553,21 @@
         form.querySelectorAll('input').forEach(inp => inp.value = '');
         // Redirige para limpiar el querystring y los valores mantenidos por el navegador
         window.location.href = '/gallery';
+    }
+
+    async function viewImageStatus(filename) {
+        try {
+            const res = await fetch(`/api/image-file-path?filename=${encodeURIComponent(filename)}`);
+            if (res.ok) {
+                const data = await res.json();
+                window.open(`/view-image?filename=${encodeURIComponent(filename)}&file_path=${encodeURIComponent(data.file_path)}`, '_blank');
+            } else {
+                alert('Error: No se pudo obtener la información del archivo');
+            }
+        } catch (e) {
+            console.error('Error:', e);
+            alert('Error al obtener la información del archivo');
+        }
     }
 </script>
 

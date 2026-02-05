@@ -1,9 +1,11 @@
-from flask import Flask, request, render_template, jsonify, send_from_directory, redirect, url_for, abort, session
+from flask import Flask, request, render_template, jsonify, send_from_directory, redirect, url_for, abort, session, send_file
 import os
 import json
 from datetime import datetime
 import re
 import hmac
+import base64
+import binascii
 from functools import wraps
 from werkzeug.security import check_password_hash
 from typing import Optional
@@ -452,7 +454,7 @@ def serve_file_by_path():
     if role == ROLE_SUPERVISOR:
         directory = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
-        return send_from_directory(directory, filename)
+        return send_from_directory(directory, filename, max_age=0)
     
     if role == ROLE_INSPECTOR:
         # Verificar que el archivo esté asignado a este inspector
@@ -464,9 +466,110 @@ def serve_file_by_path():
         if assigned:
             directory = os.path.dirname(file_path)
             filename = os.path.basename(file_path)
-            return send_from_directory(directory, filename)
+            return send_from_directory(directory, filename, max_age=0)
+    
+    # Cliente: puede acceder a archivos asignados a él
+    if role == ROLE_CLIENTE:
+        assignments = load_assignments()
+        assigned = any(
+            a.get("file_path") == file_path and a.get("client") == username
+            for a in assignments
+        )
+        if assigned:
+            directory = os.path.dirname(file_path)
+            filename = os.path.basename(file_path)
+            return send_from_directory(directory, filename, max_age=0)
     
     abort(403)
+
+
+def can_access_file_path(file_path: str, role: str, username: str) -> bool:
+    if not file_path:
+        return False
+
+    if role == ROLE_SUPERVISOR:
+        return True
+
+    assignments = load_assignments()
+
+    if role == ROLE_INSPECTOR:
+        return any(
+            a.get("file_path") == file_path and a.get("assigned_to") == username
+            for a in assignments
+        )
+
+    if role == ROLE_CLIENTE:
+        return any(
+            a.get("file_path") == file_path and a.get("client") == username
+            for a in assignments
+        )
+
+    return False
+
+
+@app.route("/api/get-image")
+@login_required
+def get_image_by_path():
+    file_path = request.args.get("file_path")
+    if not file_path or not os.path.exists(file_path):
+        return jsonify({"error": "Archivo no encontrado"}), 404
+
+    if not is_allowed_extension(file_path):
+        return jsonify({"error": "Extensión no permitida"}), 400
+
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+
+    if not can_access_file_path(file_path, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    directory = os.path.dirname(file_path)
+    filename = os.path.basename(file_path)
+    return send_from_directory(directory, filename, max_age=0)
+
+
+@app.route("/api/save-edited-image", methods=["POST"])
+@login_required
+@role_required(ROLE_INSPECTOR, ROLE_SUPERVISOR)
+def save_edited_image():
+    data = request.get_json() or {}
+    filename = data.get("filename")
+    file_path = data.get("file_path")
+    image_data = data.get("image_data")
+
+    if not filename or not file_path or not image_data:
+        return jsonify({"error": "Datos inválidos"}), 400
+
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+
+    if not can_access_file_path(file_path, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    if not is_image_extension(filename):
+        return jsonify({"error": "Solo se permiten imágenes"}), 400
+
+    try:
+        match = re.match(r"^data:image/\w+;base64,", image_data)
+        if match:
+            image_data = image_data[match.end():]
+
+        image_bytes = base64.b64decode(image_data)
+
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(image_bytes)
+
+        assignments = load_assignments()
+        assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
+        if assignment:
+            assignment["last_edited_at"] = datetime.utcnow().isoformat()
+            assignment["last_edited_by"] = username
+            save_assignments(assignments)
+
+        return jsonify({"status": "ok"})
+    except (OSError, binascii.Error) as e:
+        return jsonify({"error": f"Error al guardar imagen: {str(e)}"}), 500
 
 
 @app.route("/gallery")
@@ -750,6 +853,245 @@ def delete_user():
         json.dump(config, f, indent=4)
     
     return jsonify({"status": "ok"})
+
+
+# =========================
+# EDITOR DE IMÁGENES
+# =========================
+@app.route("/editor")
+@login_required
+@role_required(ROLE_INSPECTOR)
+def image_editor():
+    """Página del editor de imágenes para inspectores"""
+    filename = request.args.get("filename")
+    file_path = request.args.get("file_path")
+    client = request.args.get("client")
+    
+    if not filename or not file_path or not client:
+        return "Parámetros inválidos", 400
+    
+    # Verificar que el archivo está asignado al inspector actual
+    username = session.get("username")
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
+    
+    if not assignment:
+        return "Archivo no asignado a este inspector", 403
+    
+    return render_template("image_editor.html", 
+                         filename=filename, 
+                         file_path=file_path, 
+                         client=client,
+                         user_role=normalize_role(session.get("role")))
+
+
+@app.route("/api/image-status", methods=["GET", "POST"])
+@login_required
+def image_status():
+    """Obtener o actualizar el estado de una imagen"""
+    filename = request.args.get("filename") if request.method == "GET" else request.get_json().get("filename")
+    
+    if not filename:
+        return jsonify({"error": "Filename requerido"}), 400
+    
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    
+    if request.method == "GET":
+        status = assignment.get("status", "pending") if assignment else "pending"
+        return jsonify({"status": status})
+    
+    # POST: actualizar estado
+    role = normalize_role(session.get("role"))
+    if role != ROLE_SUPERVISOR and role != ROLE_INSPECTOR:
+        return jsonify({"error": "No autorizado"}), 403
+    
+    data = request.get_json()
+    status = data.get("status")
+    file_path = data.get("file_path")
+    
+    if not status or status not in ["pending", "accepted", "rejected"]:
+        return jsonify({"error": "Estado inválido"}), 400
+    
+    if assignment:
+        assignment["status"] = status
+        assignment["status_updated_at"] = datetime.utcnow().isoformat()
+        assignment["status_updated_by"] = session.get("username")
+        save_assignments(assignments)
+        return jsonify({"status": "ok"})
+    
+    return jsonify({"error": "Archivo no encontrado"}), 404
+
+
+@app.route("/api/image-file-path", methods=["GET"])
+@login_required
+def get_image_file_path():
+    """Obtener el file_path completo de un archivo"""
+    filename = request.args.get("filename")
+    
+    if not filename:
+        return jsonify({"error": "Filename requerido"}), 400
+    
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    
+    # Buscar en asignaciones primero
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    
+    if assignment:
+        return jsonify({"file_path": assignment.get("file_path")})
+    
+    # Si no está en asignaciones, buscar en la carpeta del usuario
+    folder = get_upload_folder(username)
+    full_path = os.path.join(folder, filename)
+    
+    if os.path.exists(full_path):
+        return jsonify({"file_path": full_path})
+    
+    return jsonify({"error": "Archivo no encontrado"}), 404
+
+
+@app.route("/api/image-comments", methods=["GET"])
+@login_required
+def get_image_comments():
+    """Obtener comentarios de una imagen"""
+    filename = request.args.get("filename")
+    
+    if not filename:
+        return jsonify({"error": "Filename requerido"}), 400
+    
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    
+    if not assignment:
+        return jsonify({"comments": []})
+    
+    comments = assignment.get("comments", [])
+    return jsonify({"comments": comments})
+
+
+@app.route("/api/add-image-comment", methods=["POST"])
+@login_required
+def add_image_comment():
+    """Agregar comentario a una imagen"""
+    data = request.get_json()
+    filename = data.get("filename")
+    text = data.get("text", "").strip()
+    
+    if not filename or not text:
+        return jsonify({"error": "Datos inválidos"}), 400
+    
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    
+    if not assignment:
+        return jsonify({"error": "Archivo no encontrado"}), 404
+    
+    # Verificar permisos: inspector o supervisor
+    if role not in [ROLE_INSPECTOR, ROLE_SUPERVISOR]:
+        return jsonify({"error": "No autorizado"}), 403
+    
+    # Si es inspector, debe ser el asignado
+    if role == ROLE_INSPECTOR and assignment.get("assigned_to") != username:
+        return jsonify({"error": "No autorizado"}), 403
+    
+    if "comments" not in assignment:
+        assignment["comments"] = []
+    
+    assignment["comments"].append({
+        "author": username,
+        "text": text,
+        "timestamp": datetime.utcnow().isoformat(),
+        "role": role
+    })
+    
+    save_assignments(assignments)
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/reupload-image", methods=["POST"])
+@login_required
+@role_required(ROLE_INSPECTOR)
+def reupload_image():
+    """Reemplazar una imagen asignada"""
+    if "file" not in request.files:
+        return jsonify({"error": "No se envió archivo"}), 400
+    
+    file = request.files["file"]
+    filename = request.form.get("filename")
+    file_path = request.form.get("file_path")
+    
+    if not filename or not file_path or not file.filename:
+        return jsonify({"error": "Datos inválidos"}), 400
+    
+    if not is_image_extension(file.filename):
+        return jsonify({"error": "Solo se permiten imágenes"}), 400
+    
+    # Verificar que la imagen está asignada al inspector
+    username = session.get("username")
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
+    
+    if not assignment:
+        return jsonify({"error": "Archivo no asignado"}), 403
+    
+    try:
+        # Reemplazar archivo
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        
+        file.save(file_path)
+        
+        # Resetear estado a pendiente
+        assignment["status"] = "pending"
+        assignment["status_updated_at"] = datetime.utcnow().isoformat()
+        assignment["status_updated_by"] = username
+        save_assignments(assignments)
+        
+        return jsonify({"status": "ok"})
+    except OSError as e:
+        return jsonify({"error": f"Error al reemplazar archivo: {str(e)}"}), 500
+
+
+@app.route("/view-image")
+@login_required
+def view_image():
+    """Ver imagen con comentarios y estado (cliente/supervisor)"""
+    filename = request.args.get("filename")
+    
+    if not filename:
+        return "Parámetros inválidos", 400
+    
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    
+    # Obtener información de la asignación
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    
+    if not assignment:
+        return "Archivo no encontrado", 404
+    
+    # Permisos: supervisor ve todo, cliente solo ve sus propias asignaciones
+    if role == ROLE_CLIENTE:
+        if assignment.get("client") != username:
+            return "No autorizado", 403
+    elif role != ROLE_SUPERVISOR:
+        return "No autorizado", 403
+    
+    return render_template("view_image.html",
+                         filename=filename,
+                         file_path=assignment.get("file_path"),
+                         client=assignment.get("client"),
+                         status=assignment.get("status", "pending"),
+                         comments=assignment.get("comments", []),
+                         assigned_to=assignment.get("assigned_to"),
+                         assigned_at=assignment.get("assigned_at"),
+                         assigned_by=assignment.get("assigned_by"))
 
 
 # =========================

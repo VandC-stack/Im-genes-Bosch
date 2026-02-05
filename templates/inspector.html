@@ -303,6 +303,9 @@
                         {% if image.is_image %}
                         <button type="button" class="btn-action" onclick="showPreview('{{ image.url }}')">👁️
                             Ver</button>
+                        <a class="btn-action"
+                            href="/editor?filename={{ image.filename|urlencode }}&file_path={{ image.file_path|urlencode }}&client={{ image.client|urlencode }}"
+                            target="_blank">🎨 Editar</a>
                         {% else %}
                         <a class="btn-action" href="{{ image.url }}" target="_blank">📄 Abrir</a>
                         {% endif %}

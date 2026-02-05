@@ -360,6 +360,12 @@
                             data-folder="{{ image.folder }}" data-index="{{ loop.index }}" onclick="assignImage(this)">
                             {% if image.assigned_to %}Reasignar{% else %}Asignar{% endif %}
                         </button>
+                        {% if image.assigned_to %}
+                        <button class="btn-assign" style="background: #3b82f6;"
+                            onclick="viewImageStatus('{{ image.filename }}', '{{ image.folder }}')">
+                            👁️ Ver Estado
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -441,6 +447,11 @@
             } catch (e) {
                 alert("Error: " + e.message);
             }
+        }
+
+        function viewImageStatus(filename, folder) {
+            const filePath = folder + '\\' + filename;
+            window.open(`/view-image?filename=${encodeURIComponent(filename)}&file_path=${encodeURIComponent(filePath)}`, '_blank');
         }
     </script>
 </body>

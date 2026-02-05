@@ -15,6 +15,11 @@
             "password": "123",
             "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Inspector1",
             "role": "Inspector"
+        },
+        "cliente2": {
+            "password": "123",
+            "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente2",
+            "role": "Cliente"
         }
     }
 }

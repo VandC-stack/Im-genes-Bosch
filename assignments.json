@@ -1,12 +1,24 @@
 [
   {
-    "filename": "Prueba.jpg",
-    "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Prueba.jpg",
-    "client": "admin",
-    "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh",
+    "filename": "tomate.jpg",
+    "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente2\\tomate.jpg",
+    "client": "cliente2",
+    "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente2",
     "assigned_to": "ins1",
     "assigned_by": "admin",
-    "assigned_at": "2026-02-04T23:30:18.923363",
-    "status": "pending"
+    "assigned_at": "2026-02-05T15:34:50.421900",
+    "status": "rejected",
+    "status_updated_at": "2026-02-05T17:37:32.448736",
+    "status_updated_by": "ins1",
+    "comments": [
+      {
+        "author": "ins1",
+        "text": "Jaja no sé",
+        "timestamp": "2026-02-05T17:18:26.013382",
+        "role": "inspector"
+      }
+    ],
+    "last_edited_at": "2026-02-05T18:02:04.319569",
+    "last_edited_by": "ins1"
   }
 ]
