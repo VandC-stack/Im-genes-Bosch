@@ -199,10 +199,12 @@
             display: flex;
             gap: 8px;
             margin-top: 12px;
+            flex-wrap: wrap;
         }
 
         .btn-action {
             flex: 1;
+            min-width: 100px;
             padding: 10px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -219,6 +221,140 @@
         .btn-action:hover {
             background: rgba(236, 217, 37, 0.2);
             border-color: #ecd925;
+        }
+
+        .btn-action.accept {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-action.accept:hover {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+
+        .btn-action.reject {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+
+        .btn-action.reject:hover {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: #f44336;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .status-badge.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+        }
+
+        .status-badge.aceptado {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .status-badge.rechazado {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .status-section-title {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #ecd925;
+        }
+
+        .modal-file-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px dashed rgba(236, 217, 37, 0.3);
+            border-radius: 8px;
+            color: #f5f5f5;
+            cursor: pointer;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-btn.confirm {
+            background: #ecd925;
+            color: #000;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .empty {
@@ -299,6 +435,12 @@
                         <div>📅 Asignado: {{ image.assigned_at[:10] if image.assigned_at else 'N/A' }}</div>
                         <div>💾 Tamaño: {{ (image.size / 1024)|round(1) }} KB</div>
                     </div>
+                    <div>
+                        <span class="status-badge status-{{ image.status }}">
+                            {% if image.status == 'pending' %}⏳ Pendiente{% elif image.status == 'aceptado' %}✓
+                            Aceptado{% else %}✗ Rechazado{% endif %}
+                        </span>
+                    </div>
                     <div class="card-actions">
                         {% if image.is_image %}
                         <button type="button" class="btn-action" onclick="showPreview('{{ image.url }}')">👁️
@@ -310,6 +452,22 @@
                         <a class="btn-action" href="{{ image.url }}" target="_blank">📄 Abrir</a>
                         {% endif %}
                         <a class="btn-action" href="{{ image.url }}" download>⬇️ Descargar</a>
+                        <button type="button" class="btn-action"
+                            onclick="openReplaceModal('{{ image.file_path|urlencode }}', '{{ image.filename|urlencode }}')">🔄
+                            Reemplazar</button>
+                        {% if image.status != 'aceptado' and image.status != 'rechazado' %}
+                        <div
+                            style="width: 100%; grid-column: 1 / -1; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 8px 0;">
+                        </div>
+                        <div class="status-section-title" style="width: 100%; grid-column: 1 / -1;">📊 Marcar estatus
+                        </div>
+                        <button type="button" class="btn-action accept"
+                            onclick="updateStatus('{{ image.file_path|urlencode }}', 'aceptado')" style="flex: 1;">✓
+                            Aceptado</button>
+                        <button type="button" class="btn-action reject"
+                            onclick="updateStatus('{{ image.file_path|urlencode }}', 'rechazado')" style="flex: 1;">✗
+                            Rechazado</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -334,7 +492,33 @@
         </div>
     </div>
 
+    <!-- Modal de reemplazo de archivo -->
+    <div id="replaceModal" class="modal">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">🔄 Reemplazar archivo</div>
+            <p style="color: #a0a0a0; margin-bottom: 16px; font-size: 13px;">Selecciona un archivo nuevo para reemplazar
+                el actual. El estado se resetará a "Pendiente".</p>
+            <div class="file-input-wrapper">
+                <input type="file" id="replaceFileInput" onchange="updateFileName()">
+                <button type="button" class="modal-file-input"
+                    onclick="document.getElementById('replaceFileInput').click();">
+                    📁 Haz clic para seleccionar archivo
+                </button>
+                <div id="selectedFileName"
+                    style="color: #a0a0a0; font-size: 12px; margin-bottom: 16px; text-align: center;"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn confirm" onclick="confirmReplace()">✓ Reemplazar</button>
+                <button type="button" class="modal-btn cancel" onclick="closeReplaceModal()">✗ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let currentReplaceFile = null;
+        let currentReplacePath = null;
+        let currentReplaceFilename = null;
+
         function showPreview(url) {
             const modal = document.getElementById('previewModal');
             const img = document.getElementById('previewImg');
@@ -347,8 +531,105 @@
             modal.style.display = 'none';
         }
 
+        function openReplaceModal(filePath, filename) {
+            currentReplacePath = decodeURIComponent(filePath);
+            currentReplaceFilename = decodeURIComponent(filename);
+            document.getElementById('replaceFileInput').value = '';
+            document.getElementById('selectedFileName').textContent = '';
+            document.getElementById('replaceModal').classList.add('active');
+        }
+
+        function closeReplaceModal() {
+            document.getElementById('replaceModal').classList.remove('active');
+            currentReplaceFile = null;
+            currentReplacePath = null;
+            currentReplaceFilename = null;
+        }
+
+        function updateFileName() {
+            const input = document.getElementById('replaceFileInput');
+            const filename = document.getElementById('selectedFileName');
+            if (input.files.length > 0) {
+                currentReplaceFile = input.files[0];
+                filename.textContent = '✓ ' + input.files[0].name;
+            } else {
+                filename.textContent = '';
+            }
+        }
+
+        async function confirmReplace() {
+            if (!currentReplaceFile || !currentReplacePath) {
+                alert('Selecciona un archivo');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', currentReplaceFile);
+            formData.append('file_path', currentReplacePath);
+            formData.append('filename', currentReplaceFilename);
+
+            try {
+                const res = await fetch('/api/reupload-file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✓ Archivo reemplazado exitosamente');
+                    closeReplaceModal();
+                    location.reload();
+                } else {
+                    alert('✗ ' + (data.error || 'Error al reemplazar'));
+                }
+            } catch (e) {
+                alert('✗ Error: ' + e.message);
+            }
+        }
+
+        async function updateStatus(filePath, newStatus) {
+            filePath = decodeURIComponent(filePath);
+            const statusText = newStatus === 'aceptado' ? 'Aceptar' : 'Rechazar';
+
+            if (!confirm(`¿Estás seguro de marcar como "${statusText}"?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/update-assignment-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_path: filePath,
+                        status: newStatus
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✓ Estado actualizado a: ' + statusText);
+                    location.reload();
+                } else {
+                    alert('✗ ' + (data.error || 'Error al actualizar estado'));
+                }
+            } catch (e) {
+                alert('✗ Error: ' + e.message);
+            }
+        }
+
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closePreview();
+            if (e.key === 'Escape') {
+                closePreview();
+                closeReplaceModal();
+            }
+        });
+
+        document.getElementById('replaceModal').addEventListener('click', (e) => {
+            if (e.target.id === 'replaceModal') {
+                closeReplaceModal();
+            }
         });
     </script>
 </body>

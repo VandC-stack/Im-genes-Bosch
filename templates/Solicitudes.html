@@ -120,6 +120,71 @@
             color: #ecd925;
         }
 
+        .filters-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .filters-panel h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #ecd925;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .filter-field label {
+            display: block;
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 6px;
+        }
+
+        .filter-field select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #f5f5f5;
+            font-size: 14px;
+        }
+
+        .filter-field select option {
+            background: #1a1a1a;
+            color: #f5f5f5;
+        }
+
+        .btn-filter {
+            padding: 10px 16px;
+            background: #ecd925;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-clear {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
         .solicitudes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -148,6 +213,18 @@
             background-size: cover;
             background-position: center;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-image.document {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        }
+
+        .document-icon {
+            font-size: 64px;
+            opacity: 0.7;
         }
 
         .card-badge {
@@ -164,6 +241,19 @@
 
         .card-badge.assigned {
             background: rgba(76, 175, 80, 0.9);
+        }
+
+        .file-type-badge {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .card-content {
@@ -313,7 +403,7 @@
 
         <div class="stats">
             <div class="stat-card">
-                <div class="stat-label">Total de solicitudes</div>
+                <div class="stat-label">Total de archivos</div>
                 <div class="stat-value">{{ total }}</div>
             </div>
             <div class="stat-card">
@@ -326,15 +416,67 @@
             </div>
         </div>
 
+        <div class="filters-panel">
+            <h3>🔍 Filtros</h3>
+            <form method="GET" action="/solicitudes">
+                <div class="filters-grid">
+                    <div class="filter-field">
+                        <label>Cliente</label>
+                        <select name="client" id="clientFilter">
+                            <option value="">Todos los clientes</option>
+                            {% for client in clients %}
+                            <option value="{{ client }}" {% if client_filter==client %}selected{% endif %}>
+                                {{ client }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Tipo de archivo</label>
+                        <select name="file_type" id="fileTypeFilter">
+                            <option value="all" {% if file_type=='all' %}selected{% endif %}>Todos los archivos</option>
+                            <option value="images" {% if file_type=='images' %}selected{% endif %}>Solo imágenes
+                            </option>
+                            <option value="documents" {% if file_type=='documents' %}selected{% endif %}>Solo documentos
+                                (PDF, Word, etc.)</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 12px;">
+                    <button type="submit" class="btn-filter">Aplicar Filtros</button>
+                    <button type="button" class="btn-clear" onclick="clearFilters()">Limpiar Filtros</button>
+                </div>
+            </form>
+        </div>
+
         <div class="solicitudes-grid">
             {% if images %}
             {% for image in images %}
             <div class="card">
+                {% if image.is_image %}
                 <div class="card-image" style="background-image: url('{{ image.url }}');">
                     <div class="card-badge {% if image.assigned_to %}assigned{% endif %}">
                         {% if image.assigned_to %}✓ Asignada{% else %}Pendiente{% endif %}
                     </div>
+                    <div class="file-type-badge">{{ image.ext }}</div>
                 </div>
+                {% else %}
+                <div class="card-image document">
+                    <div class="document-icon">
+                        {% if image.ext == 'pdf' %}📄
+                        {% elif image.ext in ['doc', 'docx'] %}📝
+                        {% elif image.ext in ['xls', 'xlsx'] %}📊
+                        {% elif image.ext in ['ppt', 'pptx'] %}📽️
+                        {% elif image.ext == 'txt' %}📃
+                        {% else %}📁
+                        {% endif %}
+                    </div>
+                    <div class="card-badge {% if image.assigned_to %}assigned{% endif %}">
+                        {% if image.assigned_to %}✓ Asignada{% else %}Pendiente{% endif %}
+                    </div>
+                    <div class="file-type-badge">{{ image.ext }}</div>
+                </div>
+                {% endif %}
                 <div class="card-content">
                     <div class="card-title">{{ image.filename }}</div>
                     <div class="card-meta">
@@ -366,6 +508,13 @@
                             👁️ Ver Estado
                         </button>
                         {% endif %}
+                        {% if not image.is_image %}
+                        <a href="{{ image.url }}" class="btn-assign"
+                            style="background: #10b981; display: block; text-align: center; text-decoration: none;"
+                            download>
+                            ⬇️ Descargar
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -373,20 +522,23 @@
             {% else %}
             <div class="empty">
                 <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                <p>No hay solicitudes de imágenes en este momento.</p>
+                <p>No hay archivos con los filtros seleccionados.</p>
             </div>
             {% endif %}
         </div>
 
         {% if total_pages > 1 %}
         <div class="page-info">
-            Mostrando {{ (page - 1) * per_page + 1 }} a {{ [page * per_page, total]|min }} de {{ total }} solicitudes
+            Mostrando {{ (page - 1) * per_page + 1 }} a {{ [page * per_page, total]|min }} de {{ total }} archivos
         </div>
 
         <div class="pagination">
             {% if page > 1 %}
-            <a class="page-btn" href="/solicitudes?page=1">« Primera</a>
-            <a class="page-btn" href="/solicitudes?page={{ page - 1 }}">‹ Anterior</a>
+            <a class="page-btn" href="/solicitudes?page=1&client={{ client_filter }}&file_type={{ file_type }}">«
+                Primera</a>
+            <a class="page-btn"
+                href="/solicitudes?page={{ page - 1 }}&client={{ client_filter }}&file_type={{ file_type }}">‹
+                Anterior</a>
             {% else %}
             <button class="page-btn disabled">« Primera</button>
             <button class="page-btn disabled">‹ Anterior</button>
@@ -398,12 +550,17 @@
             {% if p == page %}
             <button class="page-btn active">{{ p }}</button>
             {% else %}
-            <a class="page-btn" href="/solicitudes?page={{ p }}">{{ p }}</a>
+            <a class="page-btn" href="/solicitudes?page={{ p }}&client={{ client_filter }}&file_type={{ file_type }}">{{
+                p }}</a>
             {% endif %}
             {% endfor %}
 
-            {% if page < total_pages %} <a class="page-btn" href="/solicitudes?page={{ page + 1 }}">Siguiente ›</a>
-                <a class="page-btn" href="/solicitudes?page={{ total_pages }}">Última »</a>
+            {% if page < total_pages %} <a class="page-btn"
+                href="/solicitudes?page={{ page + 1 }}&client={{ client_filter }}&file_type={{ file_type }}">Siguiente
+                ›</a>
+                <a class="page-btn"
+                    href="/solicitudes?page={{ total_pages }}&client={{ client_filter }}&file_type={{ file_type }}">Última
+                    »</a>
                 {% else %}
                 <button class="page-btn disabled">Siguiente ›</button>
                 <button class="page-btn disabled">Última »</button>
@@ -413,6 +570,10 @@
     </div>
 
     <script>
+        function clearFilters() {
+            window.location.href = '/solicitudes';
+        }
+
         async function assignImage(button) {
             const filename = button.dataset.filename;
             const client = button.dataset.client;

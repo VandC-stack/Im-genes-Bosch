@@ -74,3 +74,5 @@ htmlcov/
 # =========================
 *.log
 upload_history.json
+assignments.json
+config.json

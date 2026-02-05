@@ -386,31 +386,6 @@ def get_user_role():
     return jsonify({"role": role})
 
 
-@app.route("/admin/ruta", methods=["GET", "POST"])
-@login_required
-@role_required(ROLE_SUPERVISOR)
-def admin_ruta():
-    if request.method == "POST":
-        raw_path = request.form.get("nueva_ruta", "")
-        new_path = sanitize_path(raw_path)
-
-        if not new_path:
-            return "Ruta inválida", 400
-
-        try:
-            os.makedirs(new_path, exist_ok=True)
-        except OSError as e:
-            return f"Error al crear la ruta: {e}", 400
-
-        save_config(new_path)
-
-        # 🔁 REDIRECCIÓN (evita pantalla en blanco)
-        return redirect(url_for("admin_ruta"))
-
-    current_folder = load_config().get("destination_folder", "uploads")
-    return render_template("admin_ruta.html", current_folder=current_folder)
-
-
 @app.route("/files/<path:filename>")
 @login_required
 def serve_file(filename):
@@ -618,15 +593,24 @@ def favicon():
 def solicitudes():
     page = request.args.get("page", 1, type=int)
     per_page = 12
+    client_filter = request.args.get("client", "").strip()
+    file_type = request.args.get("file_type", "all").strip()
     
-    # Obtener todas las imágenes de todos los clientes para el supervisor
+    # Obtener todas las imágenes y documentos de todos los clientes para el supervisor
     config = load_config()
-    all_images = []
+    all_files = []
     seen_paths = set()  # Para evitar duplicados
+    clients_list = []  # Lista de clientes para el filtro
     
     for username, client_data in config.get("clients", {}).items():
-        # Saltar supervisores, solo mostrar imágenes de clientes e inspectores
+        # Saltar supervisores, solo mostrar archivos de clientes e inspectores
         if normalize_role(client_data.get("role")) == ROLE_SUPERVISOR:
+            continue
+            
+        clients_list.append(username)
+        
+        # Aplicar filtro de cliente si existe
+        if client_filter and username != client_filter:
             continue
             
         client_folder = client_data.get("folder")
@@ -634,7 +618,8 @@ def solicitudes():
             continue
         
         for filename in os.listdir(client_folder):
-            if not is_image_extension(filename):
+            # Ahora incluimos TODOS los archivos permitidos, no solo imágenes
+            if not is_allowed_extension(filename):
                 continue
             
             full_path = os.path.join(client_folder, filename)
@@ -644,12 +629,22 @@ def solicitudes():
                 continue
             seen_paths.add(full_path)
             
+            # Determinar tipo y extensión
+            is_image = is_image_extension(filename)
+            ext = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+            
+            # Aplicar filtro de tipo de archivo
+            if file_type == "images" and not is_image:
+                continue
+            elif file_type == "documents" and is_image:
+                continue
+            
             try:
                 stats = os.stat(full_path)
                 mtime = datetime.fromtimestamp(stats.st_mtime)
                 assignment = get_assignment(filename)
                 
-                all_images.append({
+                all_files.append({
                     "filename": filename,
                     "client": username,
                     "folder": client_folder,
@@ -658,19 +653,21 @@ def solicitudes():
                     "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
                     "size": stats.st_size,
                     "assigned_to": assignment.get("assigned_to") if assignment else None,
-                    "status": assignment.get("status", "pending") if assignment else "pending"
+                    "status": assignment.get("status", "pending") if assignment else "pending",
+                    "is_image": is_image,
+                    "ext": ext
                 })
             except OSError:
                 continue
     
     # Ordenar por fecha descendente
-    all_images = sorted(all_images, key=lambda x: x["modified"], reverse=True)
+    all_files = sorted(all_files, key=lambda x: x["modified"], reverse=True)
     
     # Paginación
-    total = len(all_images)
+    total = len(all_files)
     start = (page - 1) * per_page
     end = start + per_page
-    images_page = all_images[start:end]
+    files_page = all_files[start:end]
     total_pages = (total + per_page - 1) // per_page
     
     # Obtener lista de inspectores
@@ -679,12 +676,15 @@ def solicitudes():
     
     return render_template(
         "solicitudes.html",
-        images=images_page,
+        images=files_page,
         page=page,
         total_pages=total_pages,
         total=total,
         per_page=per_page,
-        inspectors=inspectors
+        inspectors=inspectors,
+        clients=sorted(clients_list),
+        client_filter=client_filter,
+        file_type=file_type
     )
 
 
@@ -1013,11 +1013,39 @@ def add_image_comment():
     return jsonify({"status": "ok"})
 
 
-@app.route("/api/reupload-image", methods=["POST"])
+@app.route("/api/update-assignment-status", methods=["POST"])
 @login_required
 @role_required(ROLE_INSPECTOR)
-def reupload_image():
-    """Reemplazar una imagen asignada"""
+def update_assignment_status():
+    """Actualizar el estado de una asignación (aceptado/rechazado)"""
+    data = request.get_json()
+    file_path = data.get("file_path")
+    new_status = data.get("status", "").strip().lower()
+    
+    if not file_path or new_status not in ["aceptado", "rechazado"]:
+        return jsonify({"error": "Datos inválidos"}), 400
+    
+    username = session.get("username")
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
+    
+    if not assignment:
+        return jsonify({"error": "Asignación no encontrada"}), 404
+    
+    # Actualizar estado
+    assignment["status"] = new_status
+    assignment["status_updated_at"] = datetime.utcnow().isoformat()
+    assignment["status_updated_by"] = username
+    
+    save_assignments(assignments)
+    return jsonify({"status": "ok", "new_status": new_status})
+
+
+@app.route("/api/reupload-file", methods=["POST"])
+@login_required
+@role_required(ROLE_INSPECTOR)
+def reupload_file():
+    """Reemplazar un archivo asignado (imagen o documento)"""
     if "file" not in request.files:
         return jsonify({"error": "No se envió archivo"}), 400
     
@@ -1028,10 +1056,10 @@ def reupload_image():
     if not filename or not file_path or not file.filename:
         return jsonify({"error": "Datos inválidos"}), 400
     
-    if not is_image_extension(file.filename):
-        return jsonify({"error": "Solo se permiten imágenes"}), 400
+    if not is_allowed_extension(file.filename):
+        return jsonify({"error": "Tipo de archivo no permitido"}), 400
     
-    # Verificar que la imagen está asignada al inspector
+    # Verificar que el archivo está asignado al inspector
     username = session.get("username")
     assignments = load_assignments()
     assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
