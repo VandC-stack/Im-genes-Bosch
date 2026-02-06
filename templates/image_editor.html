@@ -855,10 +855,10 @@
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                    <button class="btn btn-success" onclick="editor.updateStatus('accepted')" style="flex: 1;">
+                    <button class="btn btn-success" onclick="editor.updateStatus('aceptado')" style="flex: 1;">
                         ✓ Aceptar
                     </button>
-                    <button class="btn btn-danger" onclick="editor.updateStatus('rejected')" style="flex: 1;">
+                    <button class="btn btn-danger" onclick="editor.updateStatus('rechazado')" style="flex: 1;">
                         ✗ Rechazar
                     </button>
                 </div>
@@ -1779,12 +1779,14 @@
 
             updateStatusDisplay(status) {
                 const statusInfo = {
-                    accepted: { badge: 'Aceptado', text: 'Imagen aceptada' },
-                    rejected: { badge: 'Rechazado', text: 'Imagen rechazada' },
-                    pending: { badge: 'Pendiente', text: 'Pendiente de revisión' }
+                    subido: { badge: '⬆️ Subido', text: 'Solicitud subida en espera de asignación' },
+                    asignado: { badge: '🧭 Asignado', text: 'Asignado a un inspector' },
+                    en_revision: { badge: '🔍 En revisión', text: 'El inspector está revisando' },
+                    aceptado: { badge: '✓ Aceptado', text: 'Imagen aceptada' },
+                    rechazado: { badge: '✗ Rechazado', text: 'Imagen rechazada' }
                 };
 
-                const info = statusInfo[status] || statusInfo.pending;
+                const info = statusInfo[status] || statusInfo.subido;
                 this.elements.statusDisplay.className = `status-badge status-${status}`;
                 this.elements.statusDisplay.textContent = info.badge;
                 this.elements.currentStatusText.textContent = info.text;
@@ -1805,7 +1807,7 @@
                     if (!response.ok) throw new Error('Error al actualizar estado');
 
                     this.updateStatusDisplay(status);
-                    this.showSuccess(`Imagen marcada como ${status === 'accepted' ? 'aceptada' : 'rechazada'}`);
+                    this.showSuccess(`Imagen marcada como ${status === 'aceptado' ? 'aceptada' : 'rechazada'}`);
                 } catch (error) {
                     this.showError('Error: ' + error.message);
                 }

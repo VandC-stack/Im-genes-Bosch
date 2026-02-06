@@ -585,7 +585,7 @@
                     <div class="preview-meta" id="previewMeta"></div>
                 </div>
                 <div class="preview-actions">
-                    <a id="previewOpenLink" class="btn btn-primary" target="_blank">Abrir en pestaña</a>
+                    <a id="previewCheckStatusLink" class="btn btn-primary">📋 Verificar estatus</a>
                     <a id="previewDownloadLink" class="btn btn-secondary" download>Descargar</a>
                     <button class="btn btn-ghost" onclick="closePreview()">Cerrar</button>
                 </div>
@@ -640,6 +640,7 @@
                     }
                             <div class="image-overlay">
                                 <div class="overlay-name">${image.name}</div>
+                                <div class="overlay-meta">📌 Folio: ${image.folio || 'N/A'}</div>
                                 <div class="overlay-meta">💾 ${(image.size / 1024).toFixed(1)} KB</div>
                             </div>
                             <div id="status-badge-${globalIdx}" style="display: none;"></div>
@@ -746,10 +747,11 @@
                 if (!image.is_image) continue;
 
                 try {
-                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}`);
+                    const statusKey = image.file_path || image.name;
+                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
                     if (res.ok) {
                         const data = await res.json();
-                        imageStatuses[image.name] = data.status;
+                        imageStatuses[statusKey] = data.status;
                         updateStatusBadge(globalIdx, data.status);
                     }
                 } catch (e) {
@@ -766,13 +768,14 @@
             for (let i = 0; i < allImages.length; i++) {
                 const image = allImages[i];
                 if (!image.is_image) continue;
-                if (imageStatuses[image.name]) continue; // Ya cargado
+                const statusKey = image.file_path || image.name;
+                if (imageStatuses[statusKey]) continue; // Ya cargado
 
                 try {
-                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}`);
+                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
                     if (res.ok) {
                         const data = await res.json();
-                        imageStatuses[image.name] = data.status;
+                        imageStatuses[statusKey] = data.status;
                     }
                 } catch (e) {
                     console.error('Error loading status:', e);
@@ -787,16 +790,24 @@
 
             let statusClass = 'status-pending';
             let statusIcon = '⏳';
-            let statusText = 'Pendiente';
+            let statusText = 'Subido';
 
-            if (status === 'accepted') {
+            if (status === 'asignado') {
+                statusClass = 'status-pending';
+                statusIcon = '🧭';
+                statusText = 'Asignado';
+            } else if (status === 'en_revision') {
+                statusClass = 'status-pending';
+                statusIcon = '🔍';
+                statusText = 'En revisión';
+            } else if (status === 'aceptado') {
                 statusClass = 'status-accepted';
                 statusIcon = '✓';
-                statusText = 'Aceptada';
-            } else if (status === 'rejected') {
+                statusText = 'Aceptado';
+            } else if (status === 'rechazado') {
                 statusClass = 'status-rejected';
                 statusIcon = '✗';
-                statusText = 'Rechazada';
+                statusText = 'Rechazado';
             }
 
             badge.innerHTML = `<span class="status-badge ${statusClass}">${statusIcon}</span>`;
@@ -812,13 +823,13 @@
             const previewImage = document.getElementById('previewImage');
             const previewName = document.getElementById('previewName');
             const previewMeta = document.getElementById('previewMeta');
-            const previewOpenLink = document.getElementById('previewOpenLink');
+            const previewCheckStatusLink = document.getElementById('previewCheckStatusLink');
             const previewDownloadLink = document.getElementById('previewDownloadLink');
 
             previewImage.src = image.url;
             previewName.textContent = image.name;
-            previewMeta.textContent = `📅 ${image.modified_iso} • 💾 ${(image.size / 1024).toFixed(1)} KB`;
-            previewOpenLink.href = image.url;
+            previewMeta.textContent = `📌 Folio: ${image.folio || 'N/A'} • 📅 ${image.modified_iso} • 💾 ${(image.size / 1024).toFixed(1)} KB`;
+            previewCheckStatusLink.href = `/view-image?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`;
             previewDownloadLink.href = image.url;
             previewDownloadLink.download = image.name;
 

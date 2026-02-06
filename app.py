@@ -1,8 +1,9 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory, redirect, url_for, abort, session, send_file
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import re
+import secrets
 import hmac
 import base64
 import binascii
@@ -32,6 +33,19 @@ ROLE_CLIENTE = "cliente"
 ROLE_SUPERVISOR = "supervisor"
 ROLE_INSPECTOR = "inspector"
 ALLOWED_ROLES = {ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_INSPECTOR}
+
+STATUS_UPLOADED = "subido"
+STATUS_ASSIGNED = "asignado"
+STATUS_IN_REVIEW = "en_revision"
+STATUS_ACCEPTED = "aceptado"
+STATUS_REJECTED = "rechazado"
+VALID_STATUSES = {
+    STATUS_UPLOADED,
+    STATUS_ASSIGNED,
+    STATUS_IN_REVIEW,
+    STATUS_ACCEPTED,
+    STATUS_REJECTED
+}
 
 
 # =========================
@@ -138,7 +152,14 @@ def load_assignments():
 
     try:
         with open(ASSIGNMENTS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            if not isinstance(data, list):
+                return []
+
+            changed = ensure_assignment_fields(data)
+            if changed:
+                save_assignments(data)
+            return data
     except (json.JSONDecodeError, OSError):
         return []
 
@@ -146,6 +167,88 @@ def load_assignments():
 def save_assignments(data):
     with open(ASSIGNMENTS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+# =========================
+# JINJA2 FILTERS
+# =========================
+def datetime_format(value, format_str="%d/%m/%Y %H:%M"):
+    """Formatea un string ISO datetime a un formato específico"""
+    if not value:
+        return ""
+    try:
+        # Si es un string ISO 8601, convertir a datetime
+        if isinstance(value, str):
+            # Manejar formato ISO con 'T' o espacio
+            if 'T' in value:
+                dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+            else:
+                dt = datetime.fromisoformat(value)
+        else:
+            dt = value
+        return dt.strftime(format_str)
+    except (ValueError, AttributeError):
+        return str(value)
+
+
+app.jinja_env.filters['datetime_format'] = datetime_format
+
+
+def normalize_status(value: Optional[str], assigned_to: Optional[str] = None) -> str:
+    if not value:
+        return STATUS_ASSIGNED if assigned_to else STATUS_UPLOADED
+
+    normalized = value.strip().lower()
+
+    if normalized == "pending":
+        return STATUS_ASSIGNED if assigned_to else STATUS_UPLOADED
+    if normalized == "accepted":
+        return STATUS_ACCEPTED
+    if normalized == "rejected":
+        return STATUS_REJECTED
+
+    if normalized in VALID_STATUSES:
+        return normalized
+
+    return STATUS_ASSIGNED if assigned_to else STATUS_UPLOADED
+
+
+def generate_folio(existing_folios: set) -> str:
+    date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
+    while True:
+        suffix = f"{secrets.randbelow(10000):04d}"
+        folio = f"FOL-{date_str}-{suffix}"
+        if folio not in existing_folios:
+            return folio
+
+
+def ensure_assignment_fields(assignments: list) -> bool:
+    changed = False
+    existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
+
+    for assignment in assignments:
+        normalized_status = normalize_status(
+            assignment.get("status"),
+            assignment.get("assigned_to")
+        )
+        if assignment.get("status") != normalized_status:
+            assignment["status"] = normalized_status
+            changed = True
+
+        if not assignment.get("folio"):
+            folio = generate_folio(existing_folios)
+            assignment["folio"] = folio
+            existing_folios.add(folio)
+            changed = True
+
+    return changed
+
+
+def get_assignment_by_path(file_path: str):
+    if not file_path:
+        return None
+    assignments = load_assignments()
+    return next((a for a in assignments if a.get("file_path") == file_path), None)
 
 
 def get_assignment(filename: str):
@@ -166,6 +269,12 @@ def append_history(entries):
 
 def list_images(username=None, name_filter=None, date_from=None, date_to=None, all_clients=False):
     entries = []
+    assignments = load_assignments()
+    assignments_by_path = {
+        a.get("file_path"): a for a in assignments if a.get("file_path")
+    }
+    existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
+    assignments_changed = False
     
     if all_clients and username:
         # Supervisor: listar imágenes de TODOS los clientes
@@ -175,7 +284,12 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
             if not folder or not os.path.exists(folder):
                 continue
             
-            for filename in os.listdir(folder):
+            try:
+                folder_contents = os.listdir(folder)
+            except OSError:
+                continue
+            
+            for filename in folder_contents:
                 if not is_allowed_extension(filename):
                     continue
 
@@ -184,41 +298,145 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
                 try:
                     stats = os.stat(full_path)
                     mtime = datetime.fromtimestamp(stats.st_mtime)
+                    assignment = assignments_by_path.get(full_path)
+                    if not assignment:
+                        folio = generate_folio(existing_folios)
+                        existing_folios.add(folio)
+                        assignment = {
+                            "filename": filename,
+                            "file_path": full_path,
+                            "client": client_name,
+                            "folder": folder,
+                            "assigned_to": None,
+                            "assigned_by": None,
+                            "assigned_at": None,
+                            "status": STATUS_UPLOADED,
+                            "folio": folio,
+                            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                            "comments": []
+                        }
+                        assignments.append(assignment)
+                        assignments_by_path[full_path] = assignment
+                        assignments_changed = True
+
+                    status = normalize_status(
+                        assignment.get("status") if assignment else None,
+                        assignment.get("assigned_to") if assignment else None
+                    )
                     entries.append({
                         "name": filename,
-                        "url": url_for("serve_file", filename=filename),
+                        "url": url_for("serve_file_by_path", file_path=full_path),
                         "modified": mtime,
                         "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
                         "size": stats.st_size,
                         "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else "",
                         "is_image": is_image_extension(filename),
-                        "client": client_name
+                        "client": client_name,
+                        "file_path": full_path,
+                        "status": status,
+                        "folio": assignment.get("folio") if assignment else None
                     })
                 except OSError:
                     continue
     else:
         # Cliente: listar solo sus propias imágenes
         folder = get_upload_folder(username)
-        for filename in os.listdir(folder):
-            if not is_allowed_extension(filename):
-                continue
+        seen_paths = set()
 
-            full_path = os.path.join(folder, filename)
+        client_assignments = [
+            a for a in assignments
+            if a.get("client") == username and a.get("file_path")
+        ]
+
+        for assignment in client_assignments:
+            full_path = assignment.get("file_path")
+            if not full_path or not os.path.exists(full_path):
+                continue
+            if not is_allowed_extension(full_path):
+                continue
 
             try:
                 stats = os.stat(full_path)
                 mtime = datetime.fromtimestamp(stats.st_mtime)
+                filename = assignment.get("filename") or os.path.basename(full_path)
+                status = normalize_status(
+                    assignment.get("status") if assignment else None,
+                    assignment.get("assigned_to") if assignment else None
+                )
                 entries.append({
                     "name": filename,
-                    "url": url_for("serve_file", filename=filename),
+                    "url": url_for("serve_file_by_path", file_path=full_path),
                     "modified": mtime,
                     "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
                     "size": stats.st_size,
                     "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else "",
-                    "is_image": is_image_extension(filename)
+                    "is_image": is_image_extension(filename),
+                    "file_path": full_path,
+                    "status": status,
+                    "folio": assignment.get("folio") if assignment else None
+                })
+                seen_paths.add(full_path)
+            except OSError:
+                continue
+
+        try:
+            folder_contents = os.listdir(folder)
+        except OSError:
+            folder_contents = []
+
+        for filename in folder_contents:
+            if not is_allowed_extension(filename):
+                continue
+
+            full_path = os.path.join(folder, filename)
+            if full_path in seen_paths:
+                continue
+
+            try:
+                stats = os.stat(full_path)
+                mtime = datetime.fromtimestamp(stats.st_mtime)
+                assignment = assignments_by_path.get(full_path)
+                if not assignment:
+                    folio = generate_folio(existing_folios)
+                    existing_folios.add(folio)
+                    assignment = {
+                        "filename": filename,
+                        "file_path": full_path,
+                        "client": username,
+                        "folder": folder,
+                        "assigned_to": None,
+                        "assigned_by": None,
+                        "assigned_at": None,
+                        "status": STATUS_UPLOADED,
+                        "folio": folio,
+                        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                        "comments": []
+                    }
+                    assignments.append(assignment)
+                    assignments_by_path[full_path] = assignment
+                    assignments_changed = True
+
+                status = normalize_status(
+                    assignment.get("status") if assignment else None,
+                    assignment.get("assigned_to") if assignment else None
+                )
+                entries.append({
+                    "name": filename,
+                    "url": url_for("serve_file_by_path", file_path=full_path),
+                    "modified": mtime,
+                    "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
+                    "size": stats.st_size,
+                    "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else "",
+                    "is_image": is_image_extension(filename),
+                    "file_path": full_path,
+                    "status": status,
+                    "folio": assignment.get("folio") if assignment else None
                 })
             except OSError:
                 continue
+
+    if assignments_changed:
+        save_assignments(assignments)
 
     if name_filter:
         lowered = name_filter.lower()
@@ -274,6 +492,19 @@ def role_required(*allowed_roles):
 
 def is_safe_next(value: Optional[str]) -> bool:
     return bool(value) and value.startswith("/")
+
+
+# Prevenir caché de páginas protegidas
+@app.after_request
+def add_no_cache_headers(response):
+    """Añade headers para prevenir caché en navegadores"""
+    if 'Cache-Control' not in response.headers:
+        # No cachear páginas HTML para prevenir acceso después de logout
+        if response.content_type and 'text/html' in response.content_type:
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+    return response
 
 
 # =========================
@@ -343,6 +574,9 @@ def upload():
 
     saved = []
     history_entries = []
+    assignments = load_assignments()
+    existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
+    assignments_changed = False
 
     for i, file in enumerate(files):
         if not file.filename or not is_allowed_extension(file.filename):
@@ -358,19 +592,51 @@ def upload():
             base_name = datetime.now().strftime("IMG_%Y%m%d_%H%M%S_%f")
 
         filename = f"{base_name}.{ext}"
-        file.save(os.path.join(upload_folder, filename))
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
         saved.append(filename)
 
         history_entries.append({
             "filename": filename,
             "original_name": file.filename,
             "folder": upload_folder,
-            "uploaded_at": datetime.utcnow().isoformat(),
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
             "url": url_for("serve_file", filename=filename),
             "username": username
         })
 
+        assignment = next(
+            (a for a in assignments if a.get("file_path") == file_path),
+            None
+        )
+        if assignment:
+            assignment["filename"] = filename
+            assignment["client"] = username
+            assignment["folder"] = upload_folder
+            assignment["status"] = STATUS_UPLOADED
+            assignment["uploaded_at"] = datetime.now(timezone.utc).isoformat()
+        else:
+            folio = generate_folio(existing_folios)
+            existing_folios.add(folio)
+            assignments.append({
+                "filename": filename,
+                "file_path": file_path,
+                "client": username,
+                "folder": upload_folder,
+                "assigned_to": None,
+                "assigned_by": None,
+                "assigned_at": None,
+                "status": STATUS_UPLOADED,
+                "folio": folio,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "comments": []
+            })
+        assignments_changed = True
+
     append_history(history_entries)
+
+    if assignments_changed:
+        save_assignments(assignments)
 
     return jsonify({
         "status": "ok",
@@ -434,11 +700,17 @@ def serve_file_by_path():
     if role == ROLE_INSPECTOR:
         # Verificar que el archivo esté asignado a este inspector
         assignments = load_assignments()
-        assigned = any(
-            a.get("file_path") == file_path and a.get("assigned_to") == username
-            for a in assignments
+        assignment = next(
+            (a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username),
+            None
         )
-        if assigned:
+        if assignment:
+            current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
+            if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
+                assignment["status"] = STATUS_IN_REVIEW
+                assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+                assignment["status_updated_by"] = username
+                save_assignments(assignments)
             directory = os.path.dirname(file_path)
             filename = os.path.basename(file_path)
             return send_from_directory(directory, filename, max_age=0)
@@ -538,8 +810,13 @@ def save_edited_image():
         assignments = load_assignments()
         assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
         if assignment:
-            assignment["last_edited_at"] = datetime.utcnow().isoformat()
+            assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
             assignment["last_edited_by"] = username
+            current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
+            if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
+                assignment["status"] = STATUS_IN_REVIEW
+                assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+                assignment["status_updated_by"] = username
             save_assignments(assignments)
 
         return jsonify({"status": "ok"})
@@ -642,7 +919,11 @@ def solicitudes():
             try:
                 stats = os.stat(full_path)
                 mtime = datetime.fromtimestamp(stats.st_mtime)
-                assignment = get_assignment(filename)
+                assignment = get_assignment_by_path(full_path)
+                status = normalize_status(
+                    assignment.get("status") if assignment else None,
+                    assignment.get("assigned_to") if assignment else None
+                )
                 
                 all_files.append({
                     "filename": filename,
@@ -653,7 +934,8 @@ def solicitudes():
                     "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
                     "size": stats.st_size,
                     "assigned_to": assignment.get("assigned_to") if assignment else None,
-                    "status": assignment.get("status", "pending") if assignment else "pending",
+                    "status": status,
+                    "folio": assignment.get("folio") if assignment else None,
                     "is_image": is_image,
                     "ext": ext
                 })
@@ -708,9 +990,14 @@ def assign_image():
     
     if existing:
         existing["assigned_to"] = inspector
-        existing["assigned_at"] = datetime.utcnow().isoformat()
+        existing["assigned_at"] = datetime.now(timezone.utc).isoformat()
         existing["assigned_by"] = session.get("username")
+        existing["status"] = STATUS_ASSIGNED
+        existing["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+        existing["status_updated_by"] = session.get("username")
     else:
+        assignments_folios = {a.get("folio") for a in assignments if a.get("folio")}
+        folio = generate_folio(assignments_folios)
         assignments.append({
             "filename": filename,
             "file_path": file_path,
@@ -718,8 +1005,11 @@ def assign_image():
             "folder": folder,
             "assigned_to": inspector,
             "assigned_by": session.get("username"),
-            "assigned_at": datetime.utcnow().isoformat(),
-            "status": "pending"
+            "assigned_at": datetime.now(timezone.utc).isoformat(),
+            "status": STATUS_ASSIGNED,
+            "folio": folio,
+            "status_updated_at": datetime.now(timezone.utc).isoformat(),
+            "status_updated_by": session.get("username")
         })
     
     save_assignments(assignments)
@@ -762,7 +1052,8 @@ def inspector_panel():
                 "size": stats.st_size,
                 "assigned_at": assignment.get("assigned_at"),
                 "assigned_by": assignment.get("assigned_by"),
-                "status": assignment.get("status", "pending"),
+                "status": normalize_status(assignment.get("status"), assignment.get("assigned_to")),
+                "folio": assignment.get("folio"),
                 "is_image": is_image_extension(filename),
                 "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else ""
             })
@@ -772,10 +1063,17 @@ def inspector_panel():
     # Ordenar por fecha de asignación descendente
     assigned_images = sorted(assigned_images, key=lambda x: x.get("assigned_at", ""), reverse=True)
     
+    # Calcular contadores
+    total_assignments = len(assigned_images)
+    pending_count = len([img for img in assigned_images if img.get("status") in [STATUS_ASSIGNED, STATUS_IN_REVIEW]])
+    completed_count = len([img for img in assigned_images if img.get("status") in [STATUS_ACCEPTED, STATUS_REJECTED]])
+    
     return render_template(
         "inspector.html",
         images=assigned_images,
-        total=len(assigned_images),
+        total_assignments=total_assignments,
+        pending_count=pending_count,
+        completed_count=completed_count,
         username=username
     )
 
@@ -877,6 +1175,13 @@ def image_editor():
     
     if not assignment:
         return "Archivo no asignado a este inspector", 403
+
+    current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
+    if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
+        assignment["status"] = STATUS_IN_REVIEW
+        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+        assignment["status_updated_by"] = username
+        save_assignments(assignments)
     
     return render_template("image_editor.html", 
                          filename=filename, 
@@ -890,15 +1195,23 @@ def image_editor():
 def image_status():
     """Obtener o actualizar el estado de una imagen"""
     filename = request.args.get("filename") if request.method == "GET" else request.get_json().get("filename")
+    file_path = request.args.get("file_path") if request.method == "GET" else request.get_json().get("file_path")
     
-    if not filename:
-        return jsonify({"error": "Filename requerido"}), 400
+    if not filename and not file_path:
+        return jsonify({"error": "Filename o file_path requerido"}), 400
     
     assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    assignment = None
+    if file_path:
+        assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
+    if not assignment and filename:
+        assignment = next((a for a in assignments if a.get("filename") == filename), None)
     
     if request.method == "GET":
-        status = assignment.get("status", "pending") if assignment else "pending"
+        status = normalize_status(
+            assignment.get("status") if assignment else None,
+            assignment.get("assigned_to") if assignment else None
+        )
         return jsonify({"status": status})
     
     # POST: actualizar estado
@@ -910,12 +1223,12 @@ def image_status():
     status = data.get("status")
     file_path = data.get("file_path")
     
-    if not status or status not in ["pending", "accepted", "rejected"]:
+    if not status or status not in [STATUS_ACCEPTED, STATUS_REJECTED]:
         return jsonify({"error": "Estado inválido"}), 400
     
     if assignment:
         assignment["status"] = status
-        assignment["status_updated_at"] = datetime.utcnow().isoformat()
+        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
         assignment["status_updated_by"] = session.get("username")
         save_assignments(assignments)
         return jsonify({"status": "ok"})
@@ -1005,7 +1318,7 @@ def add_image_comment():
     assignment["comments"].append({
         "author": username,
         "text": text,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "role": role
     })
     
@@ -1022,7 +1335,7 @@ def update_assignment_status():
     file_path = data.get("file_path")
     new_status = data.get("status", "").strip().lower()
     
-    if not file_path or new_status not in ["aceptado", "rechazado"]:
+    if not file_path or new_status not in [STATUS_ACCEPTED, STATUS_REJECTED]:
         return jsonify({"error": "Datos inválidos"}), 400
     
     username = session.get("username")
@@ -1034,7 +1347,7 @@ def update_assignment_status():
     
     # Actualizar estado
     assignment["status"] = new_status
-    assignment["status_updated_at"] = datetime.utcnow().isoformat()
+    assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
     assignment["status_updated_by"] = username
     
     save_assignments(assignments)
@@ -1074,9 +1387,9 @@ def reupload_file():
         
         file.save(file_path)
         
-        # Resetear estado a pendiente
-        assignment["status"] = "pending"
-        assignment["status_updated_at"] = datetime.utcnow().isoformat()
+        # Actualizar estado a en_revision
+        assignment["status"] = STATUS_IN_REVIEW
+        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
         assignment["status_updated_by"] = username
         save_assignments(assignments)
         
@@ -1090,8 +1403,9 @@ def reupload_file():
 def view_image():
     """Ver imagen con comentarios y estado (cliente/supervisor)"""
     filename = request.args.get("filename")
+    file_path = request.args.get("file_path")
     
-    if not filename:
+    if not filename and not file_path:
         return "Parámetros inválidos", 400
     
     username = session.get("username")
@@ -1099,7 +1413,11 @@ def view_image():
     
     # Obtener información de la asignación
     assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("filename") == filename), None)
+    assignment = None
+    if file_path:
+        assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
+    if not assignment and filename:
+        assignment = next((a for a in assignments if a.get("filename") == filename), None)
     
     if not assignment:
         return "Archivo no encontrado", 404
@@ -1115,7 +1433,8 @@ def view_image():
                          filename=filename,
                          file_path=assignment.get("file_path"),
                          client=assignment.get("client"),
-                         status=assignment.get("status", "pending"),
+                         status=normalize_status(assignment.get("status"), assignment.get("assigned_to")),
+                         folio=assignment.get("folio"),
                          comments=assignment.get("comments", []),
                          assigned_to=assignment.get("assigned_to"),
                          assigned_at=assignment.get("assigned_at"),

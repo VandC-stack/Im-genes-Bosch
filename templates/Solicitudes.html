@@ -455,8 +455,12 @@
             <div class="card">
                 {% if image.is_image %}
                 <div class="card-image" style="background-image: url('{{ image.url }}');">
-                    <div class="card-badge {% if image.assigned_to %}assigned{% endif %}">
-                        {% if image.assigned_to %}✓ Asignada{% else %}Pendiente{% endif %}
+                    <div class="card-badge {% if image.status == 'aceptado' %}assigned{% endif %}">
+                        {% if image.status == 'subido' %}Subido
+                        {% elif image.status == 'asignado' %}Asignado
+                        {% elif image.status == 'en_revision' %}En revisión
+                        {% elif image.status == 'aceptado' %}Aceptado
+                        {% else %}Rechazado{% endif %}
                     </div>
                     <div class="file-type-badge">{{ image.ext }}</div>
                 </div>
@@ -471,8 +475,12 @@
                         {% else %}📁
                         {% endif %}
                     </div>
-                    <div class="card-badge {% if image.assigned_to %}assigned{% endif %}">
-                        {% if image.assigned_to %}✓ Asignada{% else %}Pendiente{% endif %}
+                    <div class="card-badge {% if image.status == 'aceptado' %}assigned{% endif %}">
+                        {% if image.status == 'subido' %}Subido
+                        {% elif image.status == 'asignado' %}Asignado
+                        {% elif image.status == 'en_revision' %}En revisión
+                        {% elif image.status == 'aceptado' %}Aceptado
+                        {% else %}Rechazado{% endif %}
                     </div>
                     <div class="file-type-badge">{{ image.ext }}</div>
                 </div>
@@ -481,6 +489,7 @@
                     <div class="card-title">{{ image.filename }}</div>
                     <div class="card-meta">
                         <div>📁 Cliente: <strong>{{ image.client }}</strong></div>
+                        <div>📌 Folio: <strong>{{ image.folio or 'N/A' }}</strong></div>
                         <div>📅 {{ image.modified_iso }}</div>
                         <div>💾 {{ (image.size / 1024)|round(1) }} KB</div>
                     </div>
@@ -612,7 +621,7 @@
 
         function viewImageStatus(filename, folder) {
             const filePath = folder + '\\' + filename;
-            window.open(`/view-image?filename=${encodeURIComponent(filename)}&file_path=${encodeURIComponent(filePath)}`, '_blank');
+            window.location.href = `/view-image?filename=${encodeURIComponent(filename)}&file_path=${encodeURIComponent(filePath)}`;
         }
     </script>
 </body>

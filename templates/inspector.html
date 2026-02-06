@@ -15,136 +15,216 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-            color: #f5f5f5;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             min-height: 100vh;
-            padding: 24px 16px;
+            padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
-        header {
+        /* ========== HEADER ========== */
+        .header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
             flex-wrap: wrap;
             gap: 16px;
         }
 
-        .title {
-            font-size: 32px;
-            font-weight: 700;
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .title span {
-            width: 48px;
-            height: 48px;
-            background: #ecd925;
-            border-radius: 12px;
+        .header-icon {
+            width: 44px;
+            height: 44px;
+            background: #ECD925;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
         }
 
-        .header-actions {
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .header-right {
             display: flex;
             gap: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .user-info {
-            background: rgba(255, 255, 255, 0.06);
-            padding: 10px 14px;
-            border-radius: 12px;
+        .user-badge {
+            background: #f6f6f6;
+            padding: 8px 14px;
+            border-radius: 10px;
             font-size: 13px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .header-link {
+            text-decoration: none;
+            color: #000;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #f6f6f6;
+            display: inline-block;
         }
 
         .btn {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
-            transition: all 0.2s ease;
+            display: inline-block;
         }
 
         .btn-primary {
-            background: #ecd925;
+            background: #ECD925;
             color: #000;
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f5f5f5;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #333;
+            color: #fff;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            filter: brightness(0.98);
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+        /* ========== CONTADOR COMPACTO ========== */
+        .stats-compact {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 16px;
-            border-radius: 12px;
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            background: #ECD925;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #a0a0a0;
-            margin-bottom: 6px;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
-            color: #ecd925;
+            color: #333;
         }
 
+        /* ========== CUADRÍCULA 7x6 ========== */
         .tasks-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
+        @media (max-width: 1600px) {
+            .tasks-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .tasks-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .tasks-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .tasks-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .tasks-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 400px) {
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ========== CARD ========== */
         .card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
+            background: #ffffff;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .card:hover {
-            border-color: rgba(236, 217, 37, 0.3);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
 
         .card-image {
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #1a1a1a;
+            background: #f0f0f0;
             background-size: cover;
             background-position: center;
             position: relative;
@@ -154,148 +234,140 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(236, 217, 37, 0.14);
-            color: #ecd925;
+            background: #fff4b0;
+            color: #333;
             font-weight: 700;
-            font-size: 24px;
+            font-size: 20px;
             text-transform: uppercase;
         }
 
         .card-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(236, 217, 37, 0.9);
+            top: 6px;
+            right: 6px;
+            background: rgba(236, 217, 37, 0.95);
             color: #000;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-asignado {
+            background: rgba(59, 130, 246, 0.9);
+        }
+
+        .status-en_revision {
+            background: rgba(251, 146, 60, 0.9);
+        }
+
+        .status-aceptado {
+            background: rgba(34, 197, 94, 0.9);
+        }
+
+        .status-rechazado {
+            background: rgba(239, 68, 68, 0.9);
         }
 
         .card-content {
-            padding: 16px;
+            padding: 10px;
         }
 
         .card-title {
             font-weight: 600;
-            margin-bottom: 10px;
-            word-break: break-word;
-            font-size: 14px;
+            font-size: 12px;
+            margin-bottom: 6px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-meta {
-            font-size: 12px;
-            color: #a0a0a0;
-            margin-bottom: 8px;
-            line-height: 1.5;
+            font-size: 10px;
+            color: #666;
+            line-height: 1.4;
         }
 
-        .card-meta strong {
-            color: #f5f5f5;
+        .card-meta div {
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .card-actions {
+        /* ========== PAGINACIÓN ========== */
+        .pagination {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px 28px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
+            justify-content: center;
+            align-items: center;
             gap: 8px;
-            margin-top: 12px;
             flex-wrap: wrap;
         }
 
-        .btn-action {
-            flex: 1;
-            min-width: 100px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #f5f5f5;
-            border-radius: 8px;
+        .page-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #333;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 12px;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s ease;
+            font-size: 14px;
         }
 
-        .btn-action:hover {
-            background: rgba(236, 217, 37, 0.2);
-            border-color: #ecd925;
+        .page-btn:hover:not(.active):not(:disabled) {
+            background: #f6f6f6;
+            border-color: #ECD925;
         }
 
-        .btn-action.accept {
-            background: rgba(76, 175, 80, 0.2);
-            border-color: rgba(76, 175, 80, 0.5);
+        .page-btn.active {
+            background: #ECD925;
+            color: #000;
+            border-color: #ECD925;
         }
 
-        .btn-action.accept:hover {
-            background: rgba(76, 175, 80, 0.3);
-            border-color: #4CAF50;
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        .btn-action.reject {
-            background: rgba(244, 67, 54, 0.2);
-            border-color: rgba(244, 67, 54, 0.5);
+        .page-ellipsis {
+            padding: 0 8px;
+            color: #999;
         }
 
-        .btn-action.reject:hover {
-            background: rgba(244, 67, 54, 0.3);
-            border-color: #f44336;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-top: 8px;
-        }
-
-        .status-badge.pending {
-            background: rgba(255, 193, 7, 0.2);
-            color: #FFC107;
-        }
-
-        .status-badge.aceptado {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
-        }
-
-        .status-badge.rechazado {
-            background: rgba(244, 67, 54, 0.2);
-            color: #f44336;
-        }
-
-        .status-section-title {
-            font-size: 12px;
-            color: #a0a0a0;
-            margin-top: 12px;
-            margin-bottom: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-        }
-
-        .file-input-wrapper input[type="file"] {
-            display: none;
-        }
-
+        /* ========== MODAL ========== */
         .modal {
             display: none;
             position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal.active {
@@ -303,235 +375,475 @@
         }
 
         .modal-content {
-            background: #1a1a1a;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #ffffff;
             border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            padding: 28px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .modal-title {
             font-size: 20px;
             font-weight: 700;
-            margin-bottom: 16px;
-            color: #ecd925;
+            color: #333;
         }
 
-        .modal-file-input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 2px dashed rgba(236, 217, 37, 0.3);
+        .modal-close {
+            background: #f6f6f6;
+            border: none;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            color: #f5f5f5;
             cursor: pointer;
-            margin-bottom: 16px;
-            text-align: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #ECD925;
+        }
+
+        .modal-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .modal-info {
+            background: #f6f6f6;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: #333;
+            flex: 1;
         }
 
         .modal-actions {
-            display: flex;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
         }
 
         .modal-btn {
-            flex: 1;
-            padding: 12px;
+            padding: 14px 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             font-size: 14px;
         }
 
-        .modal-btn.confirm {
-            background: #ecd925;
+        .modal-btn:hover {
+            filter: brightness(0.98);
+        }
+
+        .btn-view {
+            background: #ECD925;
             color: #000;
         }
 
-        .modal-btn.cancel {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f5f5f5;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        .btn-edit {
+            background: #333;
+            color: #fff;
         }
 
+        .btn-download {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-replace {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-accept {
+            background: #ECD925;
+            color: #000;
+        }
+
+        .btn-reject {
+            background: #333;
+            color: #fff;
+        }
+
+        /* ========== ESTADO VACÍO ========== */
         .empty {
-            padding: 48px 24px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 60px 20px;
             text-align: center;
-            color: #7a7a7a;
-            grid-column: 1 / -1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        @media (max-width: 768px) {
-            .title {
-                font-size: 24px;
-            }
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
 
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        .empty-text {
+            font-size: 16px;
+            color: #666;
+        }
 
-            .header-actions {
-                flex-direction: column;
-                width: 100%;
-            }
+        /* ========== MODAL DE REEMPLAZO ========== */
+        .file-input-wrapper {
+            margin: 20px 0;
+        }
 
-            .header-actions .btn {
-                width: 100%;
-            }
+        .modal-file-input {
+            width: 100%;
+            padding: 16px;
+            background: #f6f6f6;
+            border: 2px dashed #ECD925;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.2s ease;
+        }
 
-            .tasks-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
+        .modal-file-input:hover {
+            background: #fffef5;
+            border-color: #d4c220;
+        }
+
+        #selectedFileName {
+            margin-top: 12px;
+            text-align: center;
+            color: #22c55e;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <header>
-            <div class="title">
-                <span>📋</span>
-                Mis Tareas Asignadas
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-icon">🔍</div>
+                <div class="header-title">Panel de Inspector</div>
             </div>
-            <div class="header-actions">
-                <div class="user-info">👤 Inspector: <strong>{{ username }}</strong></div>
-                <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
-            </div>
-        </header>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-label">Tareas asignadas</div>
-                <div class="stat-value">{{ total }}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Pendientes</div>
-                <div class="stat-value">{{ images|selectattr("status", "equalto", "pending")|list|length }}</div>
+            <div class="header-right">
+                <span class="user-badge">👤 {{ username }}</span>
+                <a href="/index" class="header-link">🏠 Inicio</a>
+                <a href="/logout" class="header-link">🚪 Salir</a>
             </div>
         </div>
 
-        <div class="tasks-grid">
-            {% if images %}
-            {% for image in images %}
-            <div class="card">
-                {% if image.is_image %}
-                <div class="card-image" style="background-image: url('{{ image.url }}');">
-                    <div class="card-badge">{{ image.status }}</div>
-                </div>
-                {% else %}
-                <div class="card-image card-file">
-                    <span>{{ image.ext or 'file' }}</span>
-                </div>
-                {% endif %}
-                <div class="card-content">
-                    <div class="card-title">{{ image.filename }}</div>
-                    <div class="card-meta">
-                        <div>📁 Cliente: <strong>{{ image.client }}</strong></div>
-                        <div>👤 Asignado por: <strong>{{ image.assigned_by }}</strong></div>
-                        <div>📅 Asignado: {{ image.assigned_at[:10] if image.assigned_at else 'N/A' }}</div>
-                        <div>💾 Tamaño: {{ (image.size / 1024)|round(1) }} KB</div>
-                    </div>
-                    <div>
-                        <span class="status-badge status-{{ image.status }}">
-                            {% if image.status == 'pending' %}⏳ Pendiente{% elif image.status == 'aceptado' %}✓
-                            Aceptado{% else %}✗ Rechazado{% endif %}
-                        </span>
-                    </div>
-                    <div class="card-actions">
-                        {% if image.is_image %}
-                        <button type="button" class="btn-action" onclick="showPreview('{{ image.url }}')">👁️
-                            Ver</button>
-                        <a class="btn-action"
-                            href="/editor?filename={{ image.filename|urlencode }}&file_path={{ image.file_path|urlencode }}&client={{ image.client|urlencode }}"
-                            target="_blank">🎨 Editar</a>
-                        {% else %}
-                        <a class="btn-action" href="{{ image.url }}" target="_blank">📄 Abrir</a>
-                        {% endif %}
-                        <a class="btn-action" href="{{ image.url }}" download>⬇️ Descargar</a>
-                        <button type="button" class="btn-action"
-                            onclick="openReplaceModal('{{ image.file_path|urlencode }}', '{{ image.filename|urlencode }}')">🔄
-                            Reemplazar</button>
-                        {% if image.status != 'aceptado' and image.status != 'rechazado' %}
-                        <div
-                            style="width: 100%; grid-column: 1 / -1; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 8px 0;">
-                        </div>
-                        <div class="status-section-title" style="width: 100%; grid-column: 1 / -1;">📊 Marcar estatus
-                        </div>
-                        <button type="button" class="btn-action accept"
-                            onclick="updateStatus('{{ image.file_path|urlencode }}', 'aceptado')" style="flex: 1;">✓
-                            Aceptado</button>
-                        <button type="button" class="btn-action reject"
-                            onclick="updateStatus('{{ image.file_path|urlencode }}', 'rechazado')" style="flex: 1;">✗
-                            Rechazado</button>
-                        {% endif %}
-                    </div>
+        <!-- Contador Compacto -->
+        <div class="stats-compact">
+            <div class="stat-item">
+                <div class="stat-icon">📋</div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Asignadas</div>
+                    <div class="stat-value">{{ total_assignments }}</div>
                 </div>
             </div>
-            {% endfor %}
-            {% else %}
-            <div class="empty">
-                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                <p>No tienes tareas asignadas en este momento.</p>
+            <div class="stat-item">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-value">{{ pending_count }}</div>
+                </div>
             </div>
-            {% endif %}
+            <div class="stat-item">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">Completadas</div>
+                    <div class="stat-value">{{ completed_count }}</div>
+                </div>
+            </div>
         </div>
+
+        <!-- Cuadrícula 7x6 -->
+        {% if images %}
+        <div class="tasks-grid" id="tasksGrid">
+            <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination" id="pagination">
+            <!-- Los botones de paginación se generarán dinámicamente -->
+        </div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">📭</div>
+            <p class="empty-text">No tienes tareas asignadas en este momento.</p>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Modal de preview -->
-    <div id="previewModal"
-        style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 24px;"
-        onclick="closePreview()">
-        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
-            <img id="previewImg"
-                style="max-width: 100%; max-height: 90vh; border-radius: 12px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);"
-                alt="Preview">
-        </div>
-    </div>
-
-    <!-- Modal de reemplazo de archivo -->
-    <div id="replaceModal" class="modal">
+    <!-- Modal de detalle -->
+    <div id="detailModal" class="modal" onclick="closeDetailModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">🔄 Reemplazar archivo</div>
-            <p style="color: #a0a0a0; margin-bottom: 16px; font-size: 13px;">Selecciona un archivo nuevo para reemplazar
-                el actual. El estado se resetará a "Pendiente".</p>
+            <div class="modal-header">
+                <div class="modal-title">Detalle de tarea</div>
+                <button class="modal-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div id="modalBody">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de reemplazo -->
+    <div id="replaceModal" class="modal" onclick="closeReplaceModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">🔄 Reemplazar archivo</div>
+                <button class="modal-close" onclick="closeReplaceModal()">✕</button>
+            </div>
+            <p style="color: #666; margin-bottom: 16px; font-size: 13px;">
+                Selecciona un archivo nuevo para reemplazar el actual. El estado se actualizará a "En revisión".
+            </p>
             <div class="file-input-wrapper">
-                <input type="file" id="replaceFileInput" onchange="updateFileName()">
+                <input type="file" id="replaceFileInput" onchange="updateFileName()" style="display: none;">
                 <button type="button" class="modal-file-input"
                     onclick="document.getElementById('replaceFileInput').click();">
                     📁 Haz clic para seleccionar archivo
                 </button>
-                <div id="selectedFileName"
-                    style="color: #a0a0a0; font-size: 12px; margin-bottom: 16px; text-align: center;"></div>
+                <div id="selectedFileName"></div>
             </div>
             <div class="modal-actions">
-                <button type="button" class="modal-btn confirm" onclick="confirmReplace()">✓ Reemplazar</button>
-                <button type="button" class="modal-btn cancel" onclick="closeReplaceModal()">✗ Cancelar</button>
+                <button type="button" class="modal-btn btn-accept" onclick="confirmReplace()">✓ Reemplazar</button>
+                <button type="button" class="modal-btn btn-reject" onclick="closeReplaceModal()">✗ Cancelar</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Datos de las imágenes
+        const allImages = {{ images | tojson | safe }};
+        const ITEMS_PER_PAGE = 42; // 7x6
+        let currentPage = 1;
         let currentReplaceFile = null;
         let currentReplacePath = null;
         let currentReplaceFilename = null;
 
-        function showPreview(url) {
-            const modal = document.getElementById('previewModal');
-            const img = document.getElementById('previewImg');
-            img.src = url;
-            modal.style.display = 'flex';
+        // Calcular total de páginas
+        const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
+
+        // Renderizar tarjetas
+        function renderCards() {
+            const grid = document.getElementById('tasksGrid');
+            if (!grid) return;
+
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIdx = startIdx + ITEMS_PER_PAGE;
+            const pageImages = allImages.slice(startIdx, endIdx);
+
+            grid.innerHTML = pageImages.map(image => {
+                const statusMap = {
+                    'subido': 'Subido',
+                    'asignado': 'Asignado',
+                    'en_revision': 'En revisión',
+                    'aceptado': 'Aceptado',
+                    'rechazado': 'Rechazado'
+                };
+
+                const imageHtml = image.is_image
+                    ? `<div class="card-image" style="background-image: url('${image.url}');">
+                         <div class="card-badge">${image.folio || 'S/F'}</div>
+                         <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
+                       </div>`
+                    : `<div class="card-image card-file">
+                         <span>${image.ext || 'FILE'}</span>
+                         <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
+                       </div>`;
+
+                return `
+                    <div class="card" onclick="openDetailModal(${startIdx + pageImages.indexOf(image)})">
+                        ${imageHtml}
+                        <div class="card-content">
+                            <div class="card-title" title="${image.filename}">${image.filename}</div>
+                            <div class="card-meta">
+                                <div>📁 ${image.client}</div>
+                                <div>📅 ${image.assigned_at ? image.assigned_at.substring(0, 10) : 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function closePreview() {
-            const modal = document.getElementById('previewModal');
-            modal.style.display = 'none';
+        // Renderizar paginación
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            if (!pagination || totalPages <= 1) {
+                if (pagination) pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex';
+
+            let buttons = '';
+
+            // Botón anterior
+            buttons += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+            // Lógica de paginación
+            if (totalPages <= 7) {
+                // Mostrar todas las páginas
+                for (let i = 1; i <= totalPages; i++) {
+                    buttons += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+            } else {
+                // Paginación con elipsis
+                buttons += `<button class="page-btn ${currentPage === 1 ? 'active' : ''}" onclick="changePage(1)">1</button>`;
+
+                if (currentPage > 3) {
+                    buttons += `<span class="page-ellipsis">...</span>`;
+                }
+
+                const start = Math.max(2, currentPage - 1);
+                const end = Math.min(totalPages - 1, currentPage + 1);
+
+                for (let i = start; i <= end; i++) {
+                    buttons += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+
+                if (currentPage < totalPages - 2) {
+                    buttons += `<span class="page-ellipsis">...</span>`;
+                }
+
+                buttons += `<button class="page-btn ${currentPage === totalPages ? 'active' : ''}" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Botón siguiente
+            buttons += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+
+            pagination.innerHTML = buttons;
         }
 
+        // Cambiar página
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderCards();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Abrir modal de detalle
+        function openDetailModal(index) {
+            const image = allImages[index];
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+
+            const statusMap = {
+                'subido': '⬆️ Subido',
+                'asignado': '🧭 Asignado',
+                'en_revision': '🔍 En revisión',
+                'aceptado': '✓ Aceptado',
+                'rechazado': '✗ Rechazado'
+            };
+
+            let content = '';
+
+            // Imagen o icono de archivo
+            if (image.is_image) {
+                content += `<img src="${image.url}" class="modal-image" alt="${image.filename}">`;
+            } else {
+                content += `<div style="background: #fff4b0; padding: 60px; text-align: center; border-radius: 12px; margin-bottom: 20px; font-size: 48px; font-weight: 700;">${image.ext || 'FILE'}</div>`;
+            }
+
+            // Información
+            content += `
+                <div class="modal-info">
+                    <div class="info-row">
+                        <div class="info-label">Nombre:</div>
+                        <div class="info-value">${image.filename}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Cliente:</div>
+                        <div class="info-value">📁 ${image.client}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Folio:</div>
+                        <div class="info-value">📌 ${image.folio || 'N/A'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Asignado por:</div>
+                        <div class="info-value">👤 ${image.assigned_by}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Fecha asignación:</div>
+                        <div class="info-value">📅 ${image.assigned_at ? image.assigned_at.substring(0, 10) : 'N/A'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Tamaño:</div>
+                        <div class="info-value">💾 ${(image.size / 1024).toFixed(1)} KB</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Estado:</div>
+                        <div class="info-value">${statusMap[image.status] || image.status}</div>
+                    </div>
+                </div>
+            `;
+
+            // Acciones
+            content += `<div class="modal-actions">`;
+
+            if (image.is_image) {
+                content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">👁️ Ver imagen</a>`;
+                content += `<a href="/editor?filename=${encodeURIComponent(image.filename)}&file_path=${encodeURIComponent(image.file_path)}&client=${encodeURIComponent(image.client)}" target="_blank" class="modal-btn btn-edit">🎨 Editar</a>`;
+            } else {
+                content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">📄 Abrir archivo</a>`;
+            }
+
+            content += `<a href="${image.url}" download class="modal-btn btn-download">⬇️ Descargar</a>`;
+            content += `<button type="button" class="modal-btn btn-replace" onclick="openReplaceModal('${encodeURIComponent(image.file_path)}', '${encodeURIComponent(image.filename)}')">🔄 Reemplazar</button>`;
+            content += `<button type="button" class="modal-btn btn-accept" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'aceptado')">✓ Aceptar</button>`;
+            content += `<button type="button" class="modal-btn btn-reject" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'rechazado')">✗ Rechazar</button>`;
+
+            content += `</div>`;
+
+            modalBody.innerHTML = content;
+            modal.classList.add('active');
+        }
+
+        // Cerrar modal de detalle
+        function closeDetailModal(event) {
+            if (event && event.target !== document.getElementById('detailModal')) return;
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Modal de reemplazo
         function openReplaceModal(filePath, filename) {
+            closeDetailModal();
             currentReplacePath = decodeURIComponent(filePath);
             currentReplaceFilename = decodeURIComponent(filename);
             document.getElementById('replaceFileInput').value = '';
@@ -539,7 +851,8 @@
             document.getElementById('replaceModal').classList.add('active');
         }
 
-        function closeReplaceModal() {
+        function closeReplaceModal(event) {
+            if (event && event.target !== document.getElementById('replaceModal')) return;
             document.getElementById('replaceModal').classList.remove('active');
             currentReplaceFile = null;
             currentReplacePath = null;
@@ -619,18 +932,19 @@
             }
         }
 
+        // Tecla ESC para cerrar modales
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closePreview();
+                closeDetailModal();
                 closeReplaceModal();
             }
         });
 
-        document.getElementById('replaceModal').addEventListener('click', (e) => {
-            if (e.target.id === 'replaceModal') {
-                closeReplaceModal();
-            }
-        });
+        // Inicializar
+        if (allImages && allImages.length > 0) {
+            renderCards();
+            renderPagination();
+        }
     </script>
 </body>
 
