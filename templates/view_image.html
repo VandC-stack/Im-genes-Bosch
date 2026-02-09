@@ -524,7 +524,11 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    {% if role|lower == 'supervisor' %}
                     <a href="/solicitudes" class="btn btn-ghost">← Volver a Solicitudes</a>
+                    {% else %}
+                    <a href="/gallery" class="btn btn-ghost">← Volver a Galería</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

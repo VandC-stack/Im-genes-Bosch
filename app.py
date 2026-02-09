@@ -1438,7 +1438,8 @@ def view_image():
                          comments=assignment.get("comments", []),
                          assigned_to=assignment.get("assigned_to"),
                          assigned_at=assignment.get("assigned_at"),
-                         assigned_by=assignment.get("assigned_by"))
+                         assigned_by=assignment.get("assigned_by"),
+                         role=role)
 
 
 # =========================

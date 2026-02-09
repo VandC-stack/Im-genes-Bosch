@@ -629,7 +629,7 @@
             galleryGrid.innerHTML = pageImages.map((image, idx) => {
                 const globalIdx = startIdx + idx;
                 return `
-                    <article class="image-card" onclick="${image.is_image ? `showPreview(${globalIdx})` : ''}">
+                    <article class="image-card" onclick="showPreview(${globalIdx})">
                         <div class="image-preview-container">
                             ${image.is_image
                         ? `<img src="${image.url}" alt="${image.name}" class="image-preview" loading="lazy">`
@@ -744,8 +744,6 @@
                 const globalIdx = startIdx + i;
                 const image = pageImages[i];
 
-                if (!image.is_image) continue;
-
                 try {
                     const statusKey = image.file_path || image.name;
                     const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
@@ -767,7 +765,6 @@
             // Luego cargar el resto en background
             for (let i = 0; i < allImages.length; i++) {
                 const image = allImages[i];
-                if (!image.is_image) continue;
                 const statusKey = image.file_path || image.name;
                 if (imageStatuses[statusKey]) continue; // Ya cargado
 
@@ -826,7 +823,14 @@
             const previewCheckStatusLink = document.getElementById('previewCheckStatusLink');
             const previewDownloadLink = document.getElementById('previewDownloadLink');
 
-            previewImage.src = image.url;
+            // Si es imagen, mostrar la imagen; si es documento, ocultar
+            if (image.is_image) {
+                previewImage.src = image.url;
+                previewImage.style.display = 'block';
+            } else {
+                previewImage.style.display = 'none';
+            }
+
             previewName.textContent = image.name;
             previewMeta.textContent = `📌 Folio: ${image.folio || 'N/A'} • 📅 ${image.modified_iso} • 💾 ${(image.size / 1024).toFixed(1)} KB`;
             previewCheckStatusLink.href = `/view-image?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`;
