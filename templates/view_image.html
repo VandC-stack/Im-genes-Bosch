@@ -298,9 +298,9 @@
         }
 
         .status-rejected {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.3);
-            color: #f87171;
+            background: #D74A3D;
+            border: 1px solid #D74A3D;
+            color: #ffffff;
         }
 
         .status-pending {
@@ -638,9 +638,9 @@
         }
 
         .status-rejected {
-            background: rgba(215, 74, 61, 0.12);
-            border-color: rgba(215, 74, 61, 0.35);
-            color: var(--error);
+            background: #D74A3D;
+            border-color: #D74A3D;
+            color: #ffffff;
         }
 
         .status-pending {
@@ -719,7 +719,8 @@
     <div class="topbar">
         <div class="topbar-content">
             <div class="topbar-left">
-                <div class="topbar-icon">🔍</div>
+                <div class="topbar-icon"><img src="/static/lupa.svg" alt="buscar" style="width: 22px; height: 22px;">
+                </div>
                 <div class="topbar-info">
                     <h1>Revisión de Imagen</h1>
                     <div class="topbar-subtitle">{{ filename }}</div>
@@ -744,7 +745,8 @@
                         {% endif %}
                         <div id="imageFallback"
                             style="padding: 80px; text-align: center; {% if image_url %}display: none;{% else %}display: block;{% endif %}">
-                            <div style="font-size: 64px; margin-bottom: 16px;">📄</div>
+                            <div style="font-size: 64px; margin-bottom: 16px;"><img src="/static/document.svg"
+                                    alt="documento" style="width: 64px; height: 64px; opacity: 0.7;"></div>
                             <div
                                 style="font-size: 16px; font-weight: 700; color: var(--yellow-800); text-transform: uppercase;">
                                 {{ file_ext or 'ARCHIVO' }}</div>
@@ -781,7 +783,10 @@
 
                     <div class="image-actions">
                         <a href="{{ image_url }}" target="_blank" class="btn btn-ghost">👁️ Ver original</a>
-                        <a href="{{ image_url }}" download="{{ filename }}" class="btn btn-primary">⬇️ Descargar</a>
+                        <a href="{{ image_url }}" download="{{ filename }}" class="btn btn-primary"><img
+                                src="/static/download.svg" alt="descargar"
+                                style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                            Descargar</a>
                     </div>
                 </div>
             </div>
@@ -905,7 +910,8 @@
                 <!-- Assignment Details -->
                 <div class="sidebar-card">
                     <div class="sidebar-title">
-                        <div class="sidebar-icon">👥</div>
+                        <div class="sidebar-icon"><img src="/static/detalles.svg" alt="detalles"
+                                style="width: 20px; height: 20px;"></div>
                         Detalles de Asignación
                     </div>
                     <div class="assignment-grid">
@@ -978,7 +984,8 @@
                 <!-- Comments -->
                 <div class="sidebar-card">
                     <div class="sidebar-title">
-                        <div class="sidebar-icon">✉️</div>
+                        <div class="sidebar-icon"><img src="/static/comentarios.svg" alt="comentarios"
+                                style="width: 20px; height: 20px;"></div>
                         Comentarios ({{ comments|length }})
                     </div>
 
@@ -1000,7 +1007,8 @@
                     </div>
                     {% else %}
                     <div class="no-comments">
-                        <div class="no-comments-icon">✉️</div>
+                        <div class="no-comments-icon"><img src="/static/comentarios.svg" alt="comentarios"
+                                style="width: 40px; height: 40px; opacity: 0.5;"></div>
                         <div>No hay comentarios aún</div>
                         <div style="font-size: 12px; margin-top: 8px; color: rgba(255,255,255,0.4);">
                             Tu inspector puede agregar comentarios cuando revise la imagen

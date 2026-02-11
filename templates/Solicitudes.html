@@ -254,6 +254,11 @@
             background: rgba(76, 175, 80, 0.9);
         }
 
+        .card-badge.rejected {
+            background: #D74A3D;
+            color: #ffffff;
+        }
+
         .file-type-badge {
             position: absolute;
             bottom: 8px;
@@ -566,8 +571,8 @@
     <div class="container">
         <header>
             <div class="title">
-                <span><img src="/static/icon-edit.svg" alt="documento" class="inline-icon"
-                        style="width: 24px; height: 24px; margin: 0;"></span>
+                <span><img src="/static/lupa.svg" alt="solicitudes"
+                        style="width: 28px; height: 28px; filter: brightness(0);"></span>
                 Solicitudes de Imágenes
             </div>
             <div class="header-actions">
@@ -655,7 +660,8 @@
                         {% else %}FILE
                         {% endif %}
                     </div>
-                    <div class="card-badge {% if image.status == 'aceptado' %}assigned{% endif %}">
+                    <div
+                        class="card-badge {% if image.status == 'aceptado' %}assigned{% elif image.status == 'rechazado' %}rejected{% endif %}">
                         {% if image.status == 'subido' %}Subido
                         {% elif image.status == 'asignado' %}Asignado
                         {% elif image.status == 'en_revision' %}En revisión
@@ -701,7 +707,8 @@
                         <a href="{{ image.url }}" class="btn-assign"
                             style="background: var(--success); color: var(--neutral-100); display: block; text-align: center; text-decoration: none;"
                             download>
-                            ⬇️ Descargar
+                            <img src="/static/download.svg" alt="descargar"
+                                style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"> Descargar
                         </a>
                         {% endif %}
                     </div>
