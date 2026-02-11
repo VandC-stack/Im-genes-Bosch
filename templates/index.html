@@ -193,6 +193,15 @@
             font-size: 14px;
             margin-top: 10px;
         }
+
+        /* INLINE SVG ICONS */
+        .inline-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
     </style>
 </head>
 
@@ -208,7 +217,7 @@
         </div>
 
         <div class="upload-area" onclick="openGallery()">
-            <div class="upload-icon">📁</div>
+            <div class="upload-icon">▲</div>
             <p>Selecciona o arrastra imágenes</p>
         </div>
 
@@ -231,8 +240,8 @@
 
         <div class="status" id="status"></div>
 
-        <a class="btn btn-link" href="/gallery">📷 Abrir galería</a>
-        <a class="btn btn-link" href="/solicitudes" style="display: none;" id="btnSolicitudes">📋 Ver solicitudes</a>
+        <a class="btn btn-link" href="/gallery">Galería</a>
+        <a class="btn btn-link" href="/solicitudes" style="display: none;" id="btnSolicitudes">Ver solicitudes</a>
     </div>
 
     <script>
@@ -446,8 +455,8 @@
             }
 
             status.textContent = res.ok
-                ? "✓ Subida completada rápidamente"
-                : "✗ Error al subir";
+                ? "Subida completada rápidamente"
+                : "Error al subir";
 
             if (res.ok) clearFiles();
         }

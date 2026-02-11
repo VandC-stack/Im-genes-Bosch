@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitudes - Supervisor</title>
     <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,7 +18,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #f5f5f5;
             min-height: 100vh;
             padding: 24px 16px;
@@ -52,6 +55,14 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
+        }
+
+        .inline-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
         }
 
         .header-actions {
@@ -383,6 +394,171 @@
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
+
+        /* Style guide overrides */
+        :root {
+            --primary: #484848;
+            --secondary: #ECD925;
+            --accent: #6C6C6C;
+            --success: #408D53;
+            --warning: #D15300;
+            --error: #D74A3D;
+            --info: #F6DF06;
+            --neutral-900: #282828;
+            --neutral-800: #404040;
+            --neutral-700: #4B4B4B;
+            --neutral-600: #626262;
+            --neutral-500: #6C6C6C;
+            --neutral-400: #878787;
+            --neutral-300: #ADADAD;
+            --neutral-200: #DBDBDB;
+            --neutral-100: #FFFFFF;
+            --yellow-900: #382C00;
+            --yellow-800: #585400;
+            --yellow-700: #867E00;
+            --yellow-600: #B8AA00;
+            --yellow-500: #ECD925;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--neutral-100);
+            color: var(--neutral-800);
+        }
+
+        .title span {
+            background: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .user-info {
+            background: var(--neutral-200);
+            color: var(--neutral-800);
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .btn-primary,
+        .btn-filter {
+            background: var(--primary);
+            color: var(--neutral-100);
+        }
+
+        .btn-secondary,
+        .btn-clear {
+            background: var(--secondary);
+            color: var(--yellow-900);
+            border: 1px solid var(--secondary);
+        }
+
+        .btn-secondary:hover,
+        .btn-clear:hover {
+            background: var(--yellow-600);
+        }
+
+        .stats .stat-card {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .stat-label {
+            color: var(--neutral-600);
+        }
+
+        .stat-value {
+            color: var(--primary);
+        }
+
+        .filters-panel {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .filters-panel h3 {
+            color: var(--neutral-900);
+        }
+
+        .filter-field label {
+            color: var(--neutral-600);
+        }
+
+        .filter-field select,
+        .select-tech {
+            background: var(--neutral-100);
+            border-color: var(--neutral-300);
+            color: var(--neutral-800);
+        }
+
+        .card {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .card:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-badge {
+            background: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .card-badge.assigned {
+            background: var(--success);
+            color: var(--neutral-100);
+        }
+
+        .file-type-badge {
+            background: var(--neutral-800);
+            color: var(--neutral-100);
+        }
+
+        .card-title {
+            color: var(--neutral-900);
+        }
+
+        .card-meta {
+            color: var(--neutral-600);
+        }
+
+        .btn-assign {
+            background: var(--primary);
+            color: var(--neutral-100);
+        }
+
+        .btn-assign:hover {
+            background: var(--neutral-800);
+        }
+
+        .empty {
+            color: var(--neutral-600);
+        }
+
+        .page-btn {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+            color: var(--neutral-700);
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--neutral-100);
+        }
+
+        .page-info {
+            color: var(--neutral-600);
+        }
     </style>
 </head>
 
@@ -390,12 +566,16 @@
     <div class="container">
         <header>
             <div class="title">
-                <span>📋</span>
+                <span><img src="/static/icon-edit.svg" alt="documento" class="inline-icon"
+                        style="width: 24px; height: 24px; margin: 0;"></span>
                 Solicitudes de Imágenes
             </div>
             <div class="header-actions">
-                <div class="user-info">👤 Supervisor: <strong>{{ session.username }}</strong></div>
-                <a class="btn btn-primary" href="/admin">👥 Administrar Usuarios</a>
+                <div class="user-info"><img src="/static/icon-user.svg" alt="usuario" class="inline-icon"> Supervisor:
+                    <strong>{{ session.username }}</strong>
+                </div>
+                <a class="btn btn-primary" href="/admin"><img src="/static/icon-user.svg" alt="usuarios"
+                        class="inline-icon"> Administrar Usuarios</a>
                 <a class="btn btn-secondary" href="/index">← Volver</a>
                 <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
             </div>
@@ -417,7 +597,7 @@
         </div>
 
         <div class="filters-panel">
-            <h3>🔍 Filtros</h3>
+            <h3>Filtros</h3>
             <form method="GET" action="/solicitudes">
                 <div class="filters-grid">
                     <div class="filter-field">
@@ -467,12 +647,12 @@
                 {% else %}
                 <div class="card-image document">
                     <div class="document-icon">
-                        {% if image.ext == 'pdf' %}📄
-                        {% elif image.ext in ['doc', 'docx'] %}📝
-                        {% elif image.ext in ['xls', 'xlsx'] %}📊
-                        {% elif image.ext in ['ppt', 'pptx'] %}📽️
-                        {% elif image.ext == 'txt' %}📃
-                        {% else %}📁
+                        {% if image.ext == 'pdf' %}PDF
+                        {% elif image.ext in ['doc', 'docx'] %}DOC
+                        {% elif image.ext in ['xls', 'xlsx'] %}XLS
+                        {% elif image.ext in ['ppt', 'pptx'] %}PPT
+                        {% elif image.ext == 'txt' %}TXT
+                        {% else %}FILE
                         {% endif %}
                     </div>
                     <div class="card-badge {% if image.status == 'aceptado' %}assigned{% endif %}">
@@ -488,13 +668,13 @@
                 <div class="card-content">
                     <div class="card-title">{{ image.filename }}</div>
                     <div class="card-meta">
-                        <div>📁 Cliente: <strong>{{ image.client }}</strong></div>
-                        <div>📌 Folio: <strong>{{ image.folio or 'N/A' }}</strong></div>
-                        <div>📅 {{ image.modified_iso }}</div>
-                        <div>💾 {{ (image.size / 1024)|round(1) }} KB</div>
+                        <div>Cliente: <strong>{{ image.client }}</strong></div>
+                        <div>Folio: <strong>{{ image.folio or 'N/A' }}</strong></div>
+                        <div>{{ image.modified_iso }}</div>
+                        <div>{{ (image.size / 1024)|round(1) }} KB</div>
                     </div>
                     {% if image.assigned_to %}
-                    <div class="card-meta" style="color: #4CAF50;">
+                    <div class="card-meta" style="color: var(--success);">
                         ✓ Asignada a: <strong>{{ image.assigned_to }}</strong>
                     </div>
                     {% endif %}
@@ -512,14 +692,14 @@
                             {% if image.assigned_to %}Reasignar{% else %}Asignar{% endif %}
                         </button>
                         {% if image.assigned_to %}
-                        <button class="btn-assign" style="background: #3b82f6;"
+                        <button class="btn-assign" style="background: var(--primary);"
                             onclick="viewImageStatus('{{ image.filename }}', '{{ image.folder }}')">
-                            👁️ Ver Estado
+                            Ver estado
                         </button>
                         {% endif %}
                         {% if not image.is_image %}
                         <a href="{{ image.url }}" class="btn-assign"
-                            style="background: #10b981; display: block; text-align: center; text-decoration: none;"
+                            style="background: var(--success); color: var(--neutral-100); display: block; text-align: center; text-decoration: none;"
                             download>
                             ⬇️ Descargar
                         </a>
@@ -530,7 +710,7 @@
             {% endfor %}
             {% else %}
             <div class="empty">
-                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                <div style="font-size: 48px; margin-bottom: 16px;">△</div>
                 <p>No hay archivos con los filtros seleccionados.</p>
             </div>
             {% endif %}
@@ -609,10 +789,10 @@
                 });
 
                 if (res.ok) {
-                    alert("✓ Imagen asignada a " + inspector);
+                    alert("Imagen asignada a " + inspector);
                     location.reload();
                 } else {
-                    alert("✗ Error al asignar");
+                    alert("Error al asignar");
                 }
             } catch (e) {
                 alert("Error: " + e.message);

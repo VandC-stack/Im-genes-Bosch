@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración de Usuarios</title>
     <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,7 +18,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #f5f5f5;
             min-height: 100vh;
             padding: 24px 16px;
@@ -178,13 +181,13 @@
         }
 
         .role-cliente {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
+            background: rgba(64, 141, 83, 0.2);
+            color: #408D53;
         }
 
         .role-inspector {
-            background: rgba(33, 150, 243, 0.2);
-            color: #2196F3;
+            background: rgba(108, 108, 108, 0.2);
+            color: #6C6C6C;
         }
 
         .btn-delete {
@@ -251,6 +254,158 @@
                 padding: 8px;
             }
         }
+
+        /* INLINE SVG ICONS */
+        .inline-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Style guide overrides */
+        :root {
+            --primary: #484848;
+            --secondary: #ECD925;
+            --accent: #6C6C6C;
+            --success: #408D53;
+            --warning: #D15300;
+            --error: #D74A3D;
+            --info: #F6DF06;
+            --neutral-900: #282828;
+            --neutral-800: #404040;
+            --neutral-700: #4B4B4B;
+            --neutral-600: #626262;
+            --neutral-500: #6C6C6C;
+            --neutral-400: #878787;
+            --neutral-300: #ADADAD;
+            --neutral-200: #DBDBDB;
+            --neutral-100: #FFFFFF;
+            --yellow-900: #382C00;
+            --yellow-800: #585400;
+            --yellow-700: #867E00;
+            --yellow-600: #B8AA00;
+            --yellow-500: #ECD925;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--neutral-100);
+            color: var(--neutral-800);
+        }
+
+        .title span {
+            background: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--neutral-100);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--neutral-800);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--yellow-900);
+            border: 1px solid var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--yellow-600);
+        }
+
+        .panel {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel h2 {
+            color: var(--neutral-900);
+        }
+
+        .form-field label {
+            color: var(--neutral-600);
+        }
+
+        .form-field input,
+        .form-field select {
+            background: var(--neutral-100);
+            border-color: var(--neutral-300);
+            color: var(--neutral-800);
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(236, 217, 37, 0.2);
+        }
+
+        .users-table thead {
+            background: var(--neutral-100);
+        }
+
+        .users-table th {
+            color: var(--neutral-700);
+            border-bottom: 2px solid var(--neutral-200);
+        }
+
+        .users-table td {
+            border-bottom: 1px solid var(--neutral-200);
+            color: var(--neutral-800);
+        }
+
+        .users-table tr:hover {
+            background: var(--neutral-200);
+        }
+
+        .role-supervisor {
+            background: rgba(236, 217, 37, 0.2);
+            color: var(--yellow-800);
+        }
+
+        .role-cliente {
+            background: rgba(64, 141, 83, 0.15);
+            color: var(--success);
+        }
+
+        .role-inspector {
+            background: rgba(108, 108, 108, 0.2);
+            color: var(--accent);
+        }
+
+        .btn-delete {
+            background: rgba(215, 74, 61, 0.12);
+            color: var(--error);
+            border-color: rgba(215, 74, 61, 0.35);
+        }
+
+        .alert-success {
+            background: rgba(64, 141, 83, 0.12);
+            color: var(--success);
+            border-color: rgba(64, 141, 83, 0.35);
+        }
+
+        .alert-error {
+            background: rgba(215, 74, 61, 0.12);
+            color: var(--error);
+            border-color: rgba(215, 74, 61, 0.35);
+        }
+
+        .folder-path {
+            color: var(--neutral-600);
+        }
     </style>
 </head>
 
@@ -258,7 +413,8 @@
     <div class="container">
         <header>
             <div class="title">
-                <span>👥</span>
+                <span><img src="/static/icon-user.svg" alt="usuarios" class="inline-icon"
+                        style="width: 24px; height: 24px; margin: 0;"></span>
                 Administración de Usuarios
             </div>
             <div class="header-actions">
@@ -319,7 +475,7 @@
                         <td class="folder-path">{{ user.folder }}</td>
                         <td>
                             {% if user.username != session.username %}
-                            <button class="btn-delete" onclick="deleteUser('{{ user.username }}')">🗑️
+                            <button class="btn-delete" onclick="deleteUser('{{ user.username }}')">Eliminar
                                 Eliminar</button>
                             {% else %}
                             <span style="color: #666; font-size: 11px;">Tu cuenta</span>
@@ -367,14 +523,14 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showAlert('✓ Usuario creado exitosamente', 'success');
+                    showAlert('Usuario creado exitosamente', 'success');
                     document.getElementById('createUserForm').reset();
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showAlert('✗ ' + data.error, 'error');
                 }
             } catch (e) {
-                showAlert('✗ Error al crear usuario: ' + e.message, 'error');
+                showAlert('Error al crear usuario: ' + e.message, 'error');
             }
         }
 
@@ -393,13 +549,13 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showAlert('✓ Usuario eliminado exitosamente', 'success');
+                    showAlert('Usuario eliminado exitosamente', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showAlert('✗ ' + data.error, 'error');
                 }
             } catch (e) {
-                showAlert('✗ Error al eliminar usuario: ' + e.message, 'error');
+                showAlert('Error al eliminar usuario: ' + e.message, 'error');
             }
         }
     </script>

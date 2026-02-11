@@ -4,8 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Imagen Profesional</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <title>Editor de Imagen - TOAST UI</title>
+
+    <!-- TOAST UI Image Editor CSS -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui-color-picker/v2.2.6/tui-color-picker.css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -14,1687 +23,658 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: #111;
+            color: #ffffff;
             min-height: 100vh;
-            padding: 10px;
-            font-size: 12px;
+            overflow: hidden;
         }
 
-        .editor-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(236, 217, 37, 0.35);
-        }
-
-        .title {
-            font-size: 22px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #f5f5f5;
-        }
-
-        .title-icon {
-            width: 32px;
-            height: 32px;
-            background: #ECD925;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Main Layout */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 260px 1fr 260px;
-            gap: 12px;
-            transition: grid-template-columns 0.25s ease;
-        }
-
-        .main-layout.tools-collapsed {
-            grid-template-columns: 0 1fr 260px;
-        }
-
-        .main-layout.status-collapsed {
-            grid-template-columns: 260px 1fr 0;
-        }
-
-        .main-layout.tools-collapsed.status-collapsed {
-            grid-template-columns: 0 1fr 0;
-        }
-
-        @media (max-width: 1400px) {
-            .main-layout {
-                grid-template-columns: 1fr 260px;
-            }
-
-            .tools-sidebar {
-                position: fixed;
-                left: -260px;
-                top: 0;
-                height: 100vh;
-                max-height: 100vh;
-                overflow-y: auto;
-                z-index: 1000;
-                transition: left 0.3s ease, opacity 0.2s ease;
-                background: #ffffff;
-                padding: 12px;
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .tools-sidebar.active {
-                left: 0;
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            .status-sidebar {
-                position: fixed;
-                right: -260px;
-                top: 0;
-                height: 100vh;
-                max-height: 100vh;
-                overflow-y: auto;
-                z-index: 1001;
-                transition: right 0.3s ease, opacity 0.2s ease;
-                background: #ffffff;
-                padding: 12px;
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .status-sidebar.active {
-                right: 0;
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            .layers-sidebar {
-                position: fixed;
-                right: -260px;
-                top: 0;
-                height: 100vh;
-                max-height: 100vh;
-                overflow-y: auto;
-                z-index: 999;
-                transition: right 0.3s ease, opacity 0.2s ease;
-                background: #ffffff;
-                padding: 12px;
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .layers-sidebar.active {
-                right: 260px;
-                opacity: 1;
-                pointer-events: auto;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 1200px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: #ffffff;
-            border: 1px solid #e6e6e6;
-            border-radius: 16px;
-            padding: 12px;
-            max-height: 90vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            scrollbar-width: none;
-            /* Firefox */
-            -ms-overflow-style: none;
-            /* IE/Edge */
-        }
-
-        .sidebar::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari, Opera */
-        }
-
-        .tools-sidebar.collapsed {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateX(-20px);
-        }
-
-        .status-sidebar.collapsed {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateX(20px);
-        }
-
-        .layers-sidebar.collapsed {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateX(20px);
-        }
-
-        .sidebar-title {
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #111;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-close-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #999;
-            cursor: pointer;
-            padding: 0 4px;
-            line-height: 1;
-            transition: color 0.2s ease;
-        }
-
-        .sidebar-close-btn:hover {
-            color: #ECD925;
-        }
-
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .tool-btn {
-            aspect-ratio: 1;
-            border: 2px solid #e5e5e5;
-            background: #f6f6f6;
-            color: #111;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: all 0.2s ease;
+        .app-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 8px;
+            height: 100vh;
         }
 
-        .tool-btn:hover {
-            background: #fff7b5;
-            border-color: #ECD925;
-            transform: translateY(-2px);
-        }
-
-        .tool-btn.active {
-            background: #ECD925;
-            border-color: #d4c220;
-        }
-
-        .tool-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .control-group {
-            margin-bottom: 14px;
-        }
-
-        .control-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #666;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .color-picker-wrapper {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        input[type="color"] {
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            cursor: pointer;
-            background: transparent;
-        }
-
-        .color-value {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #666;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #e9e9e9;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #ECD925;
-            cursor: pointer;
-        }
-
-        .range-value {
-            text-align: right;
-            font-size: 13px;
-            color: #999;
-            margin-top: 4px;
-        }
-
-        /* Canvas Section */
-        .canvas-section {
+        /* ========== TOP BAR ========== */
+        .top-bar {
             background: #ffffff;
-            border: 1px solid #e6e6e6;
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .canvas-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            z-index: 100;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .canvas-toolbar {
+        .file-info {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .canvas-wrapper {
-            background: #f6f6f6;
-            border-radius: 12px;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 360px;
+            gap: 12px;
         }
 
-        #canvas {
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        .file-info-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ECD925 0%, #f4e66e 100%);
             border-radius: 8px;
-            max-width: 100%;
-            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
-        /* Buttons */
+        .file-details h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .file-details small {
+            font-size: 12px;
+            color: #666666;
+            font-weight: 500;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* ========== BUTTONS ========== */
         .btn {
-            padding: 6px 10px;
-            border: 1px solid #e0e0e0;
-            background: #f6f6f6;
-            color: #111;
-            border-radius: 8px;
-            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            background: #333333;
+            color: #ffffff;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 600;
-            font-size: 11px;
+            cursor: pointer;
             transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
             white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .btn:hover:not(:disabled) {
-            background: #fff7b5;
-            border-color: #ECD925;
-            transform: translateY(-1px);
+            background: #444444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         .btn:disabled {
-            opacity: 0.4;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
         .btn-primary {
             background: #ECD925;
-            border-color: #d4c220;
-            color: #111;
+            color: #000000;
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #f5e856;
+            background: #f4e66e;
         }
 
         .btn-success {
-            background: #10b981;
-            border-color: #10b981;
-            color: #fff;
+            background: #34d399;
+            color: #ffffff;
         }
 
         .btn-success:hover:not(:disabled) {
-            background: #059669;
+            background: #10b981;
         }
 
         .btn-danger {
             background: #ef4444;
-            border-color: #ef4444;
-            color: #fff;
+            color: #ffffff;
         }
 
         .btn-danger:hover:not(:disabled) {
             background: #dc2626;
         }
 
-        /* Status Panel */
-        .status-panel {
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #tui-image-editor {
+            flex: 1;
+            height: 100%;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            width: 340px;
+            background: #ffffff;
+            border-left: 1px solid #e0e0e0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #cccccc transparent;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
             background: #f6f6f6;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #cccccc;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #999999;
+        }
+
+        .sidebar-section {
+            padding: 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #333333;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ========== STATUS PANEL ========== */
+        .status-panel {
+            margin-bottom: 18px;
+            padding: 16px;
+            background: #f6f6f6;
+            border: 1px solid #e0e0e0;
             border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 14px;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
         }
 
         .status-pending {
-            background: #fbbf24;
-            color: #000;
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            color: #92400e;
         }
 
-        .status-accepted {
-            background: #10b981;
-            color: #fff;
+        .status-aceptado {
+            background: #d1fae5;
+            border: 1px solid #34d399;
+            color: #065f46;
         }
 
-        .status-rejected {
-            background: #ef4444;
-            color: #fff;
+        .status-rechazado {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
         }
 
-        /* Comments */
-        .comments-section {
-            margin-top: 14px;
+        .status-text {
+            font-size: 13px;
+            color: #666666;
+            font-weight: 500;
         }
 
-        /* Layers */
-        .layers-section {
-            margin-top: 14px;
-        }
-
-        .layers-list {
+        /* ========== ACTION BUTTONS ========== */
+        .action-group {
             display: flex;
-            flex-direction: column;
             gap: 8px;
-            max-height: 240px;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            margin-bottom: 16px;
         }
 
-        .layers-list::-webkit-scrollbar {
-            display: none;
-        }
-
-        .layer-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 8px 10px;
-            background: #f6f6f6;
-            border: 1px solid #e6e6e6;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .layer-item.active {
-            border-color: #ECD925;
-            background: #fff7b5;
-        }
-
-        .layer-item.locked {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .layer-name {
-            font-weight: 600;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .action-group .btn {
             flex: 1;
         }
 
-        .layer-controls {
-            display: flex;
-            gap: 6px;
-        }
-
-        .layer-btn {
-            border: 1px solid #e0e0e0;
-            background: #ffffff;
-            color: #333;
-            border-radius: 6px;
-            font-size: 11px;
-            padding: 4px 6px;
-            cursor: pointer;
-        }
-
-        .layer-btn:hover:not(:disabled) {
-            background: #fff7b5;
-        }
-
-        .layer-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+        /* ========== COMMENTS ========== */
+        #commentsContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 14px;
         }
 
         .comment {
             background: #f6f6f6;
-            border: 1px solid #e6e6e6;
+            border: 1px solid #e0e0e0;
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
         }
 
         .comment-author {
+            font-size: 12px;
             font-weight: 700;
-            font-size: 13px;
-            color: #b79e00;
-            margin-bottom: 6px;
+            color: #000000;
+            margin-bottom: 8px;
         }
 
         .comment-text {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 6px;
+            font-size: 13px;
+            color: #333333;
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
 
         .comment-time {
             font-size: 11px;
-            color: #777;
+            color: #999999;
         }
 
-        .comment-input-wrapper {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        textarea {
-            flex: 1;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
-            color: #111;
-            font-family: inherit;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #ECD925;
-        }
-
-        /* Text Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: #ffffff;
-            border: 1px solid #e6e6e6;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .modal-input {
+        .comment-input-wrapper textarea {
             width: 100%;
+            min-height: 90px;
+            padding: 14px;
+            border: 1px solid #cccccc;
             background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            color: #111;
-            font-size: 16px;
-            margin-bottom: 20px;
+            color: #333333;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
         }
 
-        .modal-input:focus {
+        .comment-input-wrapper textarea:focus {
             outline: none;
             border-color: #ECD925;
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.1);
         }
 
-        .text-preview {
-            background: #f6f6f6;
-            border: 1px solid #e6e6e6;
-            border-radius: 10px;
-            padding: 12px;
-            min-height: 56px;
-            margin-bottom: 16px;
-            color: #111;
-            word-break: break-word;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        /* Messages */
+        /* ========== MESSAGES ========== */
         .message {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 80px;
+            right: 24px;
             padding: 16px 24px;
             border-radius: 12px;
-            font-weight: 600;
             font-size: 14px;
+            font-weight: 600;
             z-index: 3000;
             display: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
-        .error-message {
-            background: #ef4444;
-            color: #fff;
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        .success-message {
-            background: #10b981;
-            color: #fff;
+        #errorMessage {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
         }
 
-        /* Shortcuts Help */
-        .shortcuts-help {
-            background: #f6f6f6;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 12px;
-            margin-top: 20px;
+        #successMessage {
+            background: #d1fae5;
+            border: 1px solid #34d399;
+            color: #065f46;
         }
 
-        .shortcut-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            color: #666;
+        /* ========== TOAST UI OVERRIDES ========== */
+        /* Barra de herramientas inferior */
+        .tui-image-editor-menu {
+            background-color: #ffffff !important;
+            border-top: 1px solid #e0e0e0 !important;
         }
 
-        .shortcut-key {
-            background: #fff7b5;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
+        .tui-image-editor-submenu {
+            background-color: #f8f8f8 !important;
+            border: 1px solid #e0e0e0 !important;
+        }
+
+        /* Iconos de la barra principal */
+        .tui-image-editor-item {
+            border: none !important;
+        }
+
+        .tui-image-editor-item.normal svg,
+        .tui-image-editor-item svg {
+            color: #333333 !important;
+        }
+
+        .tui-image-editor-item:hover svg {
+            color: #000000 !important;
+        }
+
+        .tui-image-editor-item.active svg {
+            color: #ECD925 !important;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 8px 12px;
+            }
+
+            .file-details h1 {
+                font-size: 13px;
+            }
+
+            .btn {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="editor-container">
-        <header>
-            <div class="title">
-                <span class="title-icon">🎨</span>
-                <span id="filename">Editor de Imagen</span>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="file-info">
+                <div class="file-info-icon"><img src="/static/imagen.svg" alt="Editor" width="24" height="24"></div>
+                <div class="file-details">
+                    <h1>Editor de Imagen</h1>
+                    <small id="filename">imagen.png</small>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="btn" onclick="editor.toggleToolsSidebar()">🛠️ Herramientas</button>
-                <button class="btn" onclick="editor.toggleStatusSidebar()">📊 Estado</button>
-                <button class="btn" onclick="editor.toggleLayersSidebar()">🧱 Capas</button>
-                <button class="btn" onclick="editor.goBack()">← Volver</button>
-                <button class="btn btn-primary" onclick="editor.saveImage()">💾 Guardar</button>
+            <div class="top-actions">
+                <button class="btn btn-primary" onclick="app.saveImage()">💾 Guardar</button>
+                <button class="btn" onclick="app.goBack()">← Volver</button>
             </div>
-        </header>
+        </div>
 
-        <div class="main-layout">
-            <!-- Tools Sidebar -->
-            <aside class="sidebar tools-sidebar">
-                <div class="sidebar-title">
-                    <span>🛠️ Herramientas</span>
-                    <button class="sidebar-close-btn" onclick="editor.toggleToolsSidebar()">✕</button>
-                </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- TOAST UI Image Editor -->
+            <div id="tui-image-editor"></div>
 
-                <div class="tool-grid">
-                    <button class="tool-btn active" data-tool="select" onclick="editor.setTool('select')">
-                        <span>↖️</span>
-                        <span class="tool-label">Seleccionar</span>
-                    </button>
-                    <button class="tool-btn" data-tool="pencil" onclick="editor.setTool('pencil')">
-                        <span>✏️</span>
-                        <span class="tool-label">Lápiz</span>
-                    </button>
-                    <button class="tool-btn" data-tool="line" onclick="editor.setTool('line')">
-                        <span>📏</span>
-                        <span class="tool-label">Línea</span>
-                    </button>
-                    <button class="tool-btn" data-tool="rectangle" onclick="editor.setTool('rectangle')">
-                        <span>▭</span>
-                        <span class="tool-label">Rectángulo</span>
-                    </button>
-                    <button class="tool-btn" data-tool="circle" onclick="editor.setTool('circle')">
-                        <span>⭕</span>
-                        <span class="tool-label">Círculo</span>
-                    </button>
-                    <button class="tool-btn" data-tool="arrow" onclick="editor.setTool('arrow')">
-                        <span>➡️</span>
-                        <span class="tool-label">Flecha</span>
-                    </button>
-                    <button class="tool-btn" data-tool="text" onclick="editor.openTextModal()">
-                        <span>📝</span>
-                        <span class="tool-label">Texto</span>
-                    </button>
-                    <button class="tool-btn" onclick="editor.deleteSelected()">
-                        <span>🗑️</span>
-                        <span class="tool-label">Eliminar</span>
-                    </button>
-                </div>
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Status Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title"><img src="/static/Graficas.svg" alt="graficas" width="20" height="20">
+                        Estado</div>
 
-                <div class="control-group">
-                    <label class="control-label">Color de trazo</label>
-                    <div class="color-picker-wrapper">
-                        <input type="color" id="strokeColor" value="#000000"
-                            onchange="editor.updateStrokeColor(this.value)">
-                        <span class="color-value" id="strokeColorValue">#000000</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Color de relleno</label>
-                    <div class="color-picker-wrapper">
-                        <input type="color" id="fillColor" value="#ffffff"
-                            onchange="editor.updateFillColor(this.value)">
-                        <span class="color-value" id="fillColorValue">#ffffff</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Transparencia de relleno: <span id="fillOpacityValue">0</span>%</label>
-                    <input type="range" id="fillOpacity" min="0" max="100" value="0"
-                        oninput="editor.updateFillOpacity(this.value)">
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Grosor: <span id="strokeWidthValue">2</span>px</label>
-                    <input type="range" id="strokeWidth" min="1" max="20" value="2"
-                        oninput="editor.updateStrokeWidth(this.value)">
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Opacidad: <span id="opacityValue">100</span>%</label>
-                    <input type="range" id="opacity" min="0" max="100" value="100"
-                        oninput="editor.updateOpacity(this.value)">
-                </div>
-
-                <div class="shortcuts-help">
-                    <strong style="display: block; margin-bottom: 8px;">Atajos de teclado</strong>
-                    <div class="shortcut-item">
-                        <span>Deshacer</span>
-                        <span class="shortcut-key">Ctrl+Z</span>
-                    </div>
-                    <div class="shortcut-item">
-                        <span>Rehacer</span>
-                        <span class="shortcut-key">Ctrl+Y</span>
-                    </div>
-                    <div class="shortcut-item">
-                        <span>Eliminar</span>
-                        <span class="shortcut-key">Delete</span>
-                    </div>
-                    <div class="shortcut-item">
-                        <span>Deseleccionar</span>
-                        <span class="shortcut-key">Esc</span>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Canvas Section -->
-            <main class="canvas-section">
-                <div class="canvas-header">
-                    <div class="canvas-toolbar">
-                        <button class="btn" onclick="editor.undo()" id="undoBtn" disabled>↶ Deshacer</button>
-                        <button class="btn" onclick="editor.redo()" id="redoBtn" disabled>↷ Rehacer</button>
-                        <button class="btn" onclick="editor.clearCanvas()">🗑️ Limpiar</button>
-                    </div>
-                </div>
-                <div class="canvas-wrapper">
-                    <canvas id="canvas"></canvas>
-                </div>
-            </main>
-
-            <!-- Status Sidebar -->
-            <aside class="sidebar status-sidebar">
-                <div class="sidebar-title">
-                    <span>📊 Estado</span>
-                    <button class="sidebar-close-btn" onclick="editor.toggleStatusSidebar()">✕</button>
-                </div>
-
-                <div class="status-panel">
-                    <div style="margin-bottom: 12px;">
+                    <div class="status-panel">
                         <span class="status-badge status-pending" id="statusDisplay">Pendiente</span>
+                        <div class="status-text" id="currentStatusText">Pendiente de revisión</div>
                     </div>
-                    <div style="font-size: 13px; color: #999;" id="currentStatusText">
-                        Pendiente de revisión
+
+                    <div class="action-group">
+                        <button class="btn btn-success" onclick="app.updateStatus('aceptado')">
+                            ✓ Aceptar
+                        </button>
+                        <button class="btn btn-danger" onclick="app.updateStatus('rechazado')">
+                            ✗ Rechazar
+                        </button>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                    <button class="btn btn-success" onclick="editor.updateStatus('aceptado')" style="flex: 1;">
-                        ✓ Aceptar
-                    </button>
-                    <button class="btn btn-danger" onclick="editor.updateStatus('rechazado')" style="flex: 1;">
-                        ✗ Rechazar
-                    </button>
-                </div>
-
-                <div class="comments-section">
-                    <div class="sidebar-title">
-                        <span>💬 Comentarios</span>
-                    </div>
+                <!-- Comments Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">💬 Comentarios</div>
                     <div id="commentsContainer"></div>
                     <div class="comment-input-wrapper">
                         <textarea id="commentInput" placeholder="Escribe un comentario..."></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="editor.addComment()"
-                        style="width: 100%; margin-top: 10px;">
-                        Agregar comentario
+                    <button class="btn btn-primary" onclick="app.addComment()" style="width: 100%; margin-top: 10px;">
+                        📤 Agregar comentario
                     </button>
                 </div>
-            </aside>
-
-            <!-- Layers Sidebar -->
-            <aside class="sidebar layers-sidebar">
-                <div class="sidebar-title">
-                    <span>🧱 Capas</span>
-                    <button class="sidebar-close-btn" onclick="editor.toggleLayersSidebar()">✕</button>
-                </div>
-
-                <div class="layers-section">
-                    <button class="btn btn-primary" onclick="editor.createNewLayer()"
-                        style="width: 100%; margin-bottom: 10px;">
-                        ➕ Nueva Capa
-                    </button>
-                    <div class="layers-list" id="layersList"></div>
-                    <div style="display:flex; gap:8px; margin-top:10px;">
-                        <button class="btn" onclick="editor.bringLayerForward()" style="flex:1;">↑ Subir</button>
-                        <button class="btn" onclick="editor.sendLayerBackward()" style="flex:1;">↓ Bajar</button>
-                    </div>
-                </div>
-            </aside>
-        </div>
-    </div>
-
-    <!-- Text Modal -->
-    <div class="modal-overlay" id="textModal">
-        <div class="modal">
-            <h2 class="modal-title">Agregar Texto</h2>
-            <input type="text" class="modal-input" id="textInput" placeholder="Escribe tu texto..."
-                oninput="editor.updateTextPreview()">
-            <div class="control-group">
-                <label class="control-label">Tamaño de fuente: <span id="fontSizeValue">24</span>px</label>
-                <input type="range" id="fontSize" min="12" max="100" value="24"
-                    oninput="document.getElementById('fontSizeValue').textContent = this.value; editor.updateTextPreview()">
-            </div>
-            <div class="text-preview" id="textPreview">Vista previa</div>
-            <div class="modal-actions">
-                <button class="btn" onclick="editor.closeTextModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="editor.addText()">Agregar</button>
             </div>
         </div>
     </div>
 
     <!-- Messages -->
-    <div class="message error-message" id="errorMessage"></div>
-    <div class="message success-message" id="successMessage"></div>
+    <div id="errorMessage" class="message"></div>
+    <div id="successMessage" class="message"></div>
+
+    <!-- TOAST UI Image Editor Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.4.0/fabric.js"></script>
+    <script src="https://uicdn.toast.com/tui.code-snippet/v1.5.0/tui-code-snippet.min.js"></script>
+    <script src="https://uicdn.toast.com/tui-color-picker/v2.2.6/tui-color-picker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.js"></script>
 
     <script>
-        class ImageEditor {
+        class ImageEditorApp {
             constructor() {
-                this.canvas = new fabric.Canvas('canvas', {
-                    width: 800,
-                    height: 600,
-                    backgroundColor: '#ffffff',
-                    preserveObjectStacking: true,
-                    uniformScaling: false
-                });
-
-                this.currentTool = 'select';
-                this.isDrawing = false;
-                this.currentShape = null;
-                this.startX = 0;
-                this.startY = 0;
-
-                // Historial para deshacer/rehacer
-                this.history = [];
-                this.historyStep = 0;
-
-                // Configuración de colores y grosor
-                this.strokeColor = '#000000';
-                this.fillColor = '#ffffff';
-                this.strokeWidth = 2;
-                this.opacity = 1;
-                this.fillOpacity = 0;
-
-                // Datos de la imagen
-                this.filename = '';
-                this.filePath = '';
-                this.backgroundImage = null;
-                this.layerCounter = 0;
-                this.isDirty = false;
-
-                // Sistema de capas
-                this.layers = [];
-                this.activeLayer = null;
-
-                // Referencias a elementos DOM
-                this.elements = {
-                    undoBtn: document.getElementById('undoBtn'),
-                    redoBtn: document.getElementById('redoBtn'),
-                    textModal: document.getElementById('textModal'),
-                    textInput: document.getElementById('textInput'),
-                    fontSize: document.getElementById('fontSize'),
-                    textPreview: document.getElementById('textPreview'),
-                    commentInput: document.getElementById('commentInput'),
-                    commentsContainer: document.getElementById('commentsContainer'),
-                    layersList: document.getElementById('layersList'),
-                    statusDisplay: document.getElementById('statusDisplay'),
-                    currentStatusText: document.getElementById('currentStatusText'),
-                    errorMessage: document.getElementById('errorMessage'),
-                    successMessage: document.getElementById('successMessage')
-                };
-
-                this.init();
-            }
-
-            init() {
-                // Obtener parámetros de la URL
+                // URL Parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 this.filename = urlParams.get('filename') || 'imagen.png';
                 this.filePath = urlParams.get('file_path') || '';
 
                 document.getElementById('filename').textContent = this.filename;
 
-                // Configurar eventos del canvas
-                this.setupCanvasEvents();
-
-                // Configurar atajos de teclado
-                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-
-                // Cargar imagen y datos
-                this.loadData();
-            }
-
-            setupCanvasEvents() {
-                // Eventos de mouse
-                this.canvas.on('mouse:down', (e) => this.handleMouseDown(e));
-                this.canvas.on('mouse:move', (e) => this.handleMouseMove(e));
-                this.canvas.on('mouse:up', (e) => this.handleMouseUp(e));
-
-                // Evento de modificación de objetos
-                this.canvas.on('object:modified', () => {
-                    this.saveCanvasState();
-                });
-
-                this.canvas.on('object:added', (e) => {
-                    if (e.target) {
-                        this.assignLayerId(e.target);
-                        this.refreshLayers();
-                    }
-                });
-
-                this.canvas.on('object:removed', () => {
-                    this.refreshLayers();
-                });
-
-                this.canvas.on('selection:created', () => this.refreshLayers());
-                this.canvas.on('selection:updated', () => this.refreshLayers());
-                this.canvas.on('selection:cleared', () => this.refreshLayers());
-
-                this.canvas.on('path:created', (e) => {
-                    if (this.activeLayer && e.path) {
-                        this.activeLayer.objects.push(e.path);
-                        this.refreshLayers();
-                    }
-                    this.saveCanvasState();
-                });
-            }
-
-            toggleToolsSidebar() {
-                const toolsSidebar = document.querySelector('.tools-sidebar');
-                const layout = document.querySelector('.main-layout');
-                if (!toolsSidebar || !layout) return;
-
-                const isMobile = window.innerWidth <= 1400;
-                if (isMobile) {
-                    toolsSidebar.classList.toggle('active');
-                    return;
-                }
-
-                const collapsed = toolsSidebar.classList.toggle('collapsed');
-                layout.classList.toggle('tools-collapsed', collapsed);
-            }
-
-            toggleStatusSidebar() {
-                const statusSidebar = document.querySelector('.status-sidebar');
-                const layout = document.querySelector('.main-layout');
-                if (!statusSidebar || !layout) return;
-
-                const isMobile = window.innerWidth <= 1400;
-                if (isMobile) {
-                    statusSidebar.classList.toggle('active');
-                    return;
-                }
-
-                const collapsed = statusSidebar.classList.toggle('collapsed');
-                layout.classList.toggle('status-collapsed', collapsed);
-            }
-
-            toggleLayersSidebar() {
-                const layersSidebar = document.querySelector('.layers-sidebar');
-                const layout = document.querySelector('.main-layout');
-                if (!layersSidebar || !layout) return;
-
-                const isMobile = window.innerWidth <= 1400;
-                if (isMobile) {
-                    layersSidebar.classList.toggle('active');
-                    return;
-                }
-
-                const collapsed = layersSidebar.classList.toggle('collapsed');
-                layout.classList.toggle('layers-collapsed', collapsed);
-            }
-
-            handleMouseDown(e) {
-                if (this.currentTool === 'select') return;
-                if (this.currentTool === 'pencil') return;
-
-                this.isDrawing = true;
-                const pointer = this.canvas.getPointer(e.e);
-                this.startX = pointer.x;
-                this.startY = pointer.y;
-
-                // Desactivar la selección de objetos mientras dibujamos
-                this.canvas.selection = false;
-                this.canvas.forEachObject(obj => obj.selectable = false);
-
-                switch (this.currentTool) {
-                    case 'pencil':
-                        this.startFreeDrawing();
-                        break;
-                    case 'line':
-                        this.startLine();
-                        break;
-                    case 'arrow':
-                        this.startArrow();
-                        break;
-                    case 'rectangle':
-                        this.startRectangle();
-                        break;
-                    case 'circle':
-                        this.startCircle();
-                        break;
-                }
-            }
-
-            handleMouseMove(e) {
-                if (!this.isDrawing || this.currentTool === 'select' || this.currentTool === 'pencil') return;
-
-                const pointer = this.canvas.getPointer(e.e);
-
-                switch (this.currentTool) {
-                    case 'line':
-                        this.updateLine(pointer);
-                        break;
-                    case 'arrow':
-                        this.updateArrow(pointer);
-                        break;
-                    case 'rectangle':
-                        this.updateRectangle(pointer);
-                        break;
-                    case 'circle':
-                        this.updateCircle(pointer);
-                        break;
-                }
-            }
-
-            handleMouseUp(e) {
-                if (!this.isDrawing) return;
-
-                this.isDrawing = false;
-
-                // Reactivar la selección
-                this.canvas.selection = true;
-                this.canvas.forEachObject(obj => {
-                    if (!obj.isBackground) {
-                        obj.selectable = true;
-                    }
-                });
-
-                if (this.currentShape) {
-                    // Si la forma es muy pequeña, la eliminamos
-                    if (this.currentTool === 'line') {
-                        const length = Math.sqrt(
-                            Math.pow(this.currentShape.x2 - this.currentShape.x1, 2) +
-                            Math.pow(this.currentShape.y2 - this.currentShape.y1, 2)
-                        );
-                        if (length < 5) {
-                            this.canvas.remove(this.currentShape);
-                            this.currentShape = null;
-                            return;
-                        }
-                        // Hacer la línea seleccionable
-                        this.currentShape.selectable = true;
-                        this.currentShape.evented = true;
-                        this.currentShape.hasControls = true;
-                        this.currentShape.hasBorders = true;
-                    } else if (this.currentTool === 'arrow') {
-                        const line = this.currentShape.line;
-                        const triangle = this.currentShape.triangle;
-                        const length = Math.sqrt(
-                            Math.pow(line.x2 - line.x1, 2) +
-                            Math.pow(line.y2 - line.y1, 2)
-                        );
-                        if (length < 5) {
-                            this.canvas.remove(line);
-                            this.canvas.remove(triangle);
-                            this.currentShape = null;
-                            return;
-                        }
-
-                        // Agrupar la línea y el triángulo para seleccionar como un solo objeto
-                        this.canvas.remove(line);
-                        this.canvas.remove(triangle);
-                        const group = new fabric.Group([line, triangle], {
-                            selectable: true
-                        });
-                        this.assignLayerId(group);
-                        this.canvas.add(group);
-                        this.currentShape = group;
-                    } else {
-                        const width = Math.abs(this.currentShape.width);
-                        const height = Math.abs(this.currentShape.height);
-                        if (width < 5 || height < 5) {
-                            this.canvas.remove(this.currentShape);
-                            this.currentShape = null;
-                            return;
-                        }
-                        // Hacer la forma seleccionable
-                        this.currentShape.selectable = true;
-                        this.currentShape.evented = true;
-                        this.currentShape.hasControls = true;
-                        this.currentShape.hasBorders = true;
-                    }
-
-                    // Agregar el objeto a la capa activa
-                    if (this.activeLayer && this.currentShape) {
-                        this.activeLayer.objects.push(this.currentShape);
-                        this.refreshLayers();
-                    }
-
-                    const createdShape = this.currentShape;
-                    this.currentShape = null;
-                    this.saveCanvasState();
-
-                    // Volver automáticamente a la herramienta de selección y seleccionar el objeto
-                    this.setTool('select');
-                    if (createdShape) {
-                        this.canvas.setActiveObject(createdShape);
-                        this.canvas.renderAll();
-                    }
-                }
-            }
-
-            startFreeDrawing() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    this.setTool('select');
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    this.setTool('select');
-                    return;
-                }
-                this.canvas.isDrawingMode = true;
-                this.canvas.freeDrawingBrush.color = this.strokeColor;
-                this.canvas.freeDrawingBrush.width = this.strokeWidth;
-            }
-
-            startLine() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    return;
-                }
-                this.currentShape = new fabric.Line([this.startX, this.startY, this.startX, this.startY], {
-                    stroke: this.strokeColor,
-                    strokeWidth: this.strokeWidth,
-                    opacity: this.opacity,
-                    selectable: false
-                });
-                this.canvas.add(this.currentShape);
-            }
-
-            updateLine(pointer) {
-                if (!this.currentShape) return;
-                this.currentShape.set({
-                    x2: pointer.x,
-                    y2: pointer.y
-                });
-                this.canvas.renderAll();
-            }
-
-            startArrow() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    return;
-                }
-
-                const headSize = Math.max(6, this.strokeWidth * 4);
-
-                // Crear una línea inicial en coordenadas absolutas
-                const line = new fabric.Line([this.startX, this.startY, this.startX, this.startY], {
-                    stroke: this.strokeColor,
-                    strokeWidth: this.strokeWidth,
-                    opacity: this.opacity,
-                    selectable: false
-                });
-
-                // Crear el triángulo para la punta de la flecha
-                const triangle = new fabric.Triangle({
-                    left: this.startX,
-                    top: this.startY,
-                    width: headSize,
-                    height: headSize,
-                    fill: this.strokeColor,
-                    opacity: this.opacity,
-                    originX: 'center',
-                    originY: 'center',
-                    selectable: false
-                });
-
-                // Guardar referencia a la línea y triángulo para actualizarlos
-                this.currentShape = {
-                    isArrow: true,
-                    line,
-                    triangle
+                // DOM Elements
+                this.elements = {
+                    commentInput: document.getElementById('commentInput'),
+                    commentsContainer: document.getElementById('commentsContainer'),
+                    statusDisplay: document.getElementById('statusDisplay'),
+                    currentStatusText: document.getElementById('currentStatusText'),
+                    errorMessage: document.getElementById('errorMessage'),
+                    successMessage: document.getElementById('successMessage')
                 };
 
-                this.canvas.add(line);
-                this.canvas.add(triangle);
+                // Initialize TOAST UI Image Editor
+                this.initEditor();
+
+                // Load data
+                this.loadImageStatus();
+                this.loadComments();
             }
 
-            updateArrow(pointer) {
-                if (!this.currentShape) return;
+            initEditor() {
+                // Light Theme Configuration
+                const theme = {
+                    'common.bi.image': '',
+                    'common.bisize.width': '0px',
+                    'common.bisize.height': '0px',
+                    'common.backgroundImage': 'none',
+                    'common.backgroundColor': '#f8f8f8',
+                    'common.border': '0px',
 
-                const line = this.currentShape.line;
-                const triangle = this.currentShape.triangle;
+                    // header
+                    'header.backgroundImage': 'none',
+                    'header.backgroundColor': 'transparent',
+                    'header.border': '0px',
 
-                const dx = pointer.x - this.startX;
-                const dy = pointer.y - this.startY;
+                    // load button
+                    'loadButton.backgroundColor': '#ECD925',
+                    'loadButton.border': '1px solid #ECD925',
+                    'loadButton.color': '#000000',
+                    'loadButton.fontFamily': "'Inter', sans-serif",
+                    'loadButton.fontSize': '12px',
+                    'loadButton.fontWeight': '600',
 
-                // Actualizar la posición final de la línea
-                line.set({ x2: pointer.x, y2: pointer.y });
+                    // download button
+                    'downloadButton.backgroundColor': '#ECD925',
+                    'downloadButton.border': '1px solid #ECD925',
+                    'downloadButton.color': '#000000',
+                    'downloadButton.fontFamily': "'Inter', sans-serif",
+                    'downloadButton.fontSize': '12px',
+                    'downloadButton.fontWeight': '600',
 
-                // Calcular el ángulo de la flecha
-                const angle = Math.atan2(dy, dx);
+                    // main icons
+                    'menu.normalIcon.color': '#333333',
+                    'menu.activeIcon.color': '#ECD925',
+                    'menu.disabledIcon.color': '#cccccc',
+                    'menu.hoverIcon.color': '#000000',
+                    'submenu.normalIcon.color': '#555555',
+                    'submenu.activeIcon.color': '#ECD925',
 
-                // Posicionar y rotar el triángulo al final de la línea
-                triangle.set({
-                    left: pointer.x,
-                    top: pointer.y,
-                    angle: (angle * 180 / Math.PI) + 90
+                    'menu.iconSize.width': '24px',
+                    'menu.iconSize.height': '24px',
+                    'submenu.iconSize.width': '32px',
+                    'submenu.iconSize.height': '32px',
+
+                    // submenu primary color
+                    'submenu.backgroundColor': '#ffffff',
+                    'submenu.partition.color': '#e0e0e0',
+
+                    // submenu labels
+                    'submenu.normalLabel.color': '#666666',
+                    'submenu.normalLabel.fontWeight': '500',
+                    'submenu.activeLabel.color': '#000000',
+                    'submenu.activeLabel.fontWeight': '600',
+
+                    // checkbox style
+                    'checkbox.border': '1px solid #cccccc',
+                    'checkbox.backgroundColor': '#ffffff',
+
+                    // rango style
+                    'range.pointer.color': '#ECD925',
+                    'range.bar.color': '#dddddd',
+                    'range.subbar.color': '#ECD925',
+
+                    'range.disabledPointer.color': '#cccccc',
+                    'range.disabledBar.color': '#f0f0f0',
+                    'range.disabledSubbar.color': '#cccccc',
+
+                    'range.value.color': '#333333',
+                    'range.value.fontWeight': '500',
+                    'range.value.fontSize': '11px',
+                    'range.value.border': '1px solid #e0e0e0',
+                    'range.value.backgroundColor': '#ffffff',
+                    'range.title.color': '#333333',
+                    'range.title.fontWeight': '600',
+
+                    // colorpicker style
+                    'colorpicker.button.border': '1px solid #cccccc',
+                    'colorpicker.title.color': '#333333'
+                };
+
+                // Traducciones al español
+                const locale = {
+                    'Crop': 'Recortar',
+                    'Flip': 'Voltear',
+                    'Rotate': 'Rotar',
+                    'Draw': 'Dibujar',
+                    'Shape': 'Formas',
+                    'Icon': 'Íconos',
+                    'Text': 'Texto',
+                    'Mask': 'Máscara',
+                    'Filter': 'Filtros',
+                    'Bold': 'Negrita',
+                    'Italic': 'Cursiva',
+                    'Underline': 'Subrayado',
+                    'Left': 'Izquierda',
+                    'Center': 'Centro',
+                    'Right': 'Derecha',
+                    'Color': 'Color',
+                    'Text size': 'Tamaño',
+                    'Custom': 'Personalizado',
+                    'Square': 'Cuadrado',
+                    'Apply': 'Aplicar',
+                    'Cancel': 'Cancelar',
+                    'Flip X': 'Voltear horizontal',
+                    'Flip Y': 'Voltear vertical',
+                    'Range': 'Rango',
+                    'Stroke': 'Trazo',
+                    'Fill': 'Relleno',
+                    'Circle': 'Círculo',
+                    'Triangle': 'Triángulo',
+                    'Rectangle': 'Rectángulo',
+                    'Free': 'Libre',
+                    'Straight': 'Recto',
+                    'Line': 'Línea',
+                    'Arrow': 'Flecha',
+                    'Arrow-2': 'Flecha 2',
+                    'Arrow-3': 'Flecha 3',
+                    'Star-1': 'Estrella 1',
+                    'Star-2': 'Estrella 2',
+                    'Polygon': 'Polígono',
+                    'Location': 'Ubicación',
+                    'Heart': 'Corazón',
+                    'Bubble': 'Burbuja',
+                    'Custom icon': 'Ícono personalizado',
+                    'Load': 'Cargar',
+                    'Download': 'Descargar',
+                    'Load Image': 'Cargar imagen',
+                    'Grayscale': 'Escala de grises',
+                    'Blur': 'Desenfocar',
+                    'Sharpen': 'Enfocar',
+                    'Emboss': 'Relieve',
+                    'Remove White': 'Quitar blanco',
+                    'Distance': 'Distancia',
+                    'Brightness': 'Brillo',
+                    'Noise': 'Ruido',
+                    'Color Filter': 'Filtro de color',
+                    'Sepia': 'Sepia',
+                    'Sepia2': 'Sepia 2',
+                    'Invert': 'Invertir',
+                    'Pixelate': 'Pixelar',
+                    'Threshold': 'Umbral',
+                    'Tint': 'Tinte',
+                    'Multiply': 'Multiplicar',
+                    'Blend': 'Mezclar'
+                };
+
+                // Initialize editor
+                this.imageEditor = new tui.ImageEditor('#tui-image-editor', {
+                    includeUI: {
+                        loadImage: {
+                            path: this.filePath ? `/api/get-image?file_path=${encodeURIComponent(this.filePath)}` : '',
+                            name: this.filename
+                        },
+                        theme: theme,
+                        menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
+                        initMenu: 'filter',
+                        uiSize: {
+                            width: '100%',
+                            height: '100%'
+                        },
+                        menuBarPosition: 'bottom',
+                        locale: locale
+                    },
+                    cssMaxWidth: 2000,
+                    cssMaxHeight: 2000,
+                    selectionStyle: {
+                        cornerSize: 20,
+                        rotatingPointOffset: 70
+                    },
+                    usageStatistics: false
                 });
-
-                this.canvas.renderAll();
-            }
-
-            startRectangle() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    return;
-                }
-
-                this.currentShape = new fabric.Rect({
-                    left: this.startX,
-                    top: this.startY,
-                    width: 0,
-                    height: 0,
-                    fill: this.getFillWithOpacity(),
-                    stroke: this.strokeColor,
-                    strokeWidth: this.strokeWidth,
-                    opacity: this.opacity,
-                    selectable: false
-                });
-                this.assignLayerId(this.currentShape);
-                this.canvas.add(this.currentShape);
-            }
-
-            updateRectangle(pointer) {
-                if (!this.currentShape) return;
-
-                const width = pointer.x - this.startX;
-                const height = pointer.y - this.startY;
-
-                this.currentShape.set({
-                    width: Math.abs(width),
-                    height: Math.abs(height),
-                    left: width > 0 ? this.startX : pointer.x,
-                    top: height > 0 ? this.startY : pointer.y
-                });
-                this.canvas.renderAll();
-            }
-
-            startCircle() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    return;
-                }
-
-                this.currentShape = new fabric.Circle({
-                    left: this.startX,
-                    top: this.startY,
-                    radius: 0,
-                    fill: this.getFillWithOpacity(),
-                    stroke: this.strokeColor,
-                    strokeWidth: this.strokeWidth,
-                    opacity: this.opacity,
-                    selectable: false
-                });
-                this.assignLayerId(this.currentShape);
-                this.canvas.add(this.currentShape);
-            }
-
-            updateCircle(pointer) {
-                if (!this.currentShape) return;
-
-                const dx = pointer.x - this.startX;
-                const dy = pointer.y - this.startY;
-                const radius = Math.sqrt(dx * dx + dy * dy);
-
-                this.currentShape.set({
-                    radius: radius
-                });
-                this.canvas.renderAll();
-            }
-
-            setTool(tool) {
-                this.currentTool = tool;
-
-                // Actualizar botones activos
-                document.querySelectorAll('.tool-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                const activeBtn = document.querySelector(`[data-tool="${tool}"]`);
-                if (activeBtn) {
-                    activeBtn.classList.add('active');
-                }
-
-                // Configurar modo del canvas
-                if (tool === 'select') {
-                    this.canvas.isDrawingMode = false;
-                    this.canvas.selection = true;
-                    this.canvas.forEachObject(obj => {
-                        if (obj.isBackground) {
-                            obj.selectable = false;
-                            obj.evented = false;
-                        } else {
-                            // Verificar si el objeto pertenece a una capa bloqueada
-                            let isLocked = false;
-                            if (this.activeLayer) {
-                                const layer = this.layers.find(l => l.objects.includes(obj));
-                                if (layer && layer.locked) {
-                                    isLocked = true;
-                                }
-                            }
-                            obj.selectable = !isLocked;
-                            obj.evented = !isLocked;
-                        }
-                    });
-                    this.canvas.renderAll();
-                } else {
-                    this.canvas.selection = false;
-                    this.canvas.discardActiveObject();
-                    this.canvas.renderAll();
-
-                    if (tool === 'pencil') {
-                        this.startFreeDrawing();
-                    } else {
-                        this.canvas.isDrawingMode = false;
-                    }
-                }
-            }
-
-            updateStrokeColor(color) {
-                this.strokeColor = color;
-                document.getElementById('strokeColorValue').textContent = color.toUpperCase();
-
-                if (this.canvas.freeDrawingBrush) {
-                    this.canvas.freeDrawingBrush.color = color;
-                }
-
-                if (this.elements.textModal.classList.contains('active')) {
-                    this.updateTextPreview();
-                }
-
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.set('stroke', color);
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                }
-            }
-
-            updateFillColor(color) {
-                this.fillColor = color;
-                document.getElementById('fillColorValue').textContent = color.toUpperCase();
-
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject && activeObject.type !== 'line') {
-                    activeObject.set('fill', this.getFillWithOpacity());
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                }
-            }
-
-            updateFillOpacity(value) {
-                this.fillOpacity = parseInt(value, 10) / 100;
-                document.getElementById('fillOpacityValue').textContent = value;
-
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject && activeObject.type !== 'line') {
-                    activeObject.set('fill', this.getFillWithOpacity());
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                }
-            }
-
-            getFillWithOpacity() {
-                const hex = this.fillColor.replace('#', '');
-                if (hex.length !== 6) {
-                    return this.fillColor;
-                }
-                const r = parseInt(hex.substring(0, 2), 16);
-                const g = parseInt(hex.substring(2, 4), 16);
-                const b = parseInt(hex.substring(4, 6), 16);
-                return `rgba(${r}, ${g}, ${b}, ${this.fillOpacity})`;
-            }
-
-            updateStrokeWidth(width) {
-                this.strokeWidth = parseInt(width);
-                document.getElementById('strokeWidthValue').textContent = width;
-
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.set('strokeWidth', parseInt(width));
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                }
-            }
-
-            updateOpacity(value) {
-                this.opacity = value / 100;
-                document.getElementById('opacityValue').textContent = value;
-
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.set('opacity', this.opacity);
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                }
-            }
-
-            deleteSelected() {
-                const activeObject = this.canvas.getActiveObject();
-                if (activeObject && !activeObject.isBackground) {
-                    // Eliminar el objeto de la capa
-                    this.layers.forEach(layer => {
-                        const index = layer.objects.indexOf(activeObject);
-                        if (index > -1) {
-                            layer.objects.splice(index, 1);
-                        }
-                    });
-
-                    this.canvas.remove(activeObject);
-                    this.canvas.discardActiveObject();
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                    this.refreshLayers();
-                }
-            }
-
-            updateTextPreview() {
-                if (!this.elements.textPreview) return;
-                const text = this.elements.textInput.value.trim() || 'Vista previa';
-                const fontSize = parseInt(this.elements.fontSize.value, 10) || 24;
-                this.elements.textPreview.textContent = text;
-                this.elements.textPreview.style.fontSize = `${fontSize}px`;
-                this.elements.textPreview.style.color = this.strokeColor;
-            }
-
-            openTextModal() {
-                this.elements.textModal.classList.add('active');
-                this.updateTextPreview();
-                this.elements.textInput.focus();
-            }
-
-            closeTextModal() {
-                this.elements.textModal.classList.remove('active');
-                this.elements.textInput.value = '';
-                this.updateTextPreview();
-            }
-
-            addText() {
-                if (!this.activeLayer) {
-                    this.showError('Crea una capa primero');
-                    this.closeTextModal();
-                    return;
-                }
-                if (this.activeLayer.locked) {
-                    this.showError('La capa está bloqueada');
-                    this.closeTextModal();
-                    return;
-                }
-
-                const text = this.elements.textInput.value.trim();
-                if (!text) return;
-
-                const fontSize = parseInt(this.elements.fontSize.value);
-                const textObj = new fabric.Text(text, {
-                    left: this.canvas.width / 2,
-                    top: this.canvas.height / 2,
-                    fontSize: fontSize,
-                    fill: this.strokeColor,
-                    fontFamily: 'Arial',
-                    originX: 'center',
-                    originY: 'center'
-                });
-
-                this.canvas.add(textObj);
-                this.canvas.setActiveObject(textObj);
-                this.activeLayer.objects.push(textObj);
-                this.canvas.renderAll();
-                this.saveCanvasState();
-                this.refreshLayers();
-                this.closeTextModal();
-            }
-
-            clearCanvas() {
-                if (confirm('¿Estás seguro de que quieres limpiar el canvas? Esta acción no se puede deshacer.')) {
-                    this.canvas.clear();
-                    this.canvas.backgroundColor = '#ffffff';
-                    this.canvas.renderAll();
-                    this.saveCanvasState();
-                    if (this.filePath) {
-                        this.loadImage();
-                    }
-                }
-            }
-
-            saveCanvasState() {
-                const json = JSON.stringify(this.canvas.toJSON(['isBackground', 'layerId']));
-
-                // Eliminar estados futuros si estamos en medio del historial
-                this.history = this.history.slice(0, this.historyStep + 1);
-
-                this.history.push(json);
-                this.historyStep = this.history.length - 1;
-
-                // Limitar historial a 50 estados
-                if (this.history.length > 50) {
-                    this.history.shift();
-                    this.historyStep--;
-                }
-
-                this.updateHistoryButtons();
-                this.isDirty = true;
-            }
-
-            undo() {
-                if (this.historyStep > 0) {
-                    this.historyStep--;
-                    this.loadCanvasState(this.history[this.historyStep]);
-                    this.updateHistoryButtons();
-                }
-            }
-
-            redo() {
-                if (this.historyStep < this.history.length - 1) {
-                    this.historyStep++;
-                    this.loadCanvasState(this.history[this.historyStep]);
-                    this.updateHistoryButtons();
-                }
-            }
-
-            loadCanvasState(state) {
-                this.canvas.loadFromJSON(state, () => {
-                    this.backgroundImage = null;
-                    this.canvas.getObjects().forEach(obj => {
-                        if (obj.isBackground) {
-                            obj.selectable = false;
-                            obj.evented = false;
-                            obj.hasBorders = false;
-                            obj.hasControls = false;
-                            obj.lockMovementX = true;
-                            obj.lockMovementY = true;
-                            obj.lockScalingX = true;
-                            obj.lockScalingY = true;
-                            obj.lockRotation = true;
-                            this.backgroundImage = obj;
-                        }
-                        this.assignLayerId(obj);
-                    });
-                    this.syncLayerCounter();
-                    if (this.backgroundImage) {
-                        this.canvas.sendToBack(this.backgroundImage);
-                    }
-                    this.canvas.renderAll();
-                    this.refreshLayers();
-                });
-            }
-
-            updateHistoryButtons() {
-                this.elements.undoBtn.disabled = this.historyStep <= 0;
-                this.elements.redoBtn.disabled = this.historyStep >= this.history.length - 1;
             }
 
             async saveImage() {
                 try {
-                    const dataURL = this.canvas.toDataURL({
-                        format: 'png',
-                        quality: 1
-                    });
+                    const dataURL = this.imageEditor.toDataURL();
 
                     const response = await fetch('/api/save-edited-image', {
                         method: 'POST',
@@ -1708,66 +688,15 @@
 
                     if (!response.ok) throw new Error('Error al guardar');
 
-                    this.isDirty = false;
                     this.showSuccess('Imagen guardada exitosamente');
                 } catch (error) {
                     this.showError('Error al guardar: ' + error.message);
-                    throw error;
-                }
-            }
-
-            async loadImage() {
-                if (!this.filePath) return;
-
-                try {
-                    const url = `/api/get-image?file_path=${encodeURIComponent(this.filePath)}`;
-
-                    fabric.Image.fromURL(url, (img) => {
-                        const maxWidth = this.canvas.width - 40;
-                        const maxHeight = this.canvas.height - 40;
-                        const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
-
-                        img.scale(scale);
-                        img.set({
-                            left: this.canvas.width / 2,
-                            top: this.canvas.height / 2,
-                            originX: 'center',
-                            originY: 'center',
-                            selectable: false,
-                            evented: false,
-                            hasBorders: false,
-                            hasControls: false,
-                            lockMovementX: true,
-                            lockMovementY: true,
-                            lockScalingX: true,
-                            lockScalingY: true,
-                            lockRotation: true
-                        });
-
-                        img.isBackground = true;
-                        this.backgroundImage = img;
-
-                        this.assignLayerId(img);
-                        this.canvas.add(img);
-                        this.canvas.sendToBack(img);
-
-                        // Crear capa inicial
-                        if (this.layers.length === 0) {
-                            this.createNewLayer();
-                        }
-
-                        this.canvas.renderAll();
-                        this.resetHistoryWithCurrentState();
-                        this.refreshLayers();
-                    });
-                } catch (error) {
-                    this.showError('Error al cargar imagen: ' + error.message);
                 }
             }
 
             async loadImageStatus() {
                 try {
-                    const response = await fetch(`/api/image-status?filename=${encodeURIComponent(this.filename)}`);
+                    const response = await fetch(`/api/image-status?filename=${encodeURIComponent(this.filename)}&file_path=${encodeURIComponent(this.filePath)}`);
                     if (response.ok) {
                         const data = await response.json();
                         this.updateStatusDisplay(data.status);
@@ -1779,11 +708,11 @@
 
             updateStatusDisplay(status) {
                 const statusInfo = {
-                    subido: { badge: '⬆️ Subido', text: 'Solicitud subida en espera de asignación' },
-                    asignado: { badge: '🧭 Asignado', text: 'Asignado a un inspector' },
-                    en_revision: { badge: '🔍 En revisión', text: 'El inspector está revisando' },
-                    aceptado: { badge: '✓ Aceptado', text: 'Imagen aceptada' },
-                    rechazado: { badge: '✗ Rechazado', text: 'Imagen rechazada' }
+                    subido: { badge: 'Subido', text: 'Solicitud subida en espera de asignación' },
+                    asignado: { badge: 'Asignado', text: 'Asignado a un inspector' },
+                    en_revision: { badge: 'En revisión', text: 'El inspector está revisando' },
+                    aceptado: { badge: 'Aceptado', text: 'Imagen aceptada' },
+                    rechazado: { badge: 'Rechazado', text: 'Imagen rechazada' }
                 };
 
                 const info = statusInfo[status] || statusInfo.subido;
@@ -1815,10 +744,10 @@
 
             async loadComments() {
                 try {
-                    const response = await fetch(`/api/image-comments?filename=${encodeURIComponent(this.filename)}`);
+                    const response = await fetch(`/api/image-comments?filename=${encodeURIComponent(this.filename)}&file_path=${encodeURIComponent(this.filePath)}`);
                     if (response.ok) {
                         const data = await response.json();
-                        this.displayComments(data.comments || []);
+                        this.displayComments(data.comments);
                     }
                 } catch (error) {
                     console.error('Error loading comments:', error);
@@ -1826,13 +755,14 @@
             }
 
             displayComments(comments) {
-                this.elements.commentsContainer.textContent = '';
+                this.elements.commentsContainer.innerHTML = '';
 
                 if (!comments || comments.length === 0) {
                     const p = document.createElement('p');
-                    p.style.color = '#666';
+                    p.style.color = '#999999';
                     p.style.fontSize = '13px';
-                    p.style.padding = '12px';
+                    p.style.padding = '14px';
+                    p.style.textAlign = 'center';
                     p.textContent = 'No hay comentarios';
                     this.elements.commentsContainer.appendChild(p);
                     return;
@@ -1844,11 +774,11 @@
 
                     const authorDiv = document.createElement('div');
                     authorDiv.className = 'comment-author';
-                    authorDiv.textContent = this.sanitizeString(comment.author);
+                    authorDiv.textContent = this.sanitize(comment.author);
 
                     const textDiv = document.createElement('div');
                     textDiv.className = 'comment-text';
-                    textDiv.textContent = this.sanitizeString(comment.text);
+                    textDiv.textContent = this.sanitize(comment.text);
 
                     const timeDiv = document.createElement('div');
                     timeDiv.className = 'comment-time';
@@ -1890,234 +820,7 @@
                 }
             }
 
-            loadData() {
-                if (this.filePath) {
-                    this.loadImage();
-                } else {
-                    this.resetHistoryWithCurrentState();
-                }
-                this.loadImageStatus();
-                this.loadComments();
-            }
-
-            resetHistoryWithCurrentState() {
-                const json = JSON.stringify(this.canvas.toJSON(['isBackground', 'layerId']));
-                this.history = [json];
-                this.historyStep = 0;
-                this.updateHistoryButtons();
-                this.isDirty = false;
-            }
-
-            assignLayerId(obj) {
-                if (!obj || obj.layerId) return;
-                this.layerCounter += 1;
-                obj.layerId = `layer_${this.layerCounter}`;
-            }
-
-            syncLayerCounter() {
-                let maxId = 0;
-                this.canvas.getObjects().forEach(obj => {
-                    if (obj.layerId && typeof obj.layerId === 'string') {
-                        const match = obj.layerId.match(/layer_(\d+)/);
-                        if (match) {
-                            maxId = Math.max(maxId, parseInt(match[1], 10));
-                        }
-                    }
-                });
-                this.layerCounter = Math.max(this.layerCounter, maxId);
-            }
-
-            getLayerName(obj) {
-                if (obj.isBackground) return 'Imagen base (bloqueada)';
-                if (obj.type === 'textbox' || obj.type === 'text') return 'Texto';
-                if (obj.type === 'rect') return 'Rectángulo';
-                if (obj.type === 'circle') return 'Círculo';
-                if (obj.type === 'line') return 'Línea';
-                if (obj.type === 'path') return 'Trazo';
-                if (obj.type === 'triangle') return 'Triángulo';
-                return obj.type || 'Objeto';
-            }
-
-            createNewLayer() {
-                const layerNum = this.layers.length + 1;
-                const layer = {
-                    id: `layer_${Date.now()}`,
-                    name: `Capa ${layerNum}`,
-                    visible: true,
-                    locked: false,
-                    objects: []
-                };
-
-                this.layers.push(layer);
-                this.activeLayer = layer;
-                this.refreshLayers();
-                this.isDirty = true;
-                this.showSuccess(`Capa ${layerNum} creada`);
-            }
-
-            refreshLayers() {
-                const list = this.elements.layersList;
-                if (!list) return;
-                list.textContent = '';
-
-                // Mostrar capas en orden inverso (la más reciente arriba)
-                [...this.layers].reverse().forEach(layer => {
-                    const item = document.createElement('div');
-                    item.className = 'layer-item';
-
-                    const isActive = this.activeLayer && this.activeLayer.id === layer.id;
-                    if (isActive) {
-                        item.classList.add('active');
-                    }
-
-                    if (layer.locked) {
-                        item.classList.add('locked');
-                    }
-
-                    const name = document.createElement('div');
-                    name.className = 'layer-name';
-                    const objectCount = layer.objects.length;
-                    name.textContent = `${layer.name} (${objectCount})`;
-
-                    const controls = document.createElement('div');
-                    controls.className = 'layer-controls';
-
-                    const visibilityBtn = document.createElement('button');
-                    visibilityBtn.className = 'layer-btn';
-                    visibilityBtn.textContent = layer.visible ? '👁️' : '🚫';
-                    visibilityBtn.onclick = (ev) => {
-                        ev.stopPropagation();
-                        layer.visible = !layer.visible;
-                        this.toggleLayerVisibility(layer);
-                    };
-
-                    const lockBtn = document.createElement('button');
-                    lockBtn.className = 'layer-btn';
-                    lockBtn.textContent = layer.locked ? '🔒' : '🔓';
-                    lockBtn.onclick = (ev) => {
-                        ev.stopPropagation();
-                        layer.locked = !layer.locked;
-                        this.toggleLayerLock(layer);
-                    };
-
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'layer-btn';
-                    delBtn.textContent = '🗑️';
-                    delBtn.onclick = (ev) => {
-                        ev.stopPropagation();
-                        this.deleteLayer(layer);
-                    };
-
-                    controls.appendChild(visibilityBtn);
-                    controls.appendChild(lockBtn);
-                    controls.appendChild(delBtn);
-
-                    item.appendChild(name);
-                    item.appendChild(controls);
-
-                    item.onclick = () => {
-                        this.activeLayer = layer;
-                        this.refreshLayers();
-                    };
-
-                    list.appendChild(item);
-                });
-            }
-
-            toggleLayerVisibility(layer) {
-                layer.objects.forEach(obj => {
-                    obj.visible = layer.visible;
-                });
-                this.canvas.renderAll();
-                this.refreshLayers();
-                this.isDirty = true;
-            }
-
-            toggleLayerLock(layer) {
-                layer.objects.forEach(obj => {
-                    obj.lockMovementX = layer.locked;
-                    obj.lockMovementY = layer.locked;
-                    obj.lockScalingX = layer.locked;
-                    obj.lockScalingY = layer.locked;
-                    obj.lockRotation = layer.locked;
-                    obj.selectable = !layer.locked;
-                    obj.evented = !layer.locked;
-                });
-                this.canvas.discardActiveObject();
-                this.canvas.renderAll();
-                this.refreshLayers();
-                this.isDirty = true;
-            }
-
-            deleteLayer(layer) {
-                if (this.layers.length <= 1) {
-                    this.showError('Debe haber al menos una capa');
-                    return;
-                }
-
-                // Eliminar todos los objetos de la capa
-                layer.objects.forEach(obj => {
-                    this.canvas.remove(obj);
-                });
-
-                // Eliminar la capa
-                const index = this.layers.indexOf(layer);
-                if (index > -1) {
-                    this.layers.splice(index, 1);
-                }
-
-                // Si era la capa activa, activar otra
-                if (this.activeLayer === layer) {
-                    this.activeLayer = this.layers[Math.max(0, index - 1)];
-                }
-
-                this.canvas.renderAll();
-                this.saveCanvasState();
-                this.refreshLayers();
-                this.isDirty = true;
-            }
-
-            toggleLock(obj) {
-                const locked = !obj.lockMovementX;
-                obj.lockMovementX = locked;
-                obj.lockMovementY = locked;
-                obj.lockScalingX = locked;
-                obj.lockScalingY = locked;
-                obj.lockRotation = locked;
-                obj.selectable = !locked;
-                obj.evented = !locked;
-                obj.hasControls = !locked;
-                obj.hasBorders = !locked;
-                this.canvas.discardActiveObject();
-                this.canvas.renderAll();
-                this.refreshLayers();
-            }
-
-            bringLayerForward() {
-                const active = this.canvas.getActiveObject();
-                if (!active || active.isBackground) return;
-                this.canvas.bringForward(active);
-                if (this.backgroundImage) {
-                    this.canvas.sendToBack(this.backgroundImage);
-                }
-                this.canvas.renderAll();
-                this.saveCanvasState();
-                this.refreshLayers();
-            }
-
-            sendLayerBackward() {
-                const active = this.canvas.getActiveObject();
-                if (!active || active.isBackground) return;
-                this.canvas.sendBackwards(active);
-                if (this.backgroundImage) {
-                    this.canvas.sendToBack(this.backgroundImage);
-                }
-                this.canvas.renderAll();
-                this.saveCanvasState();
-                this.refreshLayers();
-            }
-
-            sanitizeString(str) {
+            sanitize(str) {
                 const div = document.createElement('div');
                 div.textContent = str;
                 return div.innerHTML;
@@ -2139,53 +842,16 @@
                 }, 3000);
             }
 
-            async goBack() {
-                if (this.isDirty) {
-                    const shouldSave = confirm('¿Quieres guardar los cambios antes de salir?');
-                    if (shouldSave) {
-                        try {
-                            await this.saveImage();
-                        } catch (error) {
-                            return;
-                        }
-                    }
-                }
-
+            goBack() {
                 window.close();
                 setTimeout(() => {
                     window.history.back();
                 }, 50);
             }
-
-            handleKeyboard(e) {
-                // Ctrl+Z - Deshacer
-                if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.undo();
-                }
-                // Ctrl+Y - Rehacer
-                if (e.ctrlKey && e.key === 'y') {
-                    e.preventDefault();
-                    this.redo();
-                }
-                // Delete - Eliminar
-                if (e.key === 'Delete') {
-                    this.deleteSelected();
-                }
-                // Escape - Deseleccionar
-                if (e.key === 'Escape') {
-                    if (this.elements.textModal.classList.contains('active')) {
-                        this.closeTextModal();
-                    } else {
-                        this.canvas.discardActiveObject();
-                        this.canvas.renderAll();
-                    }
-                }
-            }
         }
 
-        // Inicializar
-        const editor = new ImageEditor();
+        // Initialize app
+        const app = new ImageEditorApp();
     </script>
 </body>
 

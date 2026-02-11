@@ -615,6 +615,11 @@ def upload():
             assignment["folder"] = upload_folder
             assignment["status"] = STATUS_UPLOADED
             assignment["uploaded_at"] = datetime.now(timezone.utc).isoformat()
+            # Asegurar que la asignación tenga folio (válido para documentos e imágenes)
+            if not assignment.get("folio"):
+                folio = generate_folio(existing_folios)
+                existing_folios.add(folio)
+                assignment["folio"] = folio
         else:
             folio = generate_folio(existing_folios)
             existing_folios.add(folio)
@@ -1074,6 +1079,11 @@ def inspector_panel():
         total_assignments=total_assignments,
         pending_count=pending_count,
         completed_count=completed_count,
+        stats={
+            "total": total_assignments,
+            "pending": pending_count,
+            "completed": completed_count
+        },
         username=username
     )
 
@@ -1429,10 +1439,41 @@ def view_image():
     elif role != ROLE_SUPERVISOR:
         return "No autorizado", 403
     
+    # Obtener información del archivo
+    file_path_value = assignment.get("file_path")
+    file_size = None
+    if file_path_value and os.path.exists(file_path_value):
+        try:
+            file_size = os.path.getsize(file_path_value)
+        except OSError:
+            file_size = None
+    
+    # Obtener nombre del cliente
+    client_username = assignment.get("client")
+    client_info = get_client(client_username)
+    client_name = client_info.get("name") if client_info else client_username
+    
+    # Obtener fecha de carga
+    upload_date = assignment.get("uploaded_at")
+    if upload_date:
+        try:
+            # Convertir de ISO format a fecha legible
+            dt = datetime.fromisoformat(upload_date.replace('Z', '+00:00'))
+            upload_date = dt.strftime("%d/%m/%Y %H:%M")
+        except:
+            pass
+    
+    # Generar URL de la imagen
+    image_url = url_for("serve_file_by_path", file_path=file_path_value) if file_path_value else ""
+    
     return render_template("view_image.html",
                          filename=filename,
-                         file_path=assignment.get("file_path"),
-                         client=assignment.get("client"),
+                         file_path=file_path_value,
+                         client=client_username,
+                         client_name=client_name,
+                         file_size=file_size,
+                         upload_date=upload_date,
+                         image_url=image_url,
                          status=normalize_status(assignment.get("status"), assignment.get("assigned_to")),
                          folio=assignment.get("folio"),
                          comments=assignment.get("comments", []),

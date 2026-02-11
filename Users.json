@@ -1,0 +1,156 @@
+[
+    {
+        "NOMBRE": "Aitana Yolitzin Sanchez Tenorio",
+        "CORREO": "operaciones@vyc.com.mx",
+        "FIRMA": "ASANCHEZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "Edgar Ivan Cedillo Ramirez",
+        "CORREO": "tecnico4@vyc.com.mx",
+        "FIRMA": "ICEDILLO",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-024-SCFI-2013"
+    },
+    {
+        "NOMBRE": "Amanda Merlin Juan",
+        "CORREO": "tecnico10@vyc.com.mx",
+        "FIRMA": "AMERLIN",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021"
+    },
+    {
+        "NOMBRE": "Brenda Abigail Velazquez Cisneros",
+        "CORREO": "brenda.velazquez@vyc.com.mx",
+        "FIRMA": "BVELAZQUEZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-189-SSA1\/SCFI-2018"
+    },
+    {
+        "NOMBRE": "Saul Ivan Madrid Santiago",
+        "CORREO": "tecnico12@vyc.com.mx",
+        "FIRMA": "SMADRID",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-020-SCFI-1997; NOM-050-SCFI-2004"
+    },
+    {
+        "NOMBRE": "Alberto Martinez Guzman",
+        "CORREO": "tecnico9@vyc.com.mx",
+        "FIRMA": "AMARTINEZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
+    },
+    {
+        "NOMBRE": "Alejandro Fernando Moreno Valdovinos",
+        "CORREO": "soporte2@vyc.com.mx",
+        "FIRMA": "AMORENO",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997"
+    },
+    {
+        "NOMBRE": "Andrea Paola Ramos Santos",
+        "CORREO": "andrea.ramos@vyc.com.mx",
+        "FIRMA": "ARAMOS",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-142-SSA1\/SCFI-2014; NOM-051-SCFI\/SSA1-2010; NOM-235-SE-2020; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "Angel Imanol Pozos Zertuche",
+        "CORREO": "tecnico7@vyc.com.mx",
+        "FIRMA": "IPOZOS",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "Arturo Ivan Cortes Flores",
+        "CORREO": "ivan.cortes@vyc.com.mx",
+        "FIRMA": "ICORTES",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "Brayan Arano Chontal",
+        "CORREO": "tecnico3@vyc.com.mx",
+        "FIRMA": "BCHONTAL",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-050-SCFI-2004"
+    },
+    {
+        "NOMBRE": "Braulio Saul Garcia Maganda",
+        "CORREO": "tecnico6@vyc.com.mx",
+        "FIRMA": "BMAGANDA",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "David Garcia Alcantara",
+        "CORREO": "tecnico5@vyc.com.mx",
+        "FIRMA": "DGARCIA",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
+    },
+    {
+        "NOMBRE": "Edvin Zaid Ornelas Hernandez",
+        "CORREO": "tecnico8@vyc.com.mx",
+        "FIRMA": "EORNELAS",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-020-SCFI-1997; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010"
+    },
+    {
+        "NOMBRE": "Flor Selenia Marquez Rivera",
+        "CORREO": "flor.marquez@vyc.com.mx",
+        "FIRMA": "FMARQUEZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018"
+    },
+    {
+        "NOMBRE": "Gabriel Ramirez Castillo",
+        "CORREO": "gabriel.ramirez@vyc.com.mx",
+        "FIRMA": "GRAMIREZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-142-SSA1\/SCFI-2014"
+    },
+    {
+        "NOMBRE": "Jesus Eduardo Reyes Lozano",
+        "CORREO": "eduardo.reyes@vyc.com.mx",
+        "FIRMA": "EREYES",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
+    },
+    {
+        "NOMBRE": "Jose Alberto Zu\u00f1iga Estrada",
+        "CORREO": "tecnico2@vyc.com.mx",
+        "FIRMA": "AESTRADA",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": "Marcos Uriel Flores Gomez",
+        "CORREO": "marcos.flores@vyc.com.mx",
+        "FIRMA": "MFLORES",
+        "PUESTO": "Inspector",
+        "NORMAS": "NMX-COE-001-SCFI-2018; NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-116-SCFI-2018; NOM-141-SSA1\/SCFI-2012; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018; NOM-199-SCFI-2017; NOM-235-SE-2020"
+    },
+    {
+        "NOMBRE": "Mario Terrez Gonzalez",
+        "CORREO": "mario.terrez@vyc.com.mx",
+        "FIRMA": "MTERREZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NMX-COE-001-SCFI-2018; NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-116-SCFI-2018; NOM-141-SSA1\/SCFI-2012; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018; NOM-199-SCFI-2017"
+    },
+    {
+        "NOMBRE": "Oscar Perez Ramirez",
+        "CORREO": "tecnico1@vyc.com.mx",
+        "FIRMA": "OPEREZ",
+        "PUESTO": "Inspector",
+        "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
+    },
+    {
+        "NOMBRE": null,
+        "CORREO": null,
+        "FIRMA": null,
+        "PUESTO": null,
+        "NORMAS": "NOM-020-SCFI-1997"
+    }
+]
