@@ -1182,7 +1182,7 @@
 
             if (image.is_image) {
                 content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">Ver</a>`;
-                content += `<a href="/editor?filename=${encodeURIComponent(image.filename)}&file_path=${encodeURIComponent(image.file_path)}&client=${encodeURIComponent(image.client)}" target="_blank" class="modal-btn btn-edit">Editar</a>`;
+                content += `<a href="/editor?filename=${encodeURIComponent(image.filename)}&file_path=${encodeURIComponent(image.file_path)}&client=${encodeURIComponent(image.client)}" class="modal-btn btn-edit">Editar</a>`;
             } else {
                 content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">Abrir</a>`;
             }
