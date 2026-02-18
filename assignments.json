@@ -7,8 +7,8 @@
     "assigned_to": "ins1",
     "assigned_by": "admin",
     "assigned_at": "2026-02-05T15:34:50.421900",
-    "status": "aceptado",
-    "status_updated_at": "2026-02-11T19:47:22.243060+00:00",
+    "status": "rechazado",
+    "status_updated_at": "2026-02-17T23:12:28.683712+00:00",
     "status_updated_by": "ins1",
     "comments": [
       {
@@ -29,10 +29,10 @@
     "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh",
     "assigned_to": "ins1",
     "assigned_by": "admin",
-    "assigned_at": "2026-02-05T22:22:49.084327",
-    "status": "rechazado",
-    "status_updated_at": "2026-02-11T16:46:13.457144+00:00",
-    "status_updated_by": "ins1",
+    "assigned_at": "2026-02-18T17:50:33.618574+00:00",
+    "status": "asignado",
+    "status_updated_at": "2026-02-18T17:50:33.618574+00:00",
+    "status_updated_by": "admin",
     "folio": "FOL-20260206-4961"
   },
   {
@@ -196,12 +196,40 @@
     "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente2\\etiqueta.jpg",
     "client": "cliente2",
     "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente2",
+    "assigned_to": "ins1",
+    "assigned_by": "admin",
+    "assigned_at": "2026-02-17T23:03:20.355703+00:00",
+    "status": "en_revision",
+    "folio": "FOL-20260206-5334",
+    "uploaded_at": "2026-02-06T17:27:47.998979+00:00",
+    "comments": [],
+    "status_updated_at": "2026-02-17T23:04:11.923857+00:00",
+    "status_updated_by": "ins1"
+  },
+  {
+    "filename": "Gato.jpeg",
+    "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\Gato.jpeg",
+    "client": "cliente1",
+    "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1",
     "assigned_to": null,
     "assigned_by": null,
     "assigned_at": null,
     "status": "subido",
-    "folio": "FOL-20260206-5334",
-    "uploaded_at": "2026-02-06T17:27:47.998979+00:00",
+    "folio": "FOL-20260218-9281",
+    "uploaded_at": "2026-02-18T21:19:40.785381+00:00",
+    "comments": []
+  },
+  {
+    "filename": "Sonic.webp",
+    "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\Sonic.webp",
+    "client": "cliente1",
+    "folder": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1",
+    "assigned_to": null,
+    "assigned_by": null,
+    "assigned_at": null,
+    "status": "subido",
+    "folio": "FOL-20260218-8673",
+    "uploaded_at": "2026-02-18T21:28:49.221310+00:00",
     "comments": []
   }
 ]

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración de Usuarios</title>
+    <title>Administración de Clientes</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -185,7 +185,7 @@
             color: #408D53;
         }
 
-        .role-inspector {
+        .role-ejecutivo {
             background: rgba(108, 108, 108, 0.2);
             color: #6C6C6C;
         }
@@ -380,7 +380,7 @@
             color: var(--success);
         }
 
-        .role-inspector {
+        .role-ejecutivo {
             background: rgba(108, 108, 108, 0.2);
             color: var(--accent);
         }
@@ -415,7 +415,7 @@
             <div class="title">
                 <span><img src="/static/icon-user.svg" alt="usuarios" class="inline-icon"
                         style="width: 24px; height: 24px; margin: 0;"></span>
-                Administración de Usuarios
+                Administración de Clientes
             </div>
             <div class="header-actions">
                 <a class="btn btn-secondary" href="/solicitudes">← Volver a Solicitudes</a>
@@ -426,11 +426,11 @@
         <div id="alert" style="display: none;"></div>
 
         <div class="panel">
-            <h2>Crear Nuevo Usuario</h2>
+            <h2>Crear Nuevo Cliente</h2>
             <form id="createUserForm" onsubmit="createUser(event)">
                 <div class="form-grid">
                     <div class="form-field">
-                        <label>Usuario *</label>
+                        <label>Cliente *</label>
                         <input type="text" id="username" required placeholder="Ej: juan_perez">
                     </div>
                     <div class="form-field">
@@ -441,7 +441,7 @@
                         <label>Rol *</label>
                         <select id="role" required>
                             <option value="Cliente">Cliente</option>
-                            <option value="Inspector">Inspector</option>
+                            <option value="Ejecutivo">Ejecutivo</option>
                             <option value="Supervisor">Supervisor</option>
                         </select>
                     </div>
@@ -450,16 +450,16 @@
                         <input type="text" id="folder" required placeholder="C:\Ruta\A\Carpeta">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">➕ Crear Usuario</button>
+                <button type="submit" class="btn btn-primary">➥ Crear Cliente</button>
             </form>
         </div>
 
         <div class="panel">
-            <h2>Usuarios Registrados</h2>
+            <h2>Clientes Registrados</h2>
             <table class="users-table">
                 <thead>
                     <tr>
-                        <th>Usuario</th>
+                        <th>Cliente</th>
                         <th>Rol</th>
                         <th>Carpeta</th>
                         <th>Acciones</th>
@@ -523,19 +523,19 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showAlert('Usuario creado exitosamente', 'success');
+                    showAlert('Cliente creado exitosamente', 'success');
                     document.getElementById('createUserForm').reset();
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showAlert('✗ ' + data.error, 'error');
                 }
             } catch (e) {
-                showAlert('Error al crear usuario: ' + e.message, 'error');
+                showAlert('Error al crear cliente: ' + e.message, 'error');
             }
         }
 
         async function deleteUser(username) {
-            if (!confirm(`¿Estás seguro de eliminar al usuario "${username}"?`)) {
+            if (!confirm(`¿Estás seguro de eliminar al cliente "${username}"?`)) {
                 return;
             }
 
@@ -549,13 +549,13 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showAlert('Usuario eliminado exitosamente', 'success');
+                    showAlert('Cliente eliminado exitosamente', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showAlert('✗ ' + data.error, 'error');
                 }
             } catch (e) {
-                showAlert('Error al eliminar usuario: ' + e.message, 'error');
+                showAlert('Error al eliminar cliente: ' + e.message, 'error');
             }
         }
     </script>

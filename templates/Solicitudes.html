@@ -579,8 +579,8 @@
                 <div class="user-info"><img src="/static/icon-user.svg" alt="usuario" class="inline-icon"> Supervisor:
                     <strong>{{ session.username }}</strong>
                 </div>
-                <a class="btn btn-primary" href="/admin"><img src="/static/icon-user.svg" alt="usuarios"
-                        class="inline-icon"> Administrar Usuarios</a>
+                <a class="btn btn-primary" href="/admin"><img src="/static/icon-user.svg" alt="clientes"
+                        class="inline-icon"> Administrar Clientes</a>
                 <a class="btn btn-secondary" href="/index">← Volver</a>
                 <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
             </div>
@@ -596,8 +596,8 @@
                 <div class="stat-value">{{ page }} / {{ total_pages if total_pages > 0 else 1 }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Inspectores disponibles</div>
-                <div class="stat-value">{{ inspectors|length }}</div>
+                <div class="stat-label">Ejecutivos disponibles</div>
+                <div class="stat-value">{{ ejecutivos|length }}</div>
             </div>
         </div>
 
@@ -686,10 +686,10 @@
                     {% endif %}
                     <div class="card-actions">
                         <select class="select-tech" id="tech-{{ loop.index }}">
-                            <option value="">-- Seleccionar inspector --</option>
-                            {% for inspector in inspectors %}
-                            <option value="{{ inspector }}" {% if image.assigned_to==inspector %}selected{% endif %}>
-                                {{ inspector }}
+                            <option value="">-- Seleccionar ejecutivo --</option>
+                            {% for ejecutivo in ejecutivos %}
+                            <option value="{{ ejecutivo }}" {% if image.assigned_to==ejecutivo %}selected{% endif %}>
+                                {{ ejecutivo }}
                             </option>
                             {% endfor %}
                         </select>
@@ -776,10 +776,10 @@
             const folder = button.dataset.folder;
             const index = button.dataset.index;
             const select = document.getElementById(`tech-${index}`);
-            const inspector = select.value;
+            const ejecutivo = select.value;
 
-            if (!inspector) {
-                alert("Selecciona un inspector");
+            if (!ejecutivo) {
+                alert("Selecciona un ejecutivo");
                 return;
             }
 
@@ -791,12 +791,12 @@
                         filename: filename,
                         client: client,
                         folder: folder,
-                        inspector: inspector
+                        ejecutivo: ejecutivo
                     })
                 });
 
                 if (res.ok) {
-                    alert("Imagen asignada a " + inspector);
+                    alert("Imagen asignada a " + ejecutivo);
                     location.reload();
                 } else {
                     alert("Error al asignar");

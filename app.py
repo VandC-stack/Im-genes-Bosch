@@ -31,8 +31,8 @@ ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS | {
 }
 ROLE_CLIENTE = "cliente"
 ROLE_SUPERVISOR = "supervisor"
-ROLE_INSPECTOR = "inspector"
-ALLOWED_ROLES = {ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_INSPECTOR}
+ROLE_EJECUTIVO = "ejecutivo"
+ALLOWED_ROLES = {ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_EJECUTIVO}
 
 STATUS_UPLOADED = "subido"
 STATUS_ASSIGNED = "asignado"
@@ -523,11 +523,24 @@ def index():
     # Redirigir según el rol
     if role == ROLE_SUPERVISOR:
         return redirect(url_for("solicitudes"))
-    elif role == ROLE_INSPECTOR:
-        return redirect(url_for("inspector_panel"))
+    elif role == ROLE_EJECUTIVO:
+        return redirect(url_for("ejecutivo_panel"))
     
     # ROLE_CLIENTE: mostrar index normal
     return render_template("index.html", username=session.get("username"))
+
+
+@app.route("/welcome")
+@login_required
+def welcome():
+    role = normalize_role(session.get("role"))
+
+    if role == ROLE_SUPERVISOR:
+        return redirect(url_for("solicitudes"))
+    if role == ROLE_EJECUTIVO:
+        return redirect(url_for("ejecutivo_panel"))
+
+    return render_template("welcome.html", username=session.get("username"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -541,14 +554,14 @@ def login():
         if not client or not verify_password(client.get("password", ""), password):
             return render_template(
                 "login.html",
-                error="Usuario o contraseña inválidos",
+                error="Cliente o contraseña inválidos",
                 next=next_url
             )
 
         session["username"] = username
         session["role"] = normalize_role(client.get("role"))
         if not is_safe_next(next_url):
-            next_url = url_for("index")
+            next_url = url_for("welcome") if session["role"] == ROLE_CLIENTE else url_for("index")
         return redirect(next_url)
 
     return render_template("login.html", error=None, next=request.args.get("next", ""))
@@ -696,14 +709,14 @@ def serve_file_by_path():
     username = session.get("username")
     role = normalize_role(session.get("role"))
     
-    # Supervisor e Inspector: pueden acceder a archivos asignados
+    # Supervisor y Ejecutivo: pueden acceder a archivos asignados
     if role == ROLE_SUPERVISOR:
         directory = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
         return send_from_directory(directory, filename, max_age=0)
     
-    if role == ROLE_INSPECTOR:
-        # Verificar que el archivo esté asignado a este inspector
+    if role == ROLE_EJECUTIVO:
+        # Verificar que el archivo esté asignado a este ejecutivo
         assignments = load_assignments()
         assignment = next(
             (a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username),
@@ -744,7 +757,7 @@ def can_access_file_path(file_path: str, role: str, username: str) -> bool:
 
     assignments = load_assignments()
 
-    if role == ROLE_INSPECTOR:
+    if role == ROLE_EJECUTIVO:
         return any(
             a.get("file_path") == file_path and a.get("assigned_to") == username
             for a in assignments
@@ -782,7 +795,7 @@ def get_image_by_path():
 
 @app.route("/api/save-edited-image", methods=["POST"])
 @login_required
-@role_required(ROLE_INSPECTOR, ROLE_SUPERVISOR)
+@role_required(ROLE_EJECUTIVO, ROLE_SUPERVISOR)
 def save_edited_image():
     data = request.get_json() or {}
     filename = data.get("filename")
@@ -885,7 +898,7 @@ def solicitudes():
     clients_list = []  # Lista de clientes para el filtro
     
     for username, client_data in config.get("clients", {}).items():
-        # Saltar supervisores, solo mostrar archivos de clientes e inspectores
+        # Saltar supervisores, solo mostrar archivos de clientes y ejecutivos
         if normalize_role(client_data.get("role")) == ROLE_SUPERVISOR:
             continue
             
@@ -957,9 +970,9 @@ def solicitudes():
     files_page = all_files[start:end]
     total_pages = (total + per_page - 1) // per_page
     
-    # Obtener lista de inspectores
-    inspectors = [u for u, data in config.get("clients", {}).items() 
-                   if normalize_role(data.get("role")) == ROLE_INSPECTOR]
+    # Obtener lista de ejecutivos
+    ejecutivos = [u for u, data in config.get("clients", {}).items() 
+                   if normalize_role(data.get("role")) == ROLE_EJECUTIVO]
     
     return render_template(
         "solicitudes.html",
@@ -968,7 +981,7 @@ def solicitudes():
         total_pages=total_pages,
         total=total,
         per_page=per_page,
-        inspectors=inspectors,
+        ejecutivos=ejecutivos,
         clients=sorted(clients_list),
         client_filter=client_filter,
         file_type=file_type
@@ -981,11 +994,11 @@ def solicitudes():
 def assign_image():
     data = request.get_json()
     filename = data.get("filename")
-    inspector = data.get("inspector")
+    ejecutivo = data.get("ejecutivo")
     client = data.get("client")
     folder = data.get("folder")
     
-    if not filename or not inspector or not client or not folder:
+    if not filename or not ejecutivo or not client or not folder:
         return jsonify({"error": "Datos inválidos"}), 400
     
     file_path = os.path.join(folder, filename)
@@ -994,7 +1007,7 @@ def assign_image():
     existing = next((a for a in assignments if a.get("file_path") == file_path), None)
     
     if existing:
-        existing["assigned_to"] = inspector
+        existing["assigned_to"] = ejecutivo
         existing["assigned_at"] = datetime.now(timezone.utc).isoformat()
         existing["assigned_by"] = session.get("username")
         existing["status"] = STATUS_ASSIGNED
@@ -1008,7 +1021,7 @@ def assign_image():
             "file_path": file_path,
             "client": client,
             "folder": folder,
-            "assigned_to": inspector,
+            "assigned_to": ejecutivo,
             "assigned_by": session.get("username"),
             "assigned_at": datetime.now(timezone.utc).isoformat(),
             "status": STATUS_ASSIGNED,
@@ -1021,14 +1034,14 @@ def assign_image():
     return jsonify({"status": "ok"})
 
 
-@app.route("/inspector")
+@app.route("/ejecutivo")
 @login_required
-@role_required(ROLE_INSPECTOR)
-def inspector_panel():
+@role_required(ROLE_EJECUTIVO)
+def ejecutivo_panel():
     username = session.get("username")
     assignments = load_assignments()
     
-    # Filtrar solo las asignaciones de este inspector
+    # Filtrar solo las asignaciones de este ejecutivo
     my_assignments = [a for a in assignments if a.get("assigned_to") == username]
     
     assigned_images = []
@@ -1074,7 +1087,7 @@ def inspector_panel():
     completed_count = len([img for img in assigned_images if img.get("status") in [STATUS_ACCEPTED, STATUS_REJECTED]])
     
     return render_template(
-        "inspector.html",
+        "ejecutivo.html",
         images=assigned_images,
         total_assignments=total_assignments,
         pending_count=pending_count,
@@ -1168,9 +1181,9 @@ def delete_user():
 # =========================
 @app.route("/editor")
 @login_required
-@role_required(ROLE_INSPECTOR)
+@role_required(ROLE_EJECUTIVO)
 def image_editor():
-    """Página del editor de imágenes para inspectores"""
+    """Página del editor de imágenes para ejecutivos"""
     filename = request.args.get("filename")
     file_path = request.args.get("file_path")
     client = request.args.get("client")
@@ -1178,13 +1191,13 @@ def image_editor():
     if not filename or not file_path or not client:
         return "Parámetros inválidos", 400
     
-    # Verificar que el archivo está asignado al inspector actual
+    # Verificar que el archivo está asignado al ejecutivo actual
     username = session.get("username")
     assignments = load_assignments()
     assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
     
     if not assignment:
-        return "Archivo no asignado a este inspector", 403
+        return "Archivo no asignado a este ejecutivo", 403
 
     current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
     if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
@@ -1226,7 +1239,7 @@ def image_status():
     
     # POST: actualizar estado
     role = normalize_role(session.get("role"))
-    if role != ROLE_SUPERVISOR and role != ROLE_INSPECTOR:
+    if role != ROLE_SUPERVISOR and role != ROLE_EJECUTIVO:
         return jsonify({"error": "No autorizado"}), 403
     
     data = request.get_json()
@@ -1314,12 +1327,12 @@ def add_image_comment():
     if not assignment:
         return jsonify({"error": "Archivo no encontrado"}), 404
     
-    # Verificar permisos: inspector o supervisor
-    if role not in [ROLE_INSPECTOR, ROLE_SUPERVISOR]:
+    # Verificar permisos: ejecutivo o supervisor
+    if role not in [ROLE_EJECUTIVO, ROLE_SUPERVISOR]:
         return jsonify({"error": "No autorizado"}), 403
     
-    # Si es inspector, debe ser el asignado
-    if role == ROLE_INSPECTOR and assignment.get("assigned_to") != username:
+    # Si es ejecutivo, debe ser el asignado
+    if role == ROLE_EJECUTIVO and assignment.get("assigned_to") != username:
         return jsonify({"error": "No autorizado"}), 403
     
     if "comments" not in assignment:
@@ -1338,7 +1351,7 @@ def add_image_comment():
 
 @app.route("/api/update-assignment-status", methods=["POST"])
 @login_required
-@role_required(ROLE_INSPECTOR)
+@role_required(ROLE_EJECUTIVO)
 def update_assignment_status():
     """Actualizar el estado de una asignación (aceptado/rechazado)"""
     data = request.get_json()
@@ -1366,7 +1379,7 @@ def update_assignment_status():
 
 @app.route("/api/reupload-file", methods=["POST"])
 @login_required
-@role_required(ROLE_INSPECTOR)
+@role_required(ROLE_EJECUTIVO)
 def reupload_file():
     """Reemplazar un archivo asignado (imagen o documento)"""
     if "file" not in request.files:
@@ -1382,7 +1395,7 @@ def reupload_file():
     if not is_allowed_extension(file.filename):
         return jsonify({"error": "Tipo de archivo no permitido"}), 400
     
-    # Verificar que el archivo está asignado al inspector
+    # Verificar que el archivo está asignado al ejecutivo
     username = session.get("username")
     assignments = load_assignments()
     assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)

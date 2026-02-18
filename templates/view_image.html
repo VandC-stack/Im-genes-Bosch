@@ -727,7 +727,7 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="/gallery" class="btn btn-ghost">← Volver a Galería</a>
+                <a href="/gallery" class="btn btn-ghost">← Volver a Mis Archivos</a>
             </div>
         </div>
     </div>
@@ -798,7 +798,7 @@
                     <div class="sidebar-title">
                         <div class="sidebar-icon"><img src="/static/Graficas.svg" alt="graficas" width="20" height="20">
                         </div>
-                        Estado de Revisión
+                        Estatus de Inspección
                     </div>
 
                     {% if status == 'aceptado' %}
@@ -808,12 +808,12 @@
                     </div>
                     <div class="status-info">
                         <div class="status-info-row">
-                            <strong>Estado:</strong>
+                            <strong>Ciclo:</strong>
                             <span>Imagen aprobada y validada exitosamente</span>
                         </div>
                         <div class="status-info-row">
-                            <strong><img src="/static/icon-user.svg" alt="inspector" class="inline-icon">
-                                Inspector:</strong>
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
                             <span>{{ assigned_to }}</span>
                         </div>
                         <div class="status-info-row">
@@ -829,12 +829,12 @@
                     </div>
                     <div class="status-info">
                         <div class="status-info-row">
-                            <strong>Estado:</strong>
+                            <strong>Ciclo:</strong>
                             <span>Imagen rechazada - Revisión requerida</span>
                         </div>
                         <div class="status-info-row">
-                            <strong><img src="/static/icon-user.svg" alt="inspector" class="inline-icon">
-                                Inspector:</strong>
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
                             <span>{{ assigned_to }}</span>
                         </div>
                         <div class="status-info-row">
@@ -850,12 +850,12 @@
                     </div>
                     <div class="status-info">
                         <div class="status-info-row">
-                            <strong>Estado:</strong>
-                            <span>El inspector está revisando tu solicitud</span>
+                            <strong>Ciclo:</strong>
+                            <span>El ejecutivo está revisando tu solicitud</span>
                         </div>
                         <div class="status-info-row">
-                            <strong><img src="/static/icon-user.svg" alt="inspector" class="inline-icon">
-                                Inspector:</strong>
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
                             <span>{{ assigned_to }}</span>
                         </div>
                         {% if assigned_by %}
@@ -873,12 +873,12 @@
                     </div>
                     <div class="status-info">
                         <div class="status-info-row">
-                            <strong>Estado:</strong>
-                            <span>Solicitud asignada a un inspector</span>
+                            <strong>Ciclo:</strong>
+                            <span>Solicitud asignada a un ejecutivo</span>
                         </div>
                         <div class="status-info-row">
-                            <strong><img src="/static/icon-user.svg" alt="inspector" class="inline-icon">
-                                Inspector:</strong>
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
                             <span>{{ assigned_to }}</span>
                         </div>
                         {% if assigned_by %}
@@ -896,7 +896,7 @@
                     </div>
                     <div class="status-info">
                         <div class="status-info-row">
-                            <strong>Estado:</strong>
+                            <strong>Ciclo:</strong>
                             <span>Tu solicitud fue recibida y está en espera de asignación</span>
                         </div>
                         <div class="status-info-row">
