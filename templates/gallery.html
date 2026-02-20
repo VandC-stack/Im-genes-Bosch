@@ -807,12 +807,13 @@
     <div class="topbar">
         <div class="topbar-content">
             <div class="topbar-left">
-                <div class="logo">MIS ARCHIVOS</div>
+                <div class="logo">MIS ARCHIVOS {% if folio %}<span style="font-size:0.65em; opacity:0.7;"> • {{ folio
+                        }}</span>{% endif %}</div>
             </div>
             <div class="topbar-right">
                 <div class="user-badge"><img src="/static/icon-user.svg" alt="usuario" class="inline-icon"> {{ username
                     }}</div>
-                <a href="/index" class="topbar-link">Inicio</a>
+                <a href="/dashboard" class="topbar-link">← Volver</a>
                 <a href="/logout" class="topbar-link">Cerrar sesión</a>
             </div>
         </div>
@@ -821,7 +822,16 @@
     <div class="container">
         <!-- Filters Section -->
         <div class="filters-section">
-            <h3 class="filters-title">Filtros</h3>
+            <h3 class="filters-title">{% if folio %}Detalle de solicitud: {{ folio }}{% else %}Filtros{% endif %}</h3>
+            {% if folio %}
+            <div
+                style="background: rgba(236, 217, 37, 0.1); border-left: 3px solid #ECD925; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px;">
+                <div style="color: #ECD925; font-weight: 600; font-size: 13px;">Mostrando archivos de la solicitud:
+                    <strong style="font-family:'Space Mono',monospace;">{{ folio }}</strong></div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 4px;"><a href="/gallery"
+                        style="color: #ECD925; text-decoration: none;">← Ver todos los archivos</a></div>
+            </div>
+            {% endif %}
             <form method="GET" action="/gallery">
                 <div class="filter-grid">
                     <div class="filter-field">
@@ -830,8 +840,8 @@
                             value="{{ client or '' }}">
                     </div>
                     <div class="filter-field">
-                        <label for="folio">Folio</label>
-                        <input type="text" id="folio" name="folio" placeholder="Número de folio"
+                        <label for="folio_input">Folio</label>
+                        <input type="text" id="folio_input" name="folio" placeholder="Número de folio"
                             value="{{ folio or '' }}">
                     </div>
                     <div class="filter-field">

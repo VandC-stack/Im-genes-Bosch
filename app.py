@@ -17,6 +17,7 @@ app.secret_key = os.environ.get("APP_SECRET_KEY", "change-me")
 CONFIG_FILE = "config.json"
 HISTORY_FILE = "upload_history.json"
 ASSIGNMENTS_FILE = "assignments.json"
+SERVICE_REQUESTS_FILE = "service_requests.json"
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS | {
     "pdf",
@@ -109,6 +110,8 @@ def normalize_role(role: Optional[str]) -> str:
     if not role:
         return ROLE_CLIENTE
     normalized = role.strip().lower()
+    if normalized == "inspector":
+        return ROLE_EJECUTIVO
     return normalized if normalized in ALLOWED_ROLES else ROLE_CLIENTE
 
 
@@ -166,6 +169,23 @@ def load_assignments():
 
 def save_assignments(data):
     with open(ASSIGNMENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def load_service_requests():
+    if not os.path.exists(SERVICE_REQUESTS_FILE):
+        return []
+
+    try:
+        with open(SERVICE_REQUESTS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def save_service_requests(data):
+    with open(SERVICE_REQUESTS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
@@ -543,6 +563,21 @@ def welcome():
     return render_template("welcome.html", username=session.get("username"))
 
 
+@app.route("/dashboard")
+@login_required
+@role_required(ROLE_CLIENTE)
+def dashboard():
+    """Vista principal del cliente con resumen de solicitudes"""
+    return render_template("dashboard.html", username=session.get("username"))
+
+
+@app.route("/captura")
+@login_required
+@role_required(ROLE_CLIENTE)
+def captura():
+    """Formulario para crear una nueva solicitud"""
+    return render_template("captura.html", username=session.get("username"))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -661,6 +696,239 @@ def upload():
         "archivos": saved,
         "ruta": upload_folder
     })
+
+
+@app.route("/api/solicitudes", methods=["GET", "POST"])
+@login_required
+@role_required(ROLE_CLIENTE)
+def api_solicitudes():
+    username = session.get("username")
+
+    if request.method == "POST":
+        tipo_servicio = request.form.get("tipo_servicio", "").strip()
+        nombre_proyecto = request.form.get("nombre_proyecto", "").strip()
+        norma = request.form.get("norma", "").strip()
+        num_skus = request.form.get("num_skus", "").strip()
+        medidas = request.form.get("medidas", "").strip()
+        prioridad = request.form.get("prioridad", "").strip()
+        importador = request.form.get("importador", "").strip()
+        marca = request.form.get("marca", "").strip()
+        pais_origen = request.form.get("pais_origen", "").strip()
+        contenido = request.form.get("contenido", "").strip()
+
+        if not tipo_servicio or not nombre_proyecto or not prioridad:
+            return jsonify({"error": "Datos incompletos"}), 400
+
+        assignments = load_assignments()
+        existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
+        requests_data = load_service_requests()
+        existing_folios.update({r.get("folio") for r in requests_data if r.get("folio")})
+        folio = generate_folio(existing_folios)
+
+        upload_folder = get_upload_folder(username)
+        files = request.files.getlist("file")
+        saved_files = []
+        history_entries = []
+        assignments_changed = False
+
+        for file in files:
+            if not file.filename or not is_allowed_extension(file.filename):
+                continue
+
+            ext = file.filename.rsplit(".", 1)[1].lower()
+            base_raw = os.path.splitext(file.filename)[0]
+            base_name = sanitize_filename(base_raw)
+            if not base_name:
+                base_name = datetime.now().strftime("IMG_%Y%m%d_%H%M%S_%f")
+
+            filename = f"{base_name}.{ext}"
+            file_path = os.path.join(upload_folder, filename)
+            counter = 1
+            while os.path.exists(file_path):
+                filename = f"{base_name}_{counter}.{ext}"
+                file_path = os.path.join(upload_folder, filename)
+                counter += 1
+
+            file.save(file_path)
+
+            saved_files.append({
+                "filename": filename,
+                "original_name": file.filename,
+                "file_path": file_path
+            })
+
+            history_entries.append({
+                "filename": filename,
+                "original_name": file.filename,
+                "folder": upload_folder,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "url": url_for("serve_file", filename=filename),
+                "username": username
+            })
+
+            assignments.append({
+                "filename": filename,
+                "file_path": file_path,
+                "client": username,
+                "folder": upload_folder,
+                "assigned_to": None,
+                "assigned_by": None,
+                "assigned_at": None,
+                "status": STATUS_UPLOADED,
+                "folio": folio,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "comments": []
+            })
+            assignments_changed = True
+
+        if history_entries:
+            append_history(history_entries)
+
+        if assignments_changed:
+            save_assignments(assignments)
+
+        requests_data.append({
+            "folio": folio,
+            "client": username,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "tipo_servicio": tipo_servicio,
+            "nombre_proyecto": nombre_proyecto,
+            "norma": norma,
+            "num_skus": num_skus,
+            "medidas": medidas,
+            "prioridad": prioridad,
+            "importador": importador,
+            "marca": marca,
+            "pais_origen": pais_origen,
+            "contenido": contenido,
+            "files": saved_files
+        })
+
+        save_service_requests(requests_data)
+
+        return jsonify({"status": "ok", "folio": folio})
+
+    def parse_iso(value):
+        if not value:
+            return None
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+        return value
+
+    def request_status(statuses):
+        if not statuses:
+            return "PENDIENTE"
+        if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
+            return "FINALIZADO"
+        if any(s == STATUS_IN_REVIEW for s in statuses):
+            return "EN REVISIÓN"
+        if any(s == STATUS_ASSIGNED for s in statuses):
+            return "EN PROCESO"
+        return "PENDIENTE"
+
+    tipo_map = {
+        "consultoria": "Consultoria",
+        "constancia": "Constancia",
+        "diseno": "Diseno"
+    }
+    modalidad_map = {"urgente": "URGENTE", "regular": "REGULAR"}
+
+    requests_data = load_service_requests()
+    client_requests = [r for r in requests_data if r.get("client") == username]
+
+    assignments = load_assignments()
+    client_assignments = [a for a in assignments if a.get("client") == username]
+    assignments_by_folio = {}
+    for assignment in client_assignments:
+        folio = assignment.get("folio")
+        if not folio:
+            continue
+        assignments_by_folio.setdefault(folio, []).append(assignment)
+
+    solicitudes = []
+    used_folios = set()
+
+    for req in client_requests:
+        folio = req.get("folio")
+        used_folios.add(folio)
+        linked = assignments_by_folio.get(folio, [])
+        statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+        status_label = request_status(statuses)
+
+        created_at = parse_iso(req.get("created_at"))
+        completion_dates = [parse_iso(a.get("status_updated_at")) for a in linked]
+        completion_dates = [d for d in completion_dates if d]
+        completed_at = max(completion_dates) if completion_dates else None
+
+        # Obtener el ciclo máximo de los assignments vinculados
+        ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
+        ciclo_actual = max(ciclos) if ciclos else 1
+
+        solicitudes.append({
+            "fecha": req.get("created_at"),
+            "folio": folio,
+            "tipo": tipo_map.get(req.get("tipo_servicio"), req.get("tipo_servicio") or "—"),
+            "modalidad": modalidad_map.get(req.get("prioridad"), (req.get("prioridad") or "").upper() or "—"),
+            "proyecto": req.get("nombre_proyecto") or "—",
+            "estatus": status_label,
+            "fechaEnvio": completed_at.isoformat() if completed_at else None,
+            "ciclo": ciclo_actual,
+            "norma": req.get("norma"),
+            "num_skus": req.get("num_skus"),
+            "medidas": req.get("medidas"),
+            "prioridad": req.get("prioridad"),
+            "importador": req.get("importador"),
+            "marca": req.get("marca"),
+            "pais_origen": req.get("pais_origen"),
+            "contenido": req.get("contenido")
+        })
+
+    for folio, linked in assignments_by_folio.items():
+        if folio in used_folios:
+            continue
+
+        statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+        status_label = request_status(statuses)
+
+        created_at = None
+        for a in linked:
+            created_at = parse_iso(a.get("uploaded_at")) or created_at
+            if created_at:
+                break
+
+        completion_dates = [parse_iso(a.get("status_updated_at")) for a in linked]
+        completion_dates = [d for d in completion_dates if d]
+        completed_at = max(completion_dates) if completion_dates else None
+
+        # Obtener el ciclo máximo de los assignments vinculados
+        ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
+        ciclo_actual = max(ciclos) if ciclos else 1
+
+        project_hint = linked[0].get("filename") if linked else "—"
+        solicitudes.append({
+            "fecha": created_at.isoformat() if created_at else None,
+            "folio": folio,
+            "tipo": "Archivo",
+            "modalidad": "REGULAR",
+            "proyecto": f"Archivo: {project_hint}",
+            "estatus": status_label,
+            "fechaEnvio": completed_at.isoformat() if completed_at else None,
+            "ciclo": ciclo_actual,
+            "norma": "",
+            "num_skus": "",
+            "medidas": "",
+            "prioridad": "regular",
+            "importador": "",
+            "marca": "",
+            "pais_origen": "",
+            "contenido": ""
+        })
+
+    solicitudes = sorted(solicitudes, key=lambda x: x.get("fecha") or "", reverse=True)
+    return jsonify({"solicitudes": solicitudes})
 
 
 @app.route("/api/user-role")
@@ -814,6 +1082,14 @@ def save_edited_image():
     if not is_image_extension(filename):
         return jsonify({"error": "Solo se permiten imágenes"}), 400
 
+    # Verificar que el archivo no esté en estatus aceptado (bloqueado)
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
+    if assignment:
+        current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
+        if current_status == STATUS_ACCEPTED:
+            return jsonify({"error": "No se puede editar: archivo ya aceptado"}), 403
+
     try:
         match = re.match(r"^data:image/\w+;base64,", image_data)
         if match:
@@ -825,9 +1101,12 @@ def save_edited_image():
         with open(file_path, "wb") as f:
             f.write(image_bytes)
 
-        assignments = load_assignments()
-        assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
+        # Actualizar assignment con nuevo ciclo
         if assignment:
+            # Incrementar ciclo en cada edición
+            ciclo_actual = assignment.get("ciclo_actual", 1)
+            assignment["ciclo_actual"] = ciclo_actual + 1
+            
             assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
             assignment["last_edited_by"] = username
             current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
@@ -848,6 +1127,7 @@ def gallery():
     query = request.args.get("q", "").strip()
     date_from = request.args.get("from")
     date_to = request.args.get("to")
+    folio_filter = request.args.get("folio", "").strip()
 
     username = session.get("username")
     role = normalize_role(session.get("role"))
@@ -855,6 +1135,10 @@ def gallery():
     # Supervisor: ve todas las imágenes de todos los clientes
     all_clients = (role == ROLE_SUPERVISOR)
     images = list_images(username, query or None, date_from, date_to, all_clients=all_clients)
+
+    # Si se proporciona un folio específico, filtrar solo esos archivos
+    if folio_filter:
+        images = [img for img in images if img.get("folio") == folio_filter]
 
     history = [
         entry for entry in load_history()
@@ -868,6 +1152,7 @@ def gallery():
         query=query,
         date_from=date_from,
         date_to=date_to,
+        folio=folio_filter,
         history=history,
         current_folder=get_upload_folder(username)
     )

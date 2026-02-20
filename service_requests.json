@@ -1,0 +1,29 @@
+[
+  {
+    "folio": "FOL-20260220-3652",
+    "client": "cliente1",
+    "created_at": "2026-02-20T22:49:57.151987+00:00",
+    "tipo_servicio": "diseno",
+    "nombre_proyecto": "Prueba",
+    "norma": "NOM-004-SE-2021",
+    "num_skus": "5",
+    "medidas": "12x12",
+    "prioridad": "regular",
+    "importador": "Telmex",
+    "marca": "Infinitum",
+    "pais_origen": "Irlanda",
+    "contenido": "HKFGBRWÑ:GFGBEKFBADÑIFUGÑI",
+    "files": [
+      {
+        "filename": "e3kgne3b07kg1.jpeg",
+        "original_name": "e3kgne3b07kg1.jpeg",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\e3kgne3b07kg1.jpeg"
+      },
+      {
+        "filename": "770062b66e43ee84e71e34b6f0954641.jpg",
+        "original_name": "770062b66e43ee84e71e34b6f0954641.jpg",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\770062b66e43ee84e71e34b6f0954641.jpg"
+      }
+    ]
+  }
+]

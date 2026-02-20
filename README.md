@@ -7,9 +7,9 @@ Sistema integral de gestión de evidencias fotográficas y documentales para pro
 GEPI es una plataforma completa desarrollada en Flask que permite gestionar el ciclo completo de evidencias digitales en procesos de inspección:
 
 - **Carga de archivos**: Soporta imágenes (`png`, `jpg`, `jpeg`, `gif`, `webp`) y documentos (`pdf`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `txt`, `csv`)
-- **Sistema de roles**: Clientes, Inspectores y Supervisores con permisos diferenciados
-- **Asignación de tareas**: Los supervisores pueden asignar evidencias a inspectores específicos
-- **Editor de imágenes integrado**: Los inspectores pueden editar y anotar imágenes directamente en la plataforma
+- **Sistema de roles**: Clientes, Ejecutivos y Supervisores con permisos diferenciados
+- **Asignación de tareas**: Los supervisores pueden asignar evidencias a ejecutivos específicos
+- **Editor de imágenes integrado**: Los ejecutivos pueden editar y anotar imágenes directamente en la plataforma
 - **Gestión multi-cliente**: Cada cliente tiene su carpeta independiente y control de acceso
 - **Filtros avanzados**: Búsqueda por cliente, tipo de archivo, fechas y más
 
@@ -17,7 +17,7 @@ GEPI es una plataforma completa desarrollada en Flask que permite gestionar el c
 
 ### 🔐 Sistema de autenticación y roles
 - **Clientes**: Pueden subir evidencias y ver solo sus propios archivos
-- **Inspectores**: Reciben asignaciones, editan imágenes y gestionan evidencias asignadas
+- **Ejecutivos**: Reciben asignaciones, editan imágenes y gestionan evidencias asignadas
 - **Supervisores**: Administran usuarios, asignan tareas y tienen acceso completo al sistema
 
 ### 📁 Gestión de archivos
@@ -35,11 +35,11 @@ GEPI es una plataforma completa desarrollada en Flask que permite gestionar el c
 ### 📊 Panel de supervisión
 - Vista consolidada de todas las evidencias
 - Filtros por cliente y tipo de archivo
-- Asignación de tareas a inspectores
+- Asignación de tareas a ejecutivos
 - Seguimiento del estado de las evidencias
 - Sistema de paginación para grandes volúmenes
 
-### 🔍 Panel de inspector
+### 🔍 Panel de ejecutivo
 - Vista de evidencias asignadas
 - Edición y anotación de imágenes
 - Actualización del estado de las tareas
@@ -57,7 +57,7 @@ GEPI es una plataforma completa desarrollada en Flask que permite gestionar el c
   - `admin.html`: Gestión de usuarios (supervisor)
   - `admin_ruta.html`: Configuración de carpetas (supervisor)
   - `solicitudes.html`: Panel principal del supervisor
-  - `inspector.html`: Panel de trabajo del inspector
+  - `ejecutivo.html`: Panel de trabajo del ejecutivo
   - `gallery.html`: Galería de archivos
   - `image_editor.html`: Editor de imágenes
   - `view_image.html`: Visualizador de imágenes
@@ -139,10 +139,10 @@ GEPI soporta múltiples clientes con autenticación y carpetas independientes. E
       "role": "Supervisor",
       "folder": "C:/Evidencias/Admin"
     },
-    "inspector_1": {
+    "ejecutivo_1": {
       "password": "pbkdf2:sha256:600000$def456...",
-      "role": "Inspector",
-      "folder": "C:/Evidencias/Inspector1"
+      "role": "Ejecutivo",
+      "folder": "C:/Evidencias/Ejecutivo1"
     },
     "cliente_empresa_a": {
       "password": "pbkdf2:sha256:600000$ghi789...",
@@ -156,7 +156,7 @@ GEPI soporta múltiples clientes con autenticación y carpetas independientes. E
 ### Roles disponibles
 
 - **`Supervisor`**: Acceso completo, gestión de usuarios, asignación de tareas
-- **`Inspector`**: Acceso a evidencias asignadas, edición de imágenes
+- **`Ejecutivo`**: Acceso a evidencias asignadas, edición de imágenes
 - **`Cliente`**: Carga de evidencias, acceso solo a sus propios archivos
 
 ### Generación de contraseñas seguras
@@ -192,12 +192,12 @@ Accede a `http://localhost:5000` y usa tus credenciales para iniciar sesión. Se
 ### 3. Supervisor - Gestionar evidencias
 - Accede a `/solicitudes` para ver todas las evidencias
 - Usa los filtros para buscar por cliente o tipo de archivo
-- Selecciona un inspector en el dropdown
+- Selecciona un ejecutivo en el dropdown
 - Haz clic en "Asignar" para asignar la evidencia
 - Administra usuarios en `/admin`
 
-### 4. Inspector - Procesar evidencias
-- Accede a `/inspector` para ver tus asignaciones
+### 4. Ejecutivo - Procesar evidencias
+- Accede a `/ejecutivo` para ver tus asignaciones
 - Haz clic en una evidencia para abrirla
 - Usa el editor integrado para anotar imágenes
 - Guarda los cambios directamente en el servidor
@@ -211,7 +211,7 @@ Accede a `http://localhost:5000` y usa tus credenciales para iniciar sesión. Se
 | `/index` | Autenticado | Panel principal del cliente |
 | `/gallery` | Autenticado | Galería de archivos del usuario |
 | `/solicitudes` | Supervisor | Panel de gestión de evidencias |
-| `/inspector` | Inspector | Panel de evidencias asignadas |
+| `/ejecutivo` | Ejecutivo | Panel de evidencias asignadas |
 | `/admin` | Supervisor | Administración de usuarios |
 | `/admin/ruta` | Supervisor | Configuración de carpetas |
 | `/upload` | Autenticado | API para subir archivos (POST) |

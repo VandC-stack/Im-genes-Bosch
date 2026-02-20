@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Solicitud — SEA</title>
+    <title>Nueva Solicitud — GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -315,7 +315,8 @@
             cursor: pointer;
         }
 
-        .service-option input[type="radio"] {
+        .service-option input[type="radio"],
+        .service-option input[type="checkbox"] {
             position: absolute;
             opacity: 0;
             width: 0;
@@ -475,6 +476,50 @@
 
         .field-select {
             cursor: pointer;
+        }
+
+        /* ── NORMA LIST ── */
+        .norma-list {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 12px 14px;
+            max-height: 260px;
+            overflow: auto;
+        }
+
+        .norma-list.error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(204, 51, 51, 0.18);
+        }
+
+        .norma-item {
+            display: grid;
+            grid-template-columns: 20px minmax(130px, 180px) 1fr;
+            gap: 10px;
+            align-items: start;
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .norma-item input {
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .norma-code {
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            color: var(--dark);
+        }
+
+        .norma-desc {
+            color: var(--text-muted);
         }
 
         /* ── PRIORIDAD (Feature 3.2) ── */
@@ -1074,12 +1119,13 @@
     <!-- TOPBAR -->
     <nav class="topbar">
         <div class="topbar-brand">
-            <div class="brand-dot">📁</div>
-            <span class="brand-name">FileVault</span>
+            <div class="brand-dot"><img src="/static/captura.svg" alt="" style="width:20px;height:20px;"></div>
+            <span class="brand-name">Nueva solicitud</span>
         </div>
         <div class="topbar-right">
             <div class="user-chip">
-                <div class="user-avatar" id="avatarInitial">U</div>
+                <div class="user-avatar" id="avatarInitial"><img src="/static/icon-user.svg" alt=""
+                        style="width:16px;height:16px;"></div>
                 <span id="usernameDisplay">{{ username }}</span>
             </div>
             <a href="/logout" class="logout-link">Cerrar sesión →</a>
@@ -1099,7 +1145,7 @@
         <!-- Header -->
         <div class="page-header">
             <h1 class="page-title">Nueva <span>solicitud</span></h1>
-            <p class="page-sub">Completa los datos para registrar tu solicitud de servicio SEA.</p>
+            <p class="page-sub">Completa los datos para registrar tu solicitud de servicio GEPI.</p>
         </div>
 
         <!-- Steps -->
@@ -1129,7 +1175,7 @@
         <div id="step1">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">🏷</div>
+                    <div class="card-icon"><img src="/static/etiqueta.svg" alt="" style="width:28px;height:28px;"></div>
                     <div>
                         <div class="card-title">Tipo de servicio</div>
                         <div class="card-subtitle">Selecciona el servicio que necesitas</div>
@@ -1138,9 +1184,10 @@
 
                 <div class="service-grid">
                     <label class="service-option">
-                        <input type="radio" name="tipoServicio" value="consultoria" onchange="onServiceChange()">
+                        <input type="checkbox" name="tipoServicio" value="consultoria" onchange="onServiceChange()">
                         <div class="service-card">
-                            <span class="service-emoji">🔬</span>
+                            <span class="service-emoji"><img src="/static/foco.svg" alt=""
+                                    style="width:40px;height:40px;"></span>
                             <span class="service-name">Consultoría</span>
                             <span class="service-desc">Asesoría técnica y normativa</span>
                         </div>
@@ -1148,9 +1195,10 @@
                     </label>
 
                     <label class="service-option">
-                        <input type="radio" name="tipoServicio" value="constancia" onchange="onServiceChange()">
+                        <input type="checkbox" name="tipoServicio" value="constancia" onchange="onServiceChange()">
                         <div class="service-card">
-                            <span class="service-emoji">📋</span>
+                            <span class="service-emoji"><img src="/static/document.svg" alt=""
+                                    style="width:40px;height:40px;"></span>
                             <span class="service-name">Constancia</span>
                             <span class="service-desc">Emisión de constancias y certificados</span>
                         </div>
@@ -1158,9 +1206,10 @@
                     </label>
 
                     <label class="service-option">
-                        <input type="radio" name="tipoServicio" value="diseno" onchange="onServiceChange()">
+                        <input type="checkbox" name="tipoServicio" value="diseno" onchange="onServiceChange()">
                         <div class="service-card">
-                            <span class="service-emoji">🎨</span>
+                            <span class="service-emoji"><img src="/static/imagen.svg" alt=""
+                                    style="width:40px;height:40px;"></span>
                             <span class="service-name">Diseño</span>
                             <span class="service-desc">Revisión y validación de etiquetado</span>
                         </div>
@@ -1169,7 +1218,7 @@
                 </div>
 
                 <div class="field" style="margin-top:18px; display:none;" id="tipoError">
-                    <span class="field-error" style="display:block;">⚠ Selecciona un tipo de servicio para
+                    <span class="field-error" style="display:block;">⚠ Selecciona al menos un tipo de servicio para
                         continuar.</span>
                 </div>
             </div>
@@ -1191,10 +1240,10 @@
             <!-- Datos obligatorios — Feature 3.2 -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">📝</div>
+                    <div class="card-icon"><img src="/static/captura.svg" alt="" style="width:28px;height:28px;"></div>
                     <div>
                         <div class="card-title">Datos generales</div>
-                        <div class="card-subtitle">Información obligatoria del proyecto</div>
+                        <div class="card-subtitle">Información del proyecto</div>
                     </div>
                 </div>
 
@@ -1211,28 +1260,113 @@
                     </div>
 
                     <!-- Norma -->
-                    <div class="field">
+                    <div class="field span-2">
                         <label class="field-label">
-                            <span class="required-dot"></span>
-                            Norma aplicable
+                            Norma(s) aplicable(s)
                         </label>
-                        <select class="field-select" id="norma" onchange="clearError(this)">
-                            <option value="">— Selecciona —</option>
-                            <option value="NOM-051">NOM-051-SCFI/SSA1-2010</option>
-                            <option value="NOM-086">NOM-086-SSA1-1994</option>
-                            <option value="NOM-130">NOM-130-SSA1-1995</option>
-                            <option value="NOM-131">NOM-131-SSA1-2012</option>
-                            <option value="NOM-187">NOM-187-SSA1/SCFI-2002</option>
-                            <option value="NOM-218">NOM-218-SCFI-2018</option>
-                            <option value="OTRO">Otra norma</option>
-                        </select>
-                        <span class="field-error" id="err-norma">Campo obligatorio</span>
+                        <div class="norma-list" id="normaList">
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-004-SE-2021"
+                                    data-desc="Informacion Comercial - Etiquetado de productos textiles, prendas de vestir, sus accesorios y ropa de casa."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-004-SE-2021</span>
+                                <span class="norma-desc">Informacion Comercial - Etiquetado de productos textiles,
+                                    prendas de vestir, sus accesorios y ropa de casa.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-015-SCFI-2007"
+                                    data-desc="Informacion comercial - Etiquetado para juguetes."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-015-SCFI-2007</span>
+                                <span class="norma-desc">Informacion comercial - Etiquetado para juguetes.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-020-SCFI-1997"
+                                    data-desc="Informacion comercial - Etiquetado de cueros y pieles curtidas naturales y materiales sinteticos o artificiales con esa apariencia, calzado, marroquineria, asi como los productos elaborados con dichos materiales."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-020-SCFI-1997</span>
+                                <span class="norma-desc">Informacion comercial - Etiquetado de cueros y pieles curtidas
+                                    naturales y materiales sinteticos o artificiales con esa apariencia, calzado,
+                                    marroquineria, asi como los productos elaborados con dichos materiales.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-024-SCFI-2013"
+                                    data-desc="Informacion comercial para empaques instructivos y garantias de los productos electronicos, electricos y electrodomesticos."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-024-SCFI-2013</span>
+                                <span class="norma-desc">Informacion comercial para empaques instructivos y garantias de
+                                    los productos electronicos, electricos y electrodomesticos.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-050-SCFI-2004"
+                                    data-desc="Informacion comercial - Etiquetado general de productos."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-050-SCFI-2004</span>
+                                <span class="norma-desc">Informacion comercial - Etiquetado general de productos.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-051-SCFI/SSA1-2010"
+                                    data-desc="Especificaciones generales de etiquetado para alimentos y bebidas no alcoholicas preenvasados - Informacion comercial y sanitaria."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-051-SCFI/SSA1-2010</span>
+                                <span class="norma-desc">Especificaciones generales de etiquetado para alimentos y
+                                    bebidas no alcoholicas preenvasados - Informacion comercial y sanitaria.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-141-SSA1/SCFI-2012"
+                                    data-desc="Etiquetado para productos cosmeticos preenvasados. Etiquetado sanitario y comercial."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-141-SSA1/SCFI-2012</span>
+                                <span class="norma-desc">Etiquetado para productos cosmeticos preenvasados. Etiquetado
+                                    sanitario y comercial.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-142-SSA1-1995"
+                                    data-desc="Bienes y servicios. Bebidas Alcoholicas. Especificaciones sanitarias. Etiquetado sanitario y comercial."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-142-SSA1-1995</span>
+                                <span class="norma-desc">Bienes y servicios. Bebidas Alcoholicas. Especificaciones
+                                    sanitarias. Etiquetado sanitario y comercial.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-186-SSA1/SCFI-2013"
+                                    data-desc="Cacao, chocolate y productos similares, y derivados del cacao. Especificaciones sanitarias. Denominacion comercial. Metodos de prueba."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-186-SSA1/SCFI-2013</span>
+                                <span class="norma-desc">Cacao, chocolate y productos similares, y derivados del cacao.
+                                    Especificaciones sanitarias. Denominacion comercial. Metodos de prueba.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-189-SSA1/SCFI-2018"
+                                    data-desc="Productos y servicios. Etiquetado y envasado para productos de aseo de uso domestico."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-189-SSA1/SCFI-2018</span>
+                                <span class="norma-desc">Productos y servicios. Etiquetado y envasado para productos de
+                                    aseo de uso domestico.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-142-SSA1/SCFI-2014"
+                                    data-desc="Bebidas alcoholicas. Especificaciones sanitarias. Etiquetado sanitario y comercial."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-142-SSA1/SCFI-2014</span>
+                                <span class="norma-desc">Bebidas alcoholicas. Especificaciones sanitarias. Etiquetado
+                                    sanitario y comercial.</span>
+                            </label>
+                            <label class="norma-item">
+                                <input type="checkbox" name="norma" value="NOM-199-SCFI-2017"
+                                    data-desc="Bebidas alcoholicas - Denominacion, especificaciones fisicoquimicas, informacion comercial y metodos de prueba."
+                                    onchange="clearNormaError()">
+                                <span class="norma-code">NOM-199-SCFI-2017</span>
+                                <span class="norma-desc">Bebidas alcoholicas - Denominacion, especificaciones
+                                    fisicoquimicas, informacion comercial y metodos de prueba.</span>
+                            </label>
+                        </div>
+                        <span class="field-error" id="err-norma">Selecciona al menos una norma</span>
                     </div>
 
                     <!-- SKUs -->
                     <div class="field">
                         <label class="field-label">
-                            <span class="required-dot"></span>
                             Número de SKU's
                         </label>
                         <input class="field-input" id="numSkus" type="number" min="1" placeholder="Ej. 3"
@@ -1243,7 +1377,6 @@
                     <!-- Medidas superficie principal -->
                     <div class="field">
                         <label class="field-label">
-                            <span class="required-dot"></span>
                             Medidas superficie principal
                         </label>
                         <input class="field-input" id="medidas" type="text" placeholder="Ej. 12 cm × 8 cm"
@@ -1260,7 +1393,8 @@
                         </label>
                         <div class="priority-grid">
                             <label class="priority-option">
-                                <input type="radio" name="prioridad" value="regular">
+                                <input type="radio" name="prioridad" value="regular" required
+                                    onchange="document.getElementById('err-prioridad').style.display='none'">
                                 <div class="priority-card">
                                     <div class="priority-dot dot-regular"></div>
                                     <div class="priority-info">
@@ -1271,7 +1405,8 @@
                                 </div>
                             </label>
                             <label class="priority-option">
-                                <input type="radio" name="prioridad" value="urgente">
+                                <input type="radio" name="prioridad" value="urgente" required
+                                    onchange="document.getElementById('err-prioridad').style.display='none'">
                                 <div class="priority-card">
                                     <div class="priority-dot dot-urgente"></div>
                                     <div class="priority-info">
@@ -1290,14 +1425,14 @@
                 <div class="design-section" id="designSection">
                     <div class="section-divider">
                         <div class="section-divider-line"></div>
-                        <span class="section-divider-label">🎨 Datos específicos — Diseño</span>
+                        <span class="section-divider-label"><img src="/static/imagen.svg" alt=""
+                                style="width:18px;height:18px;vertical-align:middle;"> Datos específicos — Diseño</span>
                         <div class="section-divider-line"></div>
                     </div>
 
                     <div class="form-grid cols-3">
                         <div class="field">
                             <label class="field-label">
-                                <span class="required-dot"></span>
                                 Importador
                             </label>
                             <input class="field-input" id="importador" type="text" placeholder="Nombre del importador"
@@ -1307,7 +1442,6 @@
 
                         <div class="field">
                             <label class="field-label">
-                                <span class="required-dot"></span>
                                 Marca
                             </label>
                             <input class="field-input" id="marca" type="text" placeholder="Nombre de la marca"
@@ -1317,32 +1451,15 @@
 
                         <div class="field">
                             <label class="field-label">
-                                <span class="required-dot"></span>
                                 País de origen
                             </label>
-                            <select class="field-select" id="paisOrigen" onchange="clearError(this)">
-                                <option value="">— Selecciona —</option>
-                                <option>México</option>
-                                <option>Estados Unidos</option>
-                                <option>Francia</option>
-                                <option>Italia</option>
-                                <option>España</option>
-                                <option>Alemania</option>
-                                <option>Canadá</option>
-                                <option>China</option>
-                                <option>Japón</option>
-                                <option>Brasil</option>
-                                <option>Argentina</option>
-                                <option>Chile</option>
-                                <option>Colombia</option>
-                                <option value="otro">Otro</option>
-                            </select>
+                            <input class="field-input" id="paisOrigen" type="text" placeholder="Ej. México"
+                                oninput="clearError(this)">
                             <span class="field-error" id="err-paisOrigen">Campo obligatorio</span>
                         </div>
 
                         <div class="field span-3">
                             <label class="field-label">
-                                <span class="required-dot"></span>
                                 Contenido / Descripción del producto
                             </label>
                             <textarea class="field-textarea" id="contenido"
@@ -1392,7 +1509,8 @@
                 <!-- Sub-actions -->
                 <div class="upload-actions-row">
                     <button class="upload-btn-sm" onclick="triggerFiles()">🖼 Seleccionar archivos</button>
-                    <button class="upload-btn-sm" onclick="triggerFolder()">📁 Seleccionar carpeta</button>
+                    <button class="upload-btn-sm" onclick="triggerFolder()"><img src="/static/captura.svg" alt=""
+                            style="width:16px;height:16px;vertical-align:middle;"> Seleccionar carpeta</button>
                     <button class="upload-btn-sm" onclick="triggerZip()">🗜 Seleccionar ZIP</button>
                 </div>
 
@@ -1480,9 +1598,7 @@
         ═══════════════════════════════════════ */
         (function init() {
             const uname = document.getElementById("usernameDisplay").textContent.trim();
-            if (uname && !uname.includes("{{")) {
-                document.getElementById("avatarInitial").textContent = uname[0].toUpperCase();
-            }
+            // Avatar now uses SVG icon instead of initial
             setupDropZone();
         })();
 
@@ -1520,17 +1636,15 @@
         ═══════════════════════════════════════ */
         function validateStep(step) {
             if (step === 1) {
-                const sel = document.querySelector('input[name="tipoServicio"]:checked');
-                document.getElementById("tipoError").style.display = sel ? "none" : "block";
-                return !!sel;
+                const checked = document.querySelectorAll('input[name="tipoServicio"]:checked');
+                document.getElementById("tipoError").style.display = checked.length > 0 ? "none" : "block";
+                return checked.length > 0;
             }
 
             if (step === 2) {
+                // Campos obligatorios: nombre del proyecto y prioridad
                 const required = [
                     { id: "nombreProyecto", err: "err-nombreProyecto" },
-                    { id: "norma", err: "err-norma" },
-                    { id: "numSkus", err: "err-numSkus" },
-                    { id: "medidas", err: "err-medidas" },
                 ];
 
                 let ok = true;
@@ -1544,25 +1658,14 @@
                     }
                 });
 
-                // Prioridad
+                // Validar prioridad (obligatoria)
                 const prio = document.querySelector('input[name="prioridad"]:checked');
                 if (!prio) {
                     document.getElementById("err-prioridad").style.display = "block";
                     ok = false;
                 }
 
-                // Diseño específicos
-                const tipo = document.querySelector('input[name="tipoServicio"]:checked')?.value;
-                if (tipo === "diseno") {
-                    ["importador", "marca", "paisOrigen", "contenido"].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (!el.value.trim()) {
-                            el.classList.add("error");
-                            document.getElementById(`err-${id}`).style.display = "block";
-                            ok = false;
-                        }
-                    });
-                }
+                // Todos los demás campos son opcionales
 
                 return ok;
             }
@@ -1581,9 +1684,11 @@
         ═══════════════════════════════════════ */
         function onServiceChange() {
             document.getElementById("tipoError").style.display = "none";
-            const tipo = document.querySelector('input[name="tipoServicio"]:checked')?.value;
+            const checked = Array.from(document.querySelectorAll('input[name="tipoServicio"]:checked'));
+            const values = checked.map(cb => cb.value);
             const ds = document.getElementById("designSection");
-            if (tipo === "diseno") {
+            // Mostrar sección de diseño si al menos uno de los servicios seleccionados es "diseno"
+            if (values.includes("diseno")) {
                 ds.classList.add("visible");
             } else {
                 ds.classList.remove("visible");
@@ -1755,7 +1860,7 @@
                 const folderHeader = document.createElement("div");
                 folderHeader.style.cssText = "display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface2); border-bottom:1px solid var(--border);";
                 folderHeader.innerHTML = `
-                <span style="font-size:20px;">📁</span>
+                <img src="/static/captura.svg" alt="" style="width:20px;height:20px;">
                 <span style="font-size:13px; font-weight:700; flex:1;">${folder}</span>
                 <span style="font-size:11px; color:var(--text-muted); font-family:'Space Mono',monospace;">${items.length} archivo${items.length > 1 ? "s" : ""}</span>
             `;
@@ -1814,21 +1919,23 @@
            SUMMARY — STEP 4
         ═══════════════════════════════════════ */
         function buildSummary() {
-            const tipo = document.querySelector('input[name="tipoServicio"]:checked')?.value || "";
+            const checked = Array.from(document.querySelectorAll('input[name="tipoServicio"]:checked'));
+            const tipos = checked.map(cb => cb.value);
             const prio = document.querySelector('input[name="prioridad"]:checked')?.value || "";
-            const tipoLabel = { consultoria: "Consultoría", constancia: "Constancia", diseno: "Diseño" }[tipo] || tipo;
+            const labelMap = { consultoria: "Consultoría", constancia: "Constancia", diseno: "Diseño" };
+            const tiposLabel = tipos.map(t => labelMap[t] || t).join(", ");
             const prioLabel = prio === "urgente" ? "⚡ Urgente (24 h)" : "🔵 Regular (72 h)";
 
             const rows = [
-                ["Tipo de servicio", tipoLabel],
+                ["Tipo(s) de servicio", tiposLabel],
                 ["Nombre del proyecto", val("nombreProyecto")],
-                ["Norma aplicable", val("norma")],
+                ["Norma(s) aplicable(s)", formatNormas()],
                 ["Número de SKU's", val("numSkus")],
                 ["Medidas superficie", val("medidas")],
                 ["Prioridad", prioLabel],
             ];
 
-            if (tipo === "diseno") {
+            if (tipos.includes("diseno")) {
                 rows.push(
                     ["Importador", val("importador")],
                     ["Marca", val("marca")],
@@ -1855,6 +1962,24 @@
         `).join("");
         }
 
+        function getSelectedNormas() {
+            return Array.from(document.querySelectorAll('input[name="norma"]:checked')).map(el => ({
+                code: el.value,
+                desc: el.dataset.desc || ""
+            }));
+        }
+
+        function formatNormas() {
+            const normas = getSelectedNormas();
+            if (normas.length === 0) return "";
+            return normas.map(n => n.desc ? `${n.code} — ${n.desc}` : n.code).join("; ");
+        }
+
+        function clearNormaError() {
+            document.getElementById("err-norma").style.display = "none";
+            document.getElementById("normaList").classList.remove("error");
+        }
+
         function val(id) {
             return document.getElementById(id)?.value?.trim() || "";
         }
@@ -1875,9 +2000,11 @@
                 const fd = new FormData();
 
                 // Datos principales — tabla service_requests
-                fd.append("tipo_servicio", document.querySelector('input[name="tipoServicio"]:checked')?.value || "");
+                const checked = Array.from(document.querySelectorAll('input[name="tipoServicio"]:checked'));
+                const tipos = checked.map(cb => cb.value).join(", ");
+                fd.append("tipo_servicio", tipos);
                 fd.append("nombre_proyecto", val("nombreProyecto"));
-                fd.append("norma", val("norma"));
+                fd.append("norma", getSelectedNormas().map(n => n.code).join(", "));
                 fd.append("num_skus", val("numSkus"));
                 fd.append("medidas", val("medidas"));
                 fd.append("prioridad", document.querySelector('input[name="prioridad"]:checked')?.value || "");

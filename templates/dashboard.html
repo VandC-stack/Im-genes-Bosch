@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard SEA</title>
+    <title>Dashboard GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -76,6 +76,11 @@
             align-items: center;
             justify-content: center;
             font-size: 15px;
+        }
+
+        .brand-dot img {
+            width: 16px;
+            height: 16px;
         }
 
         .brand-name {
@@ -288,10 +293,11 @@
 
         .search-input {
             margin-left: auto;
-            padding: 7px 14px;
+            padding: 7px 14px 7px 36px;
             border-radius: 999px;
             border: 1.5px solid var(--border);
-            background: var(--surface);
+            background: var(--surface) url('/static/lupa.svg') no-repeat 12px center;
+            background-size: 16px 16px;
             font-family: inherit;
             font-size: 13px;
             color: var(--text);
@@ -382,6 +388,19 @@
             color: var(--dark);
         }
 
+        .folio-link {
+            color: var(--yellow-dark);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            border-bottom: 1px solid transparent;
+        }
+
+        .folio-link:hover {
+            color: var(--yellow);
+            border-bottom: 1px solid var(--yellow-dark);
+        }
+
         .td-date {
             font-size: 12px;
             color: var(--text-muted);
@@ -449,25 +468,15 @@
             background: #0284c7;
         }
 
-        /* ── CUMPLIMIENTO ── */
-        .cumplimiento {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
+        .badge-ciclo {
+            background: #f3e8ff;
+            color: #6b21a8;
             font-weight: 600;
         }
 
-        .cumplimiento.ok {
-            color: var(--success);
-        }
-
-        .cumplimiento.fail {
-            color: var(--danger);
-        }
-
-        .cumplimiento.pending {
-            color: var(--text-dim);
+        .badge-ciclo .badge-dot {
+            background: #9333ea;
+            display: none;
         }
 
         /* ── ACTION BUTTONS ── */
@@ -518,6 +527,50 @@
             background: var(--surface2);
         }
 
+        /* ── PAGINACIÓN ── */
+        .pagination {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--yellow);
+            border-color: var(--yellow-dark);
+            color: var(--dark);
+        }
+
+        .page-btn.active {
+            background: var(--yellow);
+            border-color: var(--yellow-dark);
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-ellipsis {
+            padding: 0 4px;
+            color: var(--text-dim);
+        }
+
         /* ── EMPTY ── */
         .empty-row td {
             text-align: center;
@@ -548,6 +601,8 @@
             padding: 32px;
             max-width: 520px;
             width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             animation: modalIn 0.2s ease;
         }
@@ -739,12 +794,13 @@
     <!-- TOPBAR -->
     <nav class="topbar">
         <div class="topbar-brand">
-            <div class="brand-dot">📁</div>
-            <span class="brand-name">FileVault</span>
+            <div class="brand-dot"><img src="/static/captura.svg" alt="Dashboard"></div>
+            <span class="brand-name">Dashboard</span>
         </div>
         <div class="topbar-right">
             <div class="user-chip">
-                <div class="user-avatar" id="avatarInitial">U</div>
+                <div class="user-avatar" id="avatarInitial"><img src="/static/icon-user.svg" alt=""
+                        style="width:16px;height:16px;"></div>
                 <span id="usernameDisplay">{{ username }}</span>
             </div>
             <a href="/logout" class="logout-link">Cerrar sesión →</a>
@@ -758,11 +814,11 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Mis <span>solicitudes</span></h1>
-                <p class="page-sub">Resumen y seguimiento de todos tus proyectos SEA</p>
+                <p class="page-sub">Resumen y seguimiento de todos tus proyectos GEPI</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a href="/" class="btn btn-outline">← Subir archivos</a>
-                <button class="btn btn-yellow" onclick="exportCSV()">⬇ Exportar</button>
+                <a href="{{ url_for('captura') }}" class="btn btn-yellow">+ Nueva solicitud</a>
+                <button class="btn btn-outline" onclick="exportCSV()">⬇ Exportar</button>
             </div>
         </div>
 
@@ -783,8 +839,8 @@
                 onclick="setFilter(this,'PENDIENTE')">Pendientes</button>
             <button class="filter-chip" data-filter="EN REVISIÓN" onclick="setFilter(this,'EN REVISIÓN')">En
                 revisión</button>
-            <input class="search-input" id="searchInput" type="search" placeholder="🔍 Buscar folio o proyecto…"
-                oninput="renderTable()">
+            <input class="search-input" id="searchInput" type="search" placeholder="Buscar folio o proyecto…"
+                oninput="search()">
         </div>
 
         <!-- Table -->
@@ -804,7 +860,7 @@
                                     class="sort-arrow">↕</span></th>
                             <th onclick="sortBy('estatus')" id="th-estatus">Estatus <span class="sort-arrow">↕</span>
                             </th>
-                            <th>Cumplimiento</th>
+                            <th>Ciclo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -813,6 +869,7 @@
             </div>
             <div class="table-footer">
                 <span id="footerCount">0 solicitudes</span>
+                <div id="pagination" class="pagination"></div>
                 <span id="footerDate"></span>
             </div>
         </div>
@@ -842,58 +899,45 @@
 
     <script>
         /* =====================
-           DATA — reemplaza con tu API: fetch('/api/solicitudes').then(r=>r.json()).then(data => { solicitudes = data; init(); })
+           DATA
            ===================== */
-        let solicitudes = [
-            {
-                fecha: "2026-02-18 10:14",
-                folio: "ACT-2026-003",
-                tipo: "ACTUALIZACIÓN",
-                prefijo: "ACT",
-                anio: "2026",
-                consecutivo: "003",
-                modalidad: "REGULAR",
-                proyecto: "ACTUALIZACIÓN DE CONSTANCIAS MERMELADAS Y RELLENOS PARA TARTA Y BONNE MAMAN",
-                estatus: "FINALIZADO",
-                fechaEnvio: null,
-                cumplimiento: "≤ 72 h — Se cumplió",
-                cumplimientoOk: true,
-            },
-            {
-                fecha: "2026-02-18 10:19",
-                folio: "CTII-2026-004",
-                tipo: "CONSULTORÍA TIPO II",
-                prefijo: "CTII",
-                anio: "2026",
-                consecutivo: "004",
-                modalidad: "REGULAR",
-                proyecto: "RECETA NUEVA — CREMA DE CACAHUATE Y CACAO 350 G",
-                estatus: "FINALIZADO",
-                fechaEnvio: null,
-                cumplimiento: "≤ 24 h — Se cumplió",
-                cumplimientoOk: true,
-            }
-        ];
-        // ── Agrega más registros aquí o carga desde API ──
+        let solicitudes = [];
 
         /* =====================
            STATE
            ===================== */
         let currentFilter = "all";
         let sortKey = "fecha";
-        let sortDir = 1;
+        let sortDir = -1;
+        let currentPage = 1;
+        let itemsPerPage = 10;
 
         /* =====================
            INIT
            ===================== */
         function init() {
             const uname = document.getElementById("usernameDisplay").textContent.trim();
-            if (uname && !uname.includes("{{")) {
-                document.getElementById("avatarInitial").textContent = uname[0].toUpperCase();
-            }
+            // Avatar now uses SVG icon instead of initial
             document.getElementById("footerDate").textContent = "Actualizado: " + new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+            const th = document.getElementById("th-fecha");
+            if (th) th.classList.add("sorted");
             buildKPIs();
             renderTable();
+        }
+
+        async function loadSolicitudes() {
+            try {
+                const res = await fetch("/api/solicitudes");
+                if (!res.ok) {
+                    showToast("error", "Error de datos", "No se pudieron cargar las solicitudes.");
+                    return;
+                }
+                const data = await res.json();
+                solicitudes = Array.isArray(data.solicitudes) ? data.solicitudes : [];
+                init();
+            } catch (e) {
+                showToast("error", "Error de conexion", "Verifica tu conexion e intenta de nuevo.");
+            }
         }
 
         /* =====================
@@ -904,8 +948,6 @@
             const finalizados = solicitudes.filter(s => s.estatus === "FINALIZADO").length;
             const enProceso = solicitudes.filter(s => s.estatus === "EN PROCESO").length;
             const pendientes = solicitudes.filter(s => s.estatus === "PENDIENTE").length;
-            const cumplidos = solicitudes.filter(s => s.cumplimientoOk === true).length;
-            const pct = total > 0 ? Math.round(cumplidos / total * 100) : 0;
 
             const grid = document.getElementById("kpiGrid");
             grid.innerHTML = `
@@ -929,11 +971,6 @@
                 <div class="kpi-value">${pendientes}</div>
                 <div class="kpi-sub">En espera de inicio</div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Cumplimiento</div>
-                <div class="kpi-value">${pct}%</div>
-                <div class="kpi-sub">Tiempo de entrega</div>
-            </div>
         `;
         }
 
@@ -942,8 +979,17 @@
            ===================== */
         function setFilter(el, filter) {
             currentFilter = filter;
+            currentPage = 1; // Reset a primera página al filtrar
             document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
             el.classList.add("active");
+            renderTable();
+        }
+
+        /* =====================
+           SEARCH
+           ===================== */
+        function search() {
+            currentPage = 1; // Reset a primera página al buscar
             renderTable();
         }
 
@@ -952,6 +998,7 @@
            ===================== */
         function sortBy(key) {
             if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+            currentPage = 1; // Reset a primera página al ordenar
             document.querySelectorAll("th").forEach(th => th.classList.remove("sorted"));
             const th = document.getElementById("th-" + key);
             if (th) th.classList.add("sorted");
@@ -984,18 +1031,26 @@
             if (data.length === 0) {
                 tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No se encontraron solicitudes.</td></tr>`;
                 document.getElementById("footerCount").textContent = "0 solicitudes";
+                document.getElementById("pagination").innerHTML = "";
                 return;
             }
 
-            tbody.innerHTML = data.map((s, i) => `
+            // Calcular paginación
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageData = data.slice(startIdx, endIdx);
+
+            tbody.innerHTML = pageData.map((s, i) => `
             <tr>
                 <td class="td-date">${formatDate(s.fecha)}</td>
-                <td class="td-folio">${s.folio}</td>
+                <td class="td-folio"><a href="/gallery?folio=${encodeURIComponent(s.folio)}" class="folio-link">${s.folio}</a></td>
                 <td style="font-size:12px;">${s.tipo}</td>
                 <td><span style="font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 8px;">${s.modalidad}</span></td>
                 <td class="td-proyecto">${s.proyecto}</td>
                 <td>${statusBadge(s.estatus)}</td>
-                <td>${cumplimientoHtml(s)}</td>
+                <td>${cicloHtml(s)}</td>
                 <td>
                     <div class="action-btns">
                         <button class="action-btn primary" onclick="openModal(${solicitudes.indexOf(s)})">Ver detalle</button>
@@ -1005,8 +1060,66 @@
             </tr>
         `).join("");
 
-            document.getElementById("footerCount").textContent =
-                data.length + (data.length === 1 ? " solicitud" : " solicitudes");
+            const showing = `${startIdx + 1}-${Math.min(endIdx, data.length)} de ${data.length}`;
+            document.getElementById("footerCount").textContent = showing + (data.length === 1 ? " solicitud" : " solicitudes");
+
+            renderPagination(totalPages);
+        }
+
+        /* =====================
+           PAGINATION
+           ===================== */
+        function renderPagination(totalPages) {
+            const paginationContainer = document.getElementById("pagination");
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = "";
+                return;
+            }
+
+            let html = "";
+
+            // Botón anterior
+            html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+            // Lógica de páginas a mostrar
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            // Primera página si no está visible
+            if (startPage > 1) {
+                html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="page-ellipsis">...</span>`;
+                }
+            }
+
+            // Páginas visibles
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+
+            // Última página si no está visible
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="page-ellipsis">...</span>`;
+                }
+                html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            // Botón siguiente
+            html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
         }
 
         function statusBadge(estatus) {
@@ -1020,11 +1133,9 @@
             return `<span class="badge ${cls}"><span class="badge-dot"></span>${label}</span>`;
         }
 
-        function cumplimientoHtml(s) {
-            if (!s.cumplimiento) return `<span class="cumplimiento pending">—</span>`;
-            const cls = s.cumplimientoOk ? "ok" : "fail";
-            const icon = s.cumplimientoOk ? "✓" : "✕";
-            return `<span class="cumplimiento ${cls}">${icon} ${s.cumplimiento}</span>`;
+        function cicloHtml(s) {
+            const ciclo = s.ciclo || 1;
+            return `<span class="badge badge-ciclo">Ciclo ${ciclo}</span>`;
         }
 
         function formatDate(str) {
@@ -1040,16 +1151,32 @@
         function openModal(idx) {
             const s = solicitudes[idx];
             document.getElementById("modalTitle").textContent = s.folio;
+            const extraFields = [
+                ["Norma(s)", s.norma],
+                ["No. SKU's", s.num_skus],
+                ["Medidas superficie", s.medidas],
+                ["Prioridad", s.prioridad === "urgente" ? "Urgente (24 h)" : s.prioridad === "regular" ? "Regular (72 h)" : s.prioridad],
+                ["Importador", s.importador],
+                ["Marca", s.marca],
+                ["Pais de origen", s.pais_origen],
+                ["Contenido", s.contenido]
+            ].filter(([, value]) => value);
+
+            const extraHtml = extraFields.map(([label, value]) => `
+            <div class="modal-field"><span class="modal-field-label">${label}</span><span class="modal-field-value">${value}</span></div>
+        `).join("");
             document.getElementById("modalBody").innerHTML = `
             <div class="modal-field"><span class="modal-field-label">Proyecto</span><span class="modal-field-value">${s.proyecto}</span></div>
             <div class="modal-field"><span class="modal-field-label">Tipo de servicio</span><span class="modal-field-value">${s.tipo}</span></div>
             <div class="modal-field"><span class="modal-field-label">Modalidad</span><span class="modal-field-value">${s.modalidad}</span></div>
-            <div class="modal-field"><span class="modal-field-label">Fecha de recepción</span><span class="modal-field-value">${s.fecha}</span></div>
-            <div class="modal-field"><span class="modal-field-label">Fecha de envío</span><span class="modal-field-value">${s.fechaEnvio || "—"}</span></div>
+            <div class="modal-field"><span class="modal-field-label">Fecha de recepción</span><span class="modal-field-value">${formatDate(s.fecha)}</span></div>
+            <div class="modal-field"><span class="modal-field-label">Fecha de envío</span><span class="modal-field-value">${s.fechaEnvio ? formatDate(s.fechaEnvio) : "—"}</span></div>
             <div class="modal-field"><span class="modal-field-label">Estatus</span><span class="modal-field-value">${statusBadge(s.estatus)}</span></div>
-            <div class="modal-field"><span class="modal-field-label">Cumplimiento</span><span class="modal-field-value">${cumplimientoHtml(s)}</span></div>
+            <div class="modal-field"><span class="modal-field-label">Ciclo</span><span class="modal-field-value">${cicloHtml(s)}</span></div>
+            ${extraHtml}
         `;
             document.getElementById("modalOverlay").classList.add("open");
+            document.body.style.overflow = "hidden";
         }
 
         function closeModal(e) {
@@ -1058,23 +1185,24 @@
 
         function closeModalBtn() {
             document.getElementById("modalOverlay").classList.remove("open");
+            document.body.style.overflow = "";
         }
 
         /* =====================
            EXPORT CSV
            ===================== */
         function exportCSV() {
-            const headers = ["Fecha", "Folio", "Tipo", "Modalidad", "Proyecto", "Estatus", "Cumplimiento"];
+            const headers = ["Fecha", "Folio", "Tipo", "Modalidad", "Proyecto", "Estatus", "Ciclo"];
             const rows = solicitudes.map(s => [
                 s.fecha, s.folio, s.tipo, s.modalidad,
                 `"${s.proyecto.replace(/"/g, '""')}"`,
-                s.estatus, s.cumplimiento || ""
+                s.estatus, `Ciclo ${s.ciclo || 1}`
             ].join(","));
             const csv = [headers.join(","), ...rows].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = url; a.download = "solicitudes_SEA.csv"; a.click();
+            a.href = url; a.download = "solicitudes_GEPI.csv"; a.click();
             showToast("success", "Exportación lista", "El archivo CSV se descargó correctamente.");
         }
 
@@ -1108,7 +1236,7 @@
         /* =====================
            BOOT
            ===================== */
-        init();
+        loadSolicitudes();
     </script>
 
 </body>
