@@ -1508,10 +1508,12 @@
 
                 <!-- Sub-actions -->
                 <div class="upload-actions-row">
-                    <button class="upload-btn-sm" onclick="triggerFiles()">🖼 Seleccionar archivos</button>
+                    <button class="upload-btn-sm" onclick="triggerFiles()"><img src="/static/foto.svg" alt=""
+                            style="width:16px;height:16px;vertical-align:middle;"> Seleccionar archivos</button>
                     <button class="upload-btn-sm" onclick="triggerFolder()"><img src="/static/captura.svg" alt=""
                             style="width:16px;height:16px;vertical-align:middle;"> Seleccionar carpeta</button>
-                    <button class="upload-btn-sm" onclick="triggerZip()">🗜 Seleccionar ZIP</button>
+                    <button class="upload-btn-sm" onclick="triggerZip()"><img src="/static/zip.svg" alt=""
+                            style="width:16px;height:16px;vertical-align:middle;"> Seleccionar ZIP</button>
                 </div>
 
                 <!-- Hidden inputs -->
@@ -1550,7 +1552,9 @@
         <div id="step4" style="display:none;">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">✅</div>
+                    <div class="card-icon">
+                        <img src="/static/check.svg" alt="Resumen" style="width:20px; height:20px;">
+                    </div>
                     <div>
                         <div class="card-title">Resumen de solicitud</div>
                         <div class="card-subtitle">Revisa los datos antes de enviar</div>
@@ -1725,23 +1729,21 @@
         }
 
         async function handleDataTransfer(dt) {
-            // Support DataTransferItemList for folders
+            // Use DataTransferItemList only for directories; files come from dt.files.
             if (dt.items) {
-                const entries = [];
                 for (const item of dt.items) {
-                    if (item.kind === "file") {
-                        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
-                        if (entry && entry.isDirectory) {
-                            await readDirectory(entry, entry.name);
-                        } else {
-                            const f = item.getAsFile();
-                            if (f) await processFile(f);
-                        }
+                    if (item.kind !== "file") continue;
+                    const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+                    if (entry && entry.isDirectory) {
+                        await readDirectory(entry, entry.name);
                     }
                 }
-            } else {
+            }
+
+            if (dt.files) {
                 for (const f of dt.files) await processFile(f);
             }
+
             renderQueue();
         }
 

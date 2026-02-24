@@ -822,16 +822,8 @@
     <div class="container">
         <!-- Filters Section -->
         <div class="filters-section">
-            <h3 class="filters-title">{% if folio %}Detalle de solicitud: {{ folio }}{% else %}Filtros{% endif %}</h3>
-            {% if folio %}
-            <div
-                style="background: rgba(236, 217, 37, 0.1); border-left: 3px solid #ECD925; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px;">
-                <div style="color: #ECD925; font-weight: 600; font-size: 13px;">Mostrando archivos de la solicitud:
-                    <strong style="font-family:'Space Mono',monospace;">{{ folio }}</strong></div>
-                <div style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 4px;"><a href="/gallery"
-                        style="color: #ECD925; text-decoration: none;">← Ver todos los archivos</a></div>
-            </div>
-            {% endif %}
+            {% if not folio %}
+            <h3 class="filters-title">Filtros</h3>
             <form method="GET" action="/gallery">
                 <div class="filter-grid">
                     <div class="filter-field">
@@ -864,75 +856,75 @@
                             id="totalPagesDisplay">1</strong></span>
                 </div>
             </form>
-        </div>
+            {% endif %}
 
-        <!-- Gallery Grid -->
-        <div class="gallery-section">
-            <div class="gallery-grid" id="galleryGrid"></div>
-            <div class="pagination" id="pagination"></div>
-        </div>
-    </div>
-
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal" onclick="closePreview()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <div class="modal-title">Vista previa</div>
-                <button class="modal-close" onclick="closePreview()">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="preview-image-container">
-                    <img id="previewImage" class="preview-image" alt="Preview">
-                </div>
-                <div class="preview-info">
-                    <div class="preview-name" id="previewName"></div>
-                    <div class="preview-meta" id="previewMeta"></div>
-                </div>
-                <div class="preview-actions">
-                    <a id="previewCheckStatusLink" class="modal-btn">
-                        Ver detalles
-                    </a>
-                    <a id="previewDownloadLink" class="modal-btn">
-                        Descargar
-                    </a>
-                </div>
+            <!-- Gallery Grid -->
+            <div class="gallery-section">
+                <div class="gallery-grid" id="galleryGrid"></div>
+                <div class="pagination" id="pagination"></div>
             </div>
         </div>
-    </div>
 
-    <script>
-        // Datos de las imágenes desde el servidor
-        const rawImages = {{ images | tojson | safe }};
-        let allImages = rawImages || [];
-        const ITEMS_PER_PAGE = 30; // 5x6
-        let currentPage = 1;
-        let imageStatuses = {};
+        <!-- Preview Modal -->
+        <div id="previewModal" class="modal" onclick="closePreview()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="modal-title">Vista previa</div>
+                    <button class="modal-close" onclick="closePreview()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="preview-image-container">
+                        <img id="previewImage" class="preview-image" alt="Preview">
+                    </div>
+                    <div class="preview-info">
+                        <div class="preview-name" id="previewName"></div>
+                        <div class="preview-meta" id="previewMeta"></div>
+                    </div>
+                    <div class="preview-actions">
+                        <a id="previewCheckStatusLink" class="modal-btn">
+                            Ver detalles
+                        </a>
+                        <a id="previewDownloadLink" class="modal-btn">
+                            Descargar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        // Inicializar
-        function init() {
-            renderGallery();
-            loadAllStatuses();
-        }
+        <script>
+            // Datos de las imágenes desde el servidor
+            const rawImages = {{ images | tojson | safe }};
+            let allImages = rawImages || [];
+            const ITEMS_PER_PAGE = 30; // 5x6
+            let currentPage = 1;
+            let imageStatuses = {};
 
-        // Renderizar galería
-        function renderGallery() {
-            const grid = document.getElementById('galleryGrid');
-            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIdx = startIdx + ITEMS_PER_PAGE;
-            const pageImages = allImages.slice(startIdx, endIdx);
+            // Inicializar
+            function init() {
+                renderGallery();
+                loadAllStatuses();
+            }
 
-            grid.innerHTML = pageImages.map((image, idx) => {
-                const globalIdx = startIdx + idx;
-                return `
+            // Renderizar galería
+            function renderGallery() {
+                const grid = document.getElementById('galleryGrid');
+                const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIdx = startIdx + ITEMS_PER_PAGE;
+                const pageImages = allImages.slice(startIdx, endIdx);
+
+                grid.innerHTML = pageImages.map((image, idx) => {
+                    const globalIdx = startIdx + idx;
+                    return `
                     <article class="image-card" onclick="showPreview(${globalIdx})">
                         <div class="image-preview-container">
                             ${image.is_image
-                        ? `<img src="${image.url}" alt="${image.name}" class="image-preview" loading="lazy">`
-                        : `<div class="file-preview">
+                            ? `<img src="${image.url}" alt="${image.name}" class="image-preview" loading="lazy">`
+                            : `<div class="file-preview">
                                        <div class="file-preview-icon">FILE</div>
                                        <div class="file-preview-ext">${image.ext || 'file'}</div>
                                    </div>`
-                    }
+                        }
                             <div class="image-overlay">
                                 <div class="overlay-name">${image.name}</div>
                                 <div class="overlay-meta">Folio: ${image.folio || 'N/A'}</div>
@@ -942,230 +934,230 @@
                         </div>
                     </article>
                 `;
-            }).join('');
+                }).join('');
 
-            renderPagination();
-            updatePageInfo();
-        }
-
-        // Renderizar paginación
-        function renderPagination() {
-            const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
-            const pagination = document.getElementById('pagination');
-
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
-                return;
+                renderPagination();
+                updatePageInfo();
             }
 
-            let buttons = [];
+            // Renderizar paginación
+            function renderPagination() {
+                const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
+                const pagination = document.getElementById('pagination');
 
-            // Botón anterior
-            buttons.push(`
+                if (totalPages <= 1) {
+                    pagination.innerHTML = '';
+                    return;
+                }
+
+                let buttons = [];
+
+                // Botón anterior
+                buttons.push(`
                 <button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                     ← Anterior
                 </button>
             `);
 
-            // Páginas
-            const maxVisible = 7;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                // Páginas
+                const maxVisible = 7;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
-            if (endPage - startPage < maxVisible - 1) {
-                startPage = Math.max(1, endPage - maxVisible + 1);
-            }
-
-            if (startPage > 1) {
-                buttons.push(`<button class="page-btn" onclick="goToPage(1)">1</button>`);
-                if (startPage > 2) {
-                    buttons.push(`<span class="page-info">...</span>`);
+                if (endPage - startPage < maxVisible - 1) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
                 }
-            }
 
-            for (let i = startPage; i <= endPage; i++) {
-                buttons.push(`
+                if (startPage > 1) {
+                    buttons.push(`<button class="page-btn" onclick="goToPage(1)">1</button>`);
+                    if (startPage > 2) {
+                        buttons.push(`<span class="page-info">...</span>`);
+                    }
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    buttons.push(`
                     <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
                         ${i}
                     </button>
                 `);
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    buttons.push(`<span class="page-info">...</span>`);
                 }
-                buttons.push(`<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`);
-            }
 
-            // Botón siguiente
-            buttons.push(`
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        buttons.push(`<span class="page-info">...</span>`);
+                    }
+                    buttons.push(`<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`);
+                }
+
+                // Botón siguiente
+                buttons.push(`
                 <button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
                     Siguiente →
                 </button>
             `);
 
-            pagination.innerHTML = buttons.join('');
-        }
+                pagination.innerHTML = buttons.join('');
+            }
 
-        // Cambiar de página
-        function goToPage(page) {
-            const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
-            if (page < 1 || page > totalPages) return;
+            // Cambiar de página
+            function goToPage(page) {
+                const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
+                if (page < 1 || page > totalPages) return;
 
-            currentPage = page;
-            renderGallery();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+                currentPage = page;
+                renderGallery();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Cargar estados de la nueva página
-            loadPageStatuses();
-        }
+                // Cargar estados de la nueva página
+                loadPageStatuses();
+            }
 
-        // Actualizar info de página
-        function updatePageInfo() {
-            const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
-            document.getElementById('currentPageDisplay').textContent = currentPage;
-            document.getElementById('totalPagesDisplay').textContent = totalPages;
-            document.getElementById('totalImages').textContent = allImages.length;
-        }
+            // Actualizar info de página
+            function updatePageInfo() {
+                const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
+                document.getElementById('currentPageDisplay').textContent = currentPage;
+                document.getElementById('totalPagesDisplay').textContent = totalPages;
+                document.getElementById('totalImages').textContent = allImages.length;
+            }
 
-        // Cargar estados de imágenes de la página actual
-        async function loadPageStatuses() {
-            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIdx = startIdx + ITEMS_PER_PAGE;
-            const pageImages = allImages.slice(startIdx, endIdx);
+            // Cargar estados de imágenes de la página actual
+            async function loadPageStatuses() {
+                const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIdx = startIdx + ITEMS_PER_PAGE;
+                const pageImages = allImages.slice(startIdx, endIdx);
 
-            for (let i = 0; i < pageImages.length; i++) {
-                const globalIdx = startIdx + i;
-                const image = pageImages[i];
+                for (let i = 0; i < pageImages.length; i++) {
+                    const globalIdx = startIdx + i;
+                    const image = pageImages[i];
 
-                try {
+                    try {
+                        const statusKey = image.file_path || image.name;
+                        const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            imageStatuses[statusKey] = data.status;
+                            updateStatusBadge(globalIdx, data.status);
+                        }
+                    } catch (e) {
+                        console.error('Error loading status:', e);
+                    }
+                }
+            }
+
+            // Cargar todos los estados (en background)
+            async function loadAllStatuses() {
+                loadPageStatuses(); // Cargar primero la página actual
+
+                // Luego cargar el resto en background
+                for (let i = 0; i < allImages.length; i++) {
+                    const image = allImages[i];
                     const statusKey = image.file_path || image.name;
-                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        imageStatuses[statusKey] = data.status;
-                        updateStatusBadge(globalIdx, data.status);
+                    if (imageStatuses[statusKey]) continue; // Ya cargado
+
+                    try {
+                        const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            imageStatuses[statusKey] = data.status;
+                        }
+                    } catch (e) {
+                        console.error('Error loading status:', e);
                     }
-                } catch (e) {
-                    console.error('Error loading status:', e);
                 }
             }
-        }
 
-        // Cargar todos los estados (en background)
-        async function loadAllStatuses() {
-            loadPageStatuses(); // Cargar primero la página actual
+            // Actualizar badge de estado
+            function updateStatusBadge(idx, status) {
+                const badge = document.getElementById(`status-badge-${idx}`);
+                if (!badge) return;
 
-            // Luego cargar el resto en background
-            for (let i = 0; i < allImages.length; i++) {
-                const image = allImages[i];
-                const statusKey = image.file_path || image.name;
-                if (imageStatuses[statusKey]) continue; // Ya cargado
+                let statusClass = 'status-pending';
+                let statusIcon = '●';
+                let statusText = 'Subido';
 
-                try {
-                    const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        imageStatuses[statusKey] = data.status;
-                    }
-                } catch (e) {
-                    console.error('Error loading status:', e);
+                if (status === 'asignado') {
+                    statusClass = 'status-pending';
+                    statusIcon = '✎';
+                    statusText = 'Asignado';
+                } else if (status === 'en_revision') {
+                    statusClass = 'status-pending';
+                    statusIcon = '◓';
+                    statusText = 'En revisión';
+                } else if (status === 'aceptado') {
+                    statusClass = 'status-accepted';
+                    statusIcon = '✓';
+                    statusText = 'Aceptado';
+                } else if (status === 'rechazado') {
+                    statusClass = 'status-rejected';
+                    statusIcon = '✗';
+                    statusText = 'Rechazado';
                 }
-            }
-        }
 
-        // Actualizar badge de estado
-        function updateStatusBadge(idx, status) {
-            const badge = document.getElementById(`status-badge-${idx}`);
-            if (!badge) return;
-
-            let statusClass = 'status-pending';
-            let statusIcon = '●';
-            let statusText = 'Subido';
-
-            if (status === 'asignado') {
-                statusClass = 'status-pending';
-                statusIcon = '✎';
-                statusText = 'Asignado';
-            } else if (status === 'en_revision') {
-                statusClass = 'status-pending';
-                statusIcon = '◓';
-                statusText = 'En revisión';
-            } else if (status === 'aceptado') {
-                statusClass = 'status-accepted';
-                statusIcon = '✓';
-                statusText = 'Aceptado';
-            } else if (status === 'rechazado') {
-                statusClass = 'status-rejected';
-                statusIcon = '✗';
-                statusText = 'Rechazado';
+                badge.innerHTML = `<span class="status-badge ${statusClass}">${statusIcon}</span>`;
+                badge.style.display = 'block';
             }
 
-            badge.innerHTML = `<span class="status-badge ${statusClass}">${statusIcon}</span>`;
-            badge.style.display = 'block';
-        }
+            // Modal de vista previa
+            function showPreview(idx) {
+                const image = allImages[idx];
+                if (!image) return;
 
-        // Modal de vista previa
-        function showPreview(idx) {
-            const image = allImages[idx];
-            if (!image) return;
+                const modal = document.getElementById('previewModal');
+                const previewImage = document.getElementById('previewImage');
+                const previewName = document.getElementById('previewName');
+                const previewMeta = document.getElementById('previewMeta');
+                const previewCheckStatusLink = document.getElementById('previewCheckStatusLink');
+                const previewDownloadLink = document.getElementById('previewDownloadLink');
 
-            const modal = document.getElementById('previewModal');
-            const previewImage = document.getElementById('previewImage');
-            const previewName = document.getElementById('previewName');
-            const previewMeta = document.getElementById('previewMeta');
-            const previewCheckStatusLink = document.getElementById('previewCheckStatusLink');
-            const previewDownloadLink = document.getElementById('previewDownloadLink');
+                // Si es imagen, mostrar la imagen; si es documento, ocultar
+                if (image.is_image) {
+                    previewImage.src = image.url;
+                    previewImage.style.display = 'block';
+                } else {
+                    previewImage.style.display = 'none';
+                }
 
-            // Si es imagen, mostrar la imagen; si es documento, ocultar
-            if (image.is_image) {
-                previewImage.src = image.url;
-                previewImage.style.display = 'block';
-            } else {
-                previewImage.style.display = 'none';
+                previewName.textContent = image.name;
+                previewMeta.textContent = `Folio: ${image.folio || 'N/A'} • ${image.modified_iso} • ${(image.size / 1024).toFixed(1)} KB`;
+                previewCheckStatusLink.href = `/view-image?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`;
+                previewDownloadLink.href = image.url;
+                previewDownloadLink.download = image.name;
+
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
             }
 
-            previewName.textContent = image.name;
-            previewMeta.textContent = `Folio: ${image.folio || 'N/A'} • ${image.modified_iso} • ${(image.size / 1024).toFixed(1)} KB`;
-            previewCheckStatusLink.href = `/view-image?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`;
-            previewDownloadLink.href = image.url;
-            previewDownloadLink.download = image.name;
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closePreview() {
-            const modal = document.getElementById('previewModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Cerrar con ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closePreview();
-        });
-
-        // Navegación con flechas
-        document.addEventListener('keydown', (e) => {
-            if (document.getElementById('previewModal').classList.contains('active')) return;
-
-            if (e.key === 'ArrowLeft') {
-                goToPage(currentPage - 1);
-            } else if (e.key === 'ArrowRight') {
-                goToPage(currentPage + 1);
+            function closePreview() {
+                const modal = document.getElementById('previewModal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
             }
-        });
 
-        // Reset de filtros
-        function resetFilters() {
-            window.location.href = '/gallery';
-        }
+            // Cerrar con ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closePreview();
+            });
 
-        // Inicializar al cargar
-        init();
-    </script>
+            // Navegación con flechas
+            document.addEventListener('keydown', (e) => {
+                if (document.getElementById('previewModal').classList.contains('active')) return;
+
+                if (e.key === 'ArrowLeft') {
+                    goToPage(currentPage - 1);
+                } else if (e.key === 'ArrowRight') {
+                    goToPage(currentPage + 1);
+                }
+            });
+
+            // Reset de filtros
+            function resetFilters() {
+                window.location.href = '/gallery';
+            }
+
+            // Inicializar al cargar
+            init();
+        </script>
 </body>
 
 </html>

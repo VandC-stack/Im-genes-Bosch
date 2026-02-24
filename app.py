@@ -33,7 +33,8 @@ ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS | {
 ROLE_CLIENTE = "cliente"
 ROLE_SUPERVISOR = "supervisor"
 ROLE_EJECUTIVO = "ejecutivo"
-ALLOWED_ROLES = {ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_EJECUTIVO}
+ROLE_BOSCH = "bosch"
+ALLOWED_ROLES = {ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_EJECUTIVO, ROLE_BOSCH}
 
 STATUS_UPLOADED = "subido"
 STATUS_ASSIGNED = "asignado"
@@ -545,6 +546,9 @@ def index():
         return redirect(url_for("solicitudes"))
     elif role == ROLE_EJECUTIVO:
         return redirect(url_for("ejecutivo_panel"))
+    elif role == ROLE_BOSCH:
+        # ROLE_BOSCH: mostrar index normal
+        pass
     
     # ROLE_CLIENTE: mostrar index normal
     return render_template("index.html", username=session.get("username"))
@@ -559,6 +563,8 @@ def welcome():
         return redirect(url_for("solicitudes"))
     if role == ROLE_EJECUTIVO:
         return redirect(url_for("ejecutivo_panel"))
+    if role == ROLE_BOSCH:
+        return redirect(url_for("index"))
 
     return render_template("welcome.html", username=session.get("username"))
 
@@ -832,7 +838,7 @@ def api_solicitudes():
     tipo_map = {
         "consultoria": "Consultoria",
         "constancia": "Constancia",
-        "diseno": "Diseno"
+        "diseno": "Diseño"
     }
     modalidad_map = {"urgente": "URGENTE", "regular": "REGULAR"}
 
@@ -1749,7 +1755,7 @@ def view_image():
     # Obtener nombre del cliente
     client_username = assignment.get("client")
     client_info = get_client(client_username)
-    client_name = client_info.get("name") if client_info else client_username
+    client_name = client_info.get("name") if (client_info and client_info.get("name")) else client_username
     
     # Obtener fecha de carga
     upload_date = assignment.get("uploaded_at")

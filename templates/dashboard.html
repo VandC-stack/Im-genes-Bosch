@@ -293,7 +293,7 @@
 
         .search-input {
             margin-left: auto;
-            padding: 7px 14px 7px 36px;
+            padding: 7px 40px 7px 36px;
             border-radius: 999px;
             border: 1.5px solid var(--border);
             background: var(--surface) url('/static/lupa.svg') no-repeat 12px center;
@@ -301,13 +301,48 @@
             font-family: inherit;
             font-size: 13px;
             color: var(--text);
-            width: 220px;
-            transition: border-color 0.2s;
+            width: 250px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .search-input:focus {
             outline: none;
             border-color: #999;
+            box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .clear-search:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .clear-search.show {
+            display: flex;
         }
 
         /* ── TABLE WRAPPER ── */
@@ -389,7 +424,7 @@
         }
 
         .folio-link {
-            color: var(--yellow-dark);
+            color: var(--dark);
             text-decoration: none;
             cursor: pointer;
             transition: color 0.2s;
@@ -397,7 +432,7 @@
         }
 
         .folio-link:hover {
-            color: var(--yellow);
+            color: var(--yellow-dark);
             border-bottom: 1px solid var(--yellow-dark);
         }
 
@@ -777,6 +812,11 @@
                 font-size: 22px;
             }
 
+            .search-wrapper {
+                width: 100%;
+                margin-left: 0;
+            }
+
             .search-input {
                 width: 100%;
                 margin-left: 0;
@@ -839,8 +879,12 @@
                 onclick="setFilter(this,'PENDIENTE')">Pendientes</button>
             <button class="filter-chip" data-filter="EN REVISIÓN" onclick="setFilter(this,'EN REVISIÓN')">En
                 revisión</button>
-            <input class="search-input" id="searchInput" type="search" placeholder="Buscar folio o proyecto…"
-                oninput="search()">
+            <div class="search-wrapper">
+                <input class="search-input" id="searchInput" type="search" placeholder="Buscar folio, proyecto, tipo..."
+                    autocomplete="off" oninput="handleSearchInput()">
+                <button class="clear-search" id="clearSearch" onclick="clearSearch()"
+                    title="Limpiar búsqueda">×</button>
+            </div>
         </div>
 
         <!-- Table -->
@@ -988,6 +1032,38 @@
         /* =====================
            SEARCH
            ===================== */
+        function highlightText(text, query) {
+            if (!query || !text) return text;
+
+            const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark style="background:#ffeb3b; padding:2px 4px; border-radius:3px; font-weight:500;">$1</mark>');
+        }
+
+        function handleSearchInput() {
+            const searchInput = document.getElementById("searchInput");
+            const clearBtn = document.getElementById("clearSearch");
+
+            // Mostrar/ocultar botón de limpiar
+            if (searchInput.value.trim()) {
+                clearBtn.classList.add("show");
+            } else {
+                clearBtn.classList.remove("show");
+            }
+
+            // Ejecutar búsqueda
+            search();
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById("searchInput");
+            const clearBtn = document.getElementById("clearSearch");
+
+            searchInput.value = "";
+            clearBtn.classList.remove("show");
+            searchInput.focus();
+            search();
+        }
+
         function search() {
             currentPage = 1; // Reset a primera página al buscar
             renderTable();
@@ -1009,14 +1085,23 @@
            RENDER TABLE
            ===================== */
         function renderTable() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
+            const searchInput = document.getElementById("searchInput");
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
             let data = solicitudes.filter(s => {
                 const matchFilter = currentFilter === "all" || s.estatus === currentFilter;
-                const matchSearch = !query ||
-                    s.folio.toLowerCase().includes(query) ||
-                    s.proyecto.toLowerCase().includes(query) ||
-                    s.tipo.toLowerCase().includes(query);
+
+                // Si no hay query, mostrar todo (según el filtro)
+                if (!query) return matchFilter;
+
+                // Búsqueda en múltiples campos
+                const matchSearch =
+                    (s.folio && s.folio.toLowerCase().includes(query)) ||
+                    (s.proyecto && s.proyecto.toLowerCase().includes(query)) ||
+                    (s.tipo && s.tipo.toLowerCase().includes(query)) ||
+                    (s.modalidad && s.modalidad.toLowerCase().includes(query)) ||
+                    (s.estatus && s.estatus.toLowerCase().includes(query));
+
                 return matchFilter && matchSearch;
             });
 
@@ -1029,7 +1114,12 @@
             const tbody = document.getElementById("tableBody");
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No se encontraron solicitudes.</td></tr>`;
+                const searchInput = document.getElementById("searchInput");
+                const query = searchInput ? searchInput.value.trim() : "";
+                const mensaje = query
+                    ? `No se encontraron resultados para "${query}"`
+                    : "No se encontraron solicitudes.";
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="8">${mensaje}</td></tr>`;
                 document.getElementById("footerCount").textContent = "0 solicitudes";
                 document.getElementById("pagination").innerHTML = "";
                 return;
@@ -1045,10 +1135,10 @@
             tbody.innerHTML = pageData.map((s, i) => `
             <tr>
                 <td class="td-date">${formatDate(s.fecha)}</td>
-                <td class="td-folio"><a href="/gallery?folio=${encodeURIComponent(s.folio)}" class="folio-link">${s.folio}</a></td>
-                <td style="font-size:12px;">${s.tipo}</td>
-                <td><span style="font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 8px;">${s.modalidad}</span></td>
-                <td class="td-proyecto">${s.proyecto}</td>
+                <td class="td-folio"><a href="/gallery?folio=${encodeURIComponent(s.folio)}" class="folio-link">${highlightText(s.folio, query)}</a></td>
+                <td style="font-size:12px;">${highlightText(s.tipo, query)}</td>
+                <td><span style="font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 8px;">${highlightText(s.modalidad, query)}</span></td>
+                <td class="td-proyecto">${highlightText(s.proyecto, query)}</td>
                 <td>${statusBadge(s.estatus)}</td>
                 <td>${cicloHtml(s)}</td>
                 <td>

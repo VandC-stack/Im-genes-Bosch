@@ -730,7 +730,8 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="/gallery" class="btn btn-ghost">← Volver a Mis Archivos</a>
+                <a href="/gallery{% if folio %}?folio={{ folio }}{% endif %}" class="btn btn-ghost">← Volver a Mis
+                    Archivos</a>
             </div>
         </div>
     </div>
@@ -786,7 +787,9 @@
                     </div>
 
                     <div class="image-actions">
-                        <a href="{{ image_url }}" target="_blank" class="btn btn-ghost">👁️ Ver original</a>
+                        <a href="{{ image_url }}" target="_blank" class="btn btn-ghost"><img src="/static/eye.svg"
+                                alt="ver" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                            Ver original</a>
                         <a href="{{ image_url }}" download="{{ filename }}" class="btn btn-primary"><img
                                 src="/static/download.svg" alt="descargar"
                                 style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
@@ -909,80 +912,6 @@
                         </div>
                     </div>
                     {% endif %}
-                </div>
-
-                <!-- Assignment Details -->
-                <div class="sidebar-card">
-                    <div class="sidebar-title">
-                        <div class="sidebar-icon"><img src="/static/detalles.svg" alt="detalles"
-                                style="width: 20px; height: 20px;"></div>
-                        Detalles de Asignación
-                    </div>
-                    <div class="assignment-grid">
-                        <div class="assignment-item">
-                            <div class="assignment-label"><img src="/static/icon-user.svg" alt="ejecutivo"
-                                    class="inline-icon"> Ejecutivo</div>
-                            <div class="assignment-value">{{ assigned_to }}</div>
-                        </div>
-                        <div class="assignment-item">
-                            <div class="assignment-label">Asignado por</div>
-                            <div class="assignment-value">{{ assigned_by }}</div>
-                        </div>
-                        <div class="assignment-item">
-                            <div class="assignment-label">Fecha de asignación</div>
-                            <div class="assignment-value">
-                                {{ assigned_at[:10] if assigned_at else 'No disponible' }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="status-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-label">Subido</div>
-                                <div class="timeline-value">Archivo cargado en el sistema</div>
-                            </div>
-                        </div>
-                        {% if assigned_to %}
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-label">Asignado</div>
-                                <div class="timeline-value">Asignado a {{ assigned_to }}</div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if status in ['en_revision', 'aceptado', 'rechazado'] %}
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-label">En revisión</div>
-                                <div class="timeline-value">El ejecutivo está revisando la solicitud</div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if status in ['aceptado', 'rechazado'] %}
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-label">
-                                    {% if status == 'aceptado' %}
-                                    ✓ Aprobado
-                                    {% elif status == 'rechazado' %}
-                                    ✗ Revisado
-                                    {% endif %}
-                                </div>
-                                <div class="timeline-value">
-                                    {% if status == 'aceptado' %}
-                                    Imagen aprobada exitosamente
-                                    {% elif status == 'rechazado' %}
-                                    Imagen requiere correcciones
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
                 </div>
 
                 <!-- Comments -->

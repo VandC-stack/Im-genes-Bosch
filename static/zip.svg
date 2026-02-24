@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
+
+  <!-- File -->
+  <path d="M6 2h9l5 5v15H6z" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Fold -->
+  <path d="M15 2v5h5" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Zipper teeth -->
+  <path d="M12 6v1.5M12 9v1.5M12 12v1.5" stroke="#282828" stroke-width="2" stroke-linecap="round"></path>
+
+  <!-- Zipper slider -->
+  <rect x="11" y="15" width="2" height="2" stroke="#282828" stroke-width="2"></rect>
+
+</svg>

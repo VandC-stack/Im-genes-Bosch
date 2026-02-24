@@ -416,7 +416,8 @@
                 </div>
             </div>
             <div class="top-actions">
-                <button class="btn btn-primary" onclick="app.saveImage()">💾 Guardar</button>
+                <button class="btn btn-primary" onclick="app.saveImage()"><img src="/static/save.svg" alt=""
+                        style="width:16px;height:16px;vertical-align:middle;"> Guardar</button>
                 <button class="btn" onclick="app.goBack()">← Volver</button>
             </div>
         </div>
@@ -450,13 +451,15 @@
 
                 <!-- Comments Section -->
                 <div class="sidebar-section">
-                    <div class="sidebar-title">💬 Comentarios</div>
+                    <div class="sidebar-title"><img src="/static/texto.svg" alt=""
+                            style="width:16px;height:16px;vertical-align:middle;"> Comentarios</div>
                     <div id="commentsContainer"></div>
                     <div class="comment-input-wrapper">
                         <textarea id="commentInput" placeholder="Escribe un comentario..."></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="app.addComment()" style="width: 100%; margin-top: 10px;">
-                        📤 Agregar comentario
+                        <img src="/static/upload.svg" alt="" style="width:16px;height:16px;vertical-align:middle;">
+                        Agregar comentario
                     </button>
                 </div>
             </div>
