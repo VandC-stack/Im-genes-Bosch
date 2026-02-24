@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+  <!-- Back of folder -->
+  <path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v3" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Front flap (open) -->
+  <path d="M3 11h18l-2 8H5l-2-8z" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+</svg>

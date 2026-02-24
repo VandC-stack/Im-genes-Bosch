@@ -869,7 +869,7 @@
     <!-- TOPBAR -->
     <nav class="topbar">
         <div class="topbar-brand">
-            <div class="brand-dot">📁</div>
+            <div class="brand-dot"><img src="/static/folder.svg" style="width:18px;height:18px;"></div>
             <span class="brand-name">FileVault</span>
         </div>
         <div class="topbar-right">
@@ -893,7 +893,8 @@
             <!-- Tabs -->
             <div class="mode-tabs">
                 <button class="mode-tab active" id="tabUpload" onclick="setMode('upload')">⬆ Subir archivos</button>
-                <button class="mode-tab" id="tabCollage" onclick="setMode('collage')">🖼 Crear collage</button>
+                <button class="mode-tab" id="tabCollage" onclick="setMode('collage')"><img src="/static/foto.svg"
+                        style="width:14px;height:14px;vertical-align:middle;"> Crear collage</button>
             </div>
 
             <!-- ─── UPLOAD MODE ─── -->
@@ -907,8 +908,10 @@
                 <input type="file" id="fileInput" style="display:none" multiple
                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
                 <div class="btn-group" style="margin-top:14px;">
-                    <button class="btn btn-outline" onclick="openGallery()">🖼 Elegir archivo</button>
-                    <button class="btn btn-outline" onclick="openCamera()">📷 Tomar foto</button>
+                    <button class="btn btn-outline" onclick="openGallery()"><img src="/static/foto.svg"
+                            style="width:14px;height:14px;vertical-align:middle;"> Elegir archivo</button>
+                    <button class="btn btn-outline" onclick="openCamera()"><img src="/static/camera.svg"
+                            style="width:14px;height:14px;vertical-align:middle;"> Tomar foto</button>
                 </div>
             </div>
 
@@ -922,8 +925,10 @@
                         <span class="camera-strip-empty" id="stripHint">Toma fotos o elige de galería</span>
                     </div>
                     <div class="btn-group" style="margin-top:10px;">
-                        <button class="btn btn-outline" onclick="collageGallery()">🖼 Galería</button>
-                        <button class="btn btn-outline" onclick="collageCamara()">📷 Cámara</button>
+                        <button class="btn btn-outline" onclick="collageGallery()"><img src="/static/foto.svg"
+                                style="width:14px;height:14px;vertical-align:middle;"> Galería</button>
+                        <button class="btn btn-outline" onclick="collageCamara()"><img src="/static/camera.svg"
+                                style="width:14px;height:14px;vertical-align:middle;"> Cámara</button>
                     </div>
                     <input type="file" id="collageInput" style="display:none" multiple accept="image/*">
                     <input type="file" id="collageCamInput" style="display:none" accept="image/*" capture="environment">
@@ -941,7 +946,8 @@
                     <div class="collage-preview-wrap">
                         <canvas id="collageCanvas"></canvas>
                         <div class="collage-hint" id="collageHint">
-                            <span class="collage-hint-icon">🖼</span>
+                            <span class="collage-hint-icon"><img src="/static/foto.svg"
+                                    style="width:30px;height:30px;"></span>
                             <span>Agrega fotos y elige un layout</span>
                         </div>
                     </div>
@@ -958,8 +964,11 @@
 
             <!-- Links -->
             <div class="quick-links">
-                <a href="/gallery" class="quick-link"><span>🗂 Ver galería</span><span class="arrow">›</span></a>
-                <a href="/solicitudes" class="quick-link" id="btnSolicitudes" style="display:none;"><span>📋 Ver
+                <a href="/gallery" class="quick-link"><span><img src="/static/organizacion.svg"
+                            style="width:14px;height:14px;vertical-align:middle;"> Ver galería</span><span
+                        class="arrow">›</span></a>
+                <a href="/solicitudes" class="quick-link" id="btnSolicitudes" style="display:none;"><span><img
+                            src="/static/captura.svg" style="width:14px;height:14px;vertical-align:middle;"> Ver
                         solicitudes</span><span class="arrow">›</span></a>
             </div>
         </div>
@@ -972,7 +981,7 @@
             </div>
 
             <div class="empty-state" id="emptyState">
-                <div class="empty-icon">📂</div>
+                <div class="empty-icon"><img src="/static/open_folder.svg" style="width:34px;height:34px;"></div>
                 Aún no hay archivos seleccionados.<br>
                 Selecciona, arrastra o crea un collage.
             </div>
@@ -1013,8 +1022,10 @@
             .catch(() => { });
 
         const uname = document.getElementById("usernameDisplay").textContent.trim();
+        {% raw %}
         if (uname && !uname.includes("{{"))
             document.getElementById("avatarInitial").textContent = uname[0].toUpperCase();
+        {% endraw %}
 
         /* ═══════════════════════
            MODE SWITCHER
