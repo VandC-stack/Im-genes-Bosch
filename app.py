@@ -1079,6 +1079,361 @@ def api_solicitudes():
     return jsonify({"solicitudes": solicitudes})
 
 
+@app.route("/api/solicitud/<folio>", methods=["GET"])
+@login_required
+@role_required(ROLE_CLIENTE)
+def get_solicitud(folio):
+    """Obtener detalles completos de una solicitud"""
+    username = session.get("username")
+    requests_data = load_service_requests()
+    
+    # Buscar la solicitud
+    solicitud = next((r for r in requests_data if r.get("folio") == folio and r.get("client") == username), None)
+    
+    if not solicitud:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+    
+    # Obtener ciclo desde assignments
+    assignments = load_assignments()
+    linked = [a for a in assignments if a.get("folio") == folio]
+    ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
+    ciclo_actual = max(ciclos) if ciclos else 1
+
+    files = []
+    for entry in solicitud.get("files", []):
+        if not isinstance(entry, dict):
+            continue
+        file_path = entry.get("file_path")
+        filename = entry.get("filename") or (os.path.basename(file_path) if file_path else "")
+        original_name = entry.get("original_name")
+        if file_path:
+            url = url_for("serve_file_by_path", file_path=file_path)
+        else:
+            url = url_for("serve_file", filename=filename) if filename else ""
+        files.append({
+            "filename": filename,
+            "original_name": original_name,
+            "file_path": file_path,
+            "url": url,
+            "is_image": is_image_extension(filename) if filename else False
+        })
+    
+    return jsonify({
+        "folio": folio,
+        "tipo_servicio": solicitud.get("tipo_servicio", ""),
+        "nombre_proyecto": solicitud.get("nombre_proyecto", ""),
+        "norma": solicitud.get("norma", ""),
+        "num_skus": solicitud.get("num_skus", ""),
+        "medidas": solicitud.get("medidas", ""),
+        "prioridad": solicitud.get("prioridad", ""),
+        "importador": solicitud.get("importador", ""),
+        "marca": solicitud.get("marca", ""),
+        "pais_origen": solicitud.get("pais_origen", ""),
+        "contenido": solicitud.get("contenido", ""),
+        "ciclo_actual": ciclo_actual,
+        "historial": solicitud.get("historial", []),
+        "created_at": solicitud.get("created_at"),
+        "files": files
+    })
+
+
+@app.route("/api/solicitud/<folio>/edit", methods=["POST"])
+@login_required
+@role_required(ROLE_CLIENTE)
+def edit_solicitud(folio):
+    """Editar una solicitud y guardar en el historial"""
+    username = session.get("username")
+    requests_data = load_service_requests()
+    
+    # Buscar la solicitud
+    req_index = None
+    solicitud = None
+    for i, r in enumerate(requests_data):
+        if r.get("folio") == folio and r.get("client") == username:
+            req_index = i
+            solicitud = r
+            break
+    
+    if solicitud is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+    
+    # Obtener datos de la edición
+    tipo_servicio = request.form.get("tipo_servicio", "").strip()
+    nombre_proyecto = request.form.get("nombre_proyecto", "").strip()
+    norma = request.form.get("norma", "").strip()
+    num_skus = request.form.get("num_skus", "").strip()
+    medidas = request.form.get("medidas", "").strip()
+    prioridad = request.form.get("prioridad", "").strip()
+    importador = request.form.get("importador", "").strip()
+    marca = request.form.get("marca", "").strip()
+    pais_origen = request.form.get("pais_origen", "").strip()
+    contenido = request.form.get("contenido", "").strip()
+    comentario_edicion = request.form.get("comentario_edicion", "").strip()
+    
+    if not comentario_edicion:
+        return jsonify({"error": "Debe proporcionar un comentario de la edición"}), 400
+
+    assignments = load_assignments()
+    files_list = solicitud.setdefault("files", [])
+    upload_folder = get_upload_folder(username)
+
+    imagenes_reemplazadas = []
+    for key in request.files:
+        if not key.startswith("replace_file_"):
+            continue
+        replacement = request.files.get(key)
+        if not replacement or not replacement.filename:
+            continue
+
+        idx = key.split("_")[-1]
+        target_path = request.form.get(f"replace_target_{idx}", "").strip()
+        if not target_path:
+            continue
+
+        target_entry = next((f for f in files_list if f.get("file_path") == target_path), None)
+        if not target_entry:
+            return jsonify({"error": "Imagen a reemplazar no encontrada"}), 400
+
+        target_filename = target_entry.get("filename") or os.path.basename(target_path)
+        if not target_filename or not is_image_extension(target_filename):
+            return jsonify({"error": "Solo se pueden reemplazar imágenes"}), 400
+
+        if not is_image_extension(replacement.filename):
+            return jsonify({"error": "La imagen de reemplazo debe ser una imagen válida"}), 400
+
+        target_ext = target_filename.rsplit(".", 1)[1].lower() if "." in target_filename else ""
+        replace_ext = replacement.filename.rsplit(".", 1)[1].lower() if "." in replacement.filename else ""
+        if target_ext and replace_ext and target_ext != replace_ext:
+            return jsonify({"error": "La imagen de reemplazo debe conservar la extensión original"}), 400
+
+        if not os.path.exists(target_path):
+            return jsonify({"error": "Archivo original no encontrado"}), 400
+
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+        replacement.save(target_path)
+
+        imagenes_reemplazadas.append({
+            "file_path": target_path,
+            "filename": target_filename,
+            "anterior": target_entry.get("original_name"),
+            "nuevo": replacement.filename
+        })
+        target_entry["original_name"] = replacement.filename
+
+    imagenes_agregadas = []
+    history_entries = []
+    new_files = request.files.getlist("file")
+    for file in new_files:
+        if not file or not file.filename:
+            continue
+        if not is_allowed_extension(file.filename):
+            continue
+
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        base_raw = os.path.splitext(file.filename)[0]
+        base_name = sanitize_filename(base_raw)
+        if not base_name:
+            base_name = datetime.now().strftime("IMG_%Y%m%d_%H%M%S_%f")
+
+        filename = f"{base_name}.{ext}"
+        file_path = os.path.join(upload_folder, filename)
+        counter = 1
+        while os.path.exists(file_path):
+            filename = f"{base_name}_{counter}.{ext}"
+            file_path = os.path.join(upload_folder, filename)
+            counter += 1
+
+        file.save(file_path)
+
+        files_list.append({
+            "filename": filename,
+            "original_name": file.filename,
+            "file_path": file_path
+        })
+
+        imagenes_agregadas.append({
+            "file_path": file_path,
+            "filename": filename,
+            "original_name": file.filename
+        })
+
+        history_entries.append({
+            "filename": filename,
+            "original_name": file.filename,
+            "folder": upload_folder,
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+            "url": url_for("serve_file", filename=filename),
+            "username": username
+        })
+
+        assignments.append({
+            "filename": filename,
+            "file_path": file_path,
+            "client": username,
+            "folder": upload_folder,
+            "assigned_to": None,
+            "assigned_by": None,
+            "assigned_at": None,
+            "status": STATUS_UPLOADED,
+            "folio": folio,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Detectar cambios
+    cambios = {}
+    if tipo_servicio and tipo_servicio != solicitud.get("tipo_servicio"):
+        cambios["tipo_servicio"] = {"viejo": solicitud.get("tipo_servicio"), "nuevo": tipo_servicio}
+    if nombre_proyecto and nombre_proyecto != solicitud.get("nombre_proyecto"):
+        cambios["nombre_proyecto"] = {"viejo": solicitud.get("nombre_proyecto"), "nuevo": nombre_proyecto}
+    if norma and norma != solicitud.get("norma"):
+        cambios["norma"] = {"viejo": solicitud.get("norma"), "nuevo": norma}
+    if num_skus and num_skus != solicitud.get("num_skus"):
+        cambios["num_skus"] = {"viejo": solicitud.get("num_skus"), "nuevo": num_skus}
+    if medidas and medidas != solicitud.get("medidas"):
+        cambios["medidas"] = {"viejo": solicitud.get("medidas"), "nuevo": medidas}
+    if prioridad and prioridad != solicitud.get("prioridad"):
+        cambios["prioridad"] = {"viejo": solicitud.get("prioridad"), "nuevo": prioridad}
+    if importador and importador != solicitud.get("importador"):
+        cambios["importador"] = {"viejo": solicitud.get("importador"), "nuevo": importador}
+    if marca and marca != solicitud.get("marca"):
+        cambios["marca"] = {"viejo": solicitud.get("marca"), "nuevo": marca}
+    if pais_origen and pais_origen != solicitud.get("pais_origen"):
+        cambios["pais_origen"] = {"viejo": solicitud.get("pais_origen"), "nuevo": pais_origen}
+    if contenido and contenido != solicitud.get("contenido"):
+        cambios["contenido"] = {"viejo": solicitud.get("contenido"), "nuevo": contenido}
+    
+    if not cambios and not imagenes_reemplazadas and not imagenes_agregadas:
+        return jsonify({"error": "No hay cambios que guardar"}), 400
+    
+    # Actualizar solicitud
+    if tipo_servicio:
+        solicitud["tipo_servicio"] = tipo_servicio
+    if nombre_proyecto:
+        solicitud["nombre_proyecto"] = nombre_proyecto
+    if norma:
+        solicitud["norma"] = norma
+    if num_skus:
+        solicitud["num_skus"] = num_skus
+    if medidas:
+        solicitud["medidas"] = medidas
+    if prioridad:
+        solicitud["prioridad"] = prioridad
+    if importador:
+        solicitud["importador"] = importador
+    if marca:
+        solicitud["marca"] = marca
+    if pais_origen:
+        solicitud["pais_origen"] = pais_origen
+    if contenido:
+        solicitud["contenido"] = contenido
+    
+    # Agregar al historial
+    historial = solicitud.setdefault("historial", [])
+    historial.append({
+        "tipo": "edicion_cliente",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "usuario": username,
+        "comentario": comentario_edicion,
+        "cambios": cambios,
+        "imagenes_reemplazadas": imagenes_reemplazadas,
+        "imagenes_agregadas": imagenes_agregadas
+    })
+    
+    # Incrementar ciclo en los assignments vinculados
+    for assignment in assignments:
+        if assignment.get("folio") == folio:
+            ciclo_actual = assignment.get("ciclo_actual", 1)
+            assignment["ciclo_actual"] = ciclo_actual + 1
+            assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
+            assignment["last_edited_by"] = username
+    
+    # Guardar cambios
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+    if history_entries:
+        append_history(history_entries)
+    save_assignments(assignments)
+    
+    return jsonify({
+        "status": "ok",
+        "message": "Solicitud actualizada correctamente",
+        "ciclo_nuevo": max([a.get("ciclo_actual", 1) for a in assignments if a.get("folio") == folio] or [1])
+    })
+
+
+@app.route("/api/solicitud/<folio>/historial", methods=["GET"])
+@login_required
+def get_solicitud_historial(folio):
+    """Obtener el historial completo de una solicitud"""
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    requests_data = load_service_requests()
+    
+    # Buscar la solicitud
+    solicitud = None
+    for r in requests_data:
+        if r.get("folio") == folio:
+            # Verificar permiso: cliente solo ve su propia, ejecutivo ve la del cliente
+            if role == ROLE_CLIENTE and r.get("client") != username:
+                return jsonify({"error": "No autorizado"}), 403
+            solicitud = r
+            break
+    
+    if solicitud is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+    
+    historial = solicitud.get("historial", [])
+    return jsonify({"historial": historial})
+
+
+@app.route("/api/assignment/<file_path>/action", methods=["POST"])
+@login_required
+def add_assignment_action(file_path):
+    """Agregar una acción al historial (solo ejecutivo)"""
+    role = normalize_role(session.get("role"))
+    if role not in {ROLE_EJECUTIVO, ROLE_SUPERVISOR}:
+        return jsonify({"error": "No autorizado"}), 403
+    
+    action_type = request.json.get("action_type")  # "cambio_estado", "comentario", etc.
+    comentario = request.json.get("comentario", "")
+    nuevo_estado = request.json.get("nuevo_estado")
+    
+    assignments = load_assignments()
+    assignment = None
+    for a in assignments:
+        if a.get("file_path") == file_path:
+            assignment = a
+            break
+    
+    if not assignment:
+        return jsonify({"error": "Assignment no encontrado"}), 404
+    
+    # Crear entrada de historial
+    historial = assignment.setdefault("historial_acciones", [])
+    entrada = {
+        "tipo": action_type,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "usuario": session.get("username"),
+        "comentario": comentario
+    }
+    
+    # Si es cambio de estado, incrementar ciclo
+    if action_type == "cambio_estado" and nuevo_estado:
+        entrada["nuevo_estado"] = nuevo_estado
+        assignment["status"] = nuevo_estado
+        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
+        assignment["status_updated_by"] = session.get("username")
+        
+        # Incrementar ciclo
+        ciclo_actual = assignment.get("ciclo_actual", 1)
+        assignment["ciclo_actual"] = ciclo_actual + 1
+    
+    historial.append(entrada)
+    save_assignments(assignments)
+    
+    return jsonify({"status": "ok", "ciclo_nuevo": assignment.get("ciclo_actual", 1)})
+
+
 @app.route("/api/user-role")
 @login_required
 def get_user_role():

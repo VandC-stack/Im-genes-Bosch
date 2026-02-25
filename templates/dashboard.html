@@ -291,6 +291,37 @@
             border-color: var(--dark);
         }
 
+        .filter-separator {
+            color: var(--border);
+            font-size: 18px;
+            margin: 0 8px;
+            font-weight: 300;
+        }
+
+        .edit-mode-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            background: #484848;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .edit-mode-btn:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+
+        .edit-mode-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
         .search-input {
             margin-left: auto;
             padding: 7px 40px 7px 36px;
@@ -561,6 +592,36 @@
             background: var(--yellow-dark);
         }
 
+        /* ── EDIT MODE ── */
+        .edit-mode {
+            --highlight-bg: #f3e8ff;
+        }
+
+        .edit-mode .solicitud-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .edit-mode .solicitud-row:hover {
+            background-color: #f3e8ff;
+        }
+
+        .solicitud-row.selected {
+            background-color: #e9d5ff;
+            font-weight: 500;
+        }
+
+        .edit-mode .action-btns {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .edit-mode .solicitud-row:hover .action-btns {
+            visibility: visible;
+            opacity: 1;
+        }
+
         /* ── TABLE FOOTER ── */
         .table-footer {
             display: flex;
@@ -648,7 +709,8 @@
             max-width: 520px;
             width: 100%;
             max-height: 85vh;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             animation: modalIn 0.2s ease;
         }
@@ -809,6 +871,241 @@
             opacity: 1;
         }
 
+        /* ── FORM STYLES ── */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            background: var(--surface);
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--yellow);
+            box-shadow: 0 0 0 3px var(--yellow-light);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+        /* ── EDIT MODAL FORM ── */
+        #editForm {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #editModalBody {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        #editModalBody::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #editModalBody::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #editModalBody::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #editModalBody::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ── IMAGES SECTION ── */
+        .images-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .image-thumbnail {
+            position: relative;
+            aspect-ratio: 1;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .image-thumbnail:hover {
+            border-color: var(--yellow);
+            box-shadow: 0 0 0 3px var(--yellow-light);
+        }
+
+        .image-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .image-thumbnail:hover .image-remove-btn {
+            display: flex;
+        }
+
+        .image-replace-btn {
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            background: var(--dark);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .image-replace-btn:hover {
+            background: var(--yellow);
+            color: var(--dark);
+        }
+
+        .image-replace-input {
+            display: none;
+        }
+
+        .image-replace-pending {
+            border-color: var(--yellow);
+            box-shadow: 0 0 0 3px var(--yellow-light);
+        }
+
+        /* ── HISTORIAL STYLES ── */
+        .historial-item {
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            background: var(--surface2);
+            position: relative;
+            margin-left: -32px;
+            padding-left: 32px;
+        }
+
+        .historial-item::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--yellow);
+            border: 2px solid var(--surface);
+        }
+
+        .historial-item.ejecutivo {
+            background: #dbeafe;
+        }
+
+        .historial-item.ejecutivo::before {
+            background: #0284c7;
+        }
+
+        .historial-item.cliente {
+            background: #f3e8ff;
+        }
+
+        .historial-item.cliente::before {
+            background: #9333ea;
+        }
+
+        .historial-tipo {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .historial-tiempo {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .historial-comentario {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .historial-cambios {
+            margin-top: 8px;
+            font-size: 12px;
+            border-left: 2px solid var(--yellow);
+            padding-left: 8px;
+            color: var(--text-muted);
+        }
+
+        .historial-cambio {
+            margin: 4px 0;
+        }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 700px) {
             .topbar {
@@ -880,6 +1177,10 @@
 
         <!-- Filters + Search -->
         <div class="filters">
+            <button class="edit-mode-btn" onclick="activateEditMode()" title="Editar solicitud">
+                <img src="/static/icon-edit.svg" alt="Editar">
+            </button>
+            <span class="filter-separator">|</span>
             <span class="filter-label">Filtrar:</span>
             <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">Todos</button>
             <button class="filter-chip" data-filter="FINALIZADO"
@@ -895,6 +1196,17 @@
                     autocomplete="off" oninput="handleSearchInput()">
                 <button class="clear-search" id="clearSearch" onclick="clearSearch()"
                     title="Limpiar búsqueda">×</button>
+            </div>
+        </div>
+
+        <!-- Edit Section -->
+        <div class="edit-section" id="editSection"
+            style="display: none; margin-top: 16px; padding: 12px 16px; background: #f3e8ff; border-radius: 8px; border: 1px solid #e0d2ff;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 13px; font-weight: 600; color: #6b21a8;">Modo edición activado</span>
+                <span style="font-size: 11px; color: #9333ea;">Selecciona una solicitud para editarla</span>
+                <button type="button" class="action-btn" onclick="cancelEditMode()"
+                    style="margin-left: auto;">Cancelar</button>
             </div>
         </div>
 
@@ -939,6 +1251,84 @@
                 <button class="modal-close" onclick="closeModalBtn()">×</button>
             </div>
             <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- MODAL EDICIÓN -->
+    <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Editar solicitud</span>
+                <button class="modal-close" onclick="closeEditModalBtn()">×</button>
+            </div>
+            <form id="editForm" onsubmit="submitEditForm(event)" enctype="multipart/form-data">
+                <div id="editModalBody"
+                    style="max-height: 70vh; overflow-y: auto; padding: 20px; gap: 15px; display: flex; flex-direction: column;">
+                    <div class="form-group">
+                        <label>Tipo de servicio</label>
+                        <input type="text" id="editTipoServicio" name="tipo_servicio">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del proyecto</label>
+                        <input type="text" id="editNombreProyecto" name="nombre_proyecto">
+                    </div>
+                    <div class="form-group">
+                        <label>Norma(s)</label>
+                        <input type="text" id="editNorma" name="norma">
+                    </div>
+                    <div class="form-group">
+                        <label>Número de SKU's</label>
+                        <input type="text" id="editNumSkus" name="num_skus">
+                    </div>
+                    <div class="form-group">
+                        <label>Medidas superficie</label>
+                        <input type="text" id="editMedidas" name="medidas">
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridad</label>
+                        <select id="editPrioridad" name="prioridad">
+                            <option value="">Seleccionar...</option>
+                            <option value="urgente">Urgente (24h)</option>
+                            <option value="regular">Regular (72h)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Importador</label>
+                        <input type="text" id="editImportador" name="importador">
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="editMarca" name="marca">
+                    </div>
+                    <div class="form-group">
+                        <label>País de origen</label>
+                        <input type="text" id="editPaisOrigen" name="pais_origen">
+                    </div>
+                    <div class="form-group">
+                        <label>Contenido</label>
+                        <textarea id="editContenido" name="contenido" rows="3"></textarea>
+                    </div>
+                    <div class="images-section">
+                        <label style="font-weight: 600;">Imágenes adjuntas</label>
+                        <div class="images-grid" id="previasImages"></div>
+                        <label style="font-weight: 600; margin-top: 12px; display: block;">Agregar imágenes</label>
+                        <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf"
+                            style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); margin-top: 6px;">
+                        <div class="images-grid" id="newImages" style="margin-top: 8px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: var(--danger); font-weight: 600;">Comentario de la edición *</label>
+                        <textarea id="editComentario" name="comentario_edicion"
+                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" required
+                            style="border-color: var(--danger);"></textarea>
+                    </div>
+                </div>
+                <div
+                    style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="action-btn" onclick="closeEditModalBtn()">Cancelar</button>
+                    <button type="submit" class="action-btn primary">Guardar cambios</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1144,9 +1534,9 @@
             const pageData = data.slice(startIdx, endIdx);
 
             tbody.innerHTML = pageData.map((s, i) => `
-            <tr>
+            <tr class="solicitud-row" data-folio="${s.folio}" onclick="handleRowClick('${s.folio}', event)">
                 <td class="td-date">${formatDate(s.fecha)}</td>
-                <td class="td-folio"><a href="/gallery?folio=${encodeURIComponent(s.folio)}" class="folio-link">${highlightText(s.folio, query)}</a></td>
+                <td class="td-folio"><a href="javascript:void(0)" onclick="openModal(${solicitudes.indexOf(s)}, event)" class="folio-link">${highlightText(s.folio, query)}</a></td>
                 <td style="font-size:12px;">${highlightText(s.tipo, query)}</td>
                 <td><span style="font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 8px;">${highlightText(s.modalidad, query)}</span></td>
                 <td class="td-proyecto">${highlightText(s.proyecto, query)}</td>
@@ -1154,7 +1544,7 @@
                 <td>${cicloHtml(s)}</td>
                 <td>
                     <div class="action-btns">
-                        <button class="action-btn primary" onclick="openModal(${solicitudes.indexOf(s)})">Ver detalle</button>
+                        <button class="action-btn primary" id="btn-${s.folio}" onclick="window.location.href='/gallery?folio=${encodeURIComponent(s.folio)}'">Ver detalle</button>
                         <button class="action-btn" onclick="descargar('${s.folio}')">⬇ Cert.</button>
                     </div>
                 </td>
@@ -1257,7 +1647,14 @@
         /* =====================
            MODAL
            ===================== */
-        function openModal(idx) {
+        function openModal(idx, event) {
+            // Si estamos en modo edición, no abrir modal de detalles
+            if (editModeActive && event) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+
             const s = solicitudes[idx];
             document.getElementById("modalTitle").textContent = s.folio;
             const extraFields = [
@@ -1342,6 +1739,231 @@
             document.getElementById("toast").classList.remove("show");
         }
 
+        /* =====================
+           EDIT MODAL
+           ===================== */
+        let currentEditFolio = null;
+
+        async function openEditModal(folio) {
+            currentEditFolio = folio;
+            try {
+                const response = await fetch(`/api/solicitud/${encodeURIComponent(folio)}`);
+                if (!response.ok) {
+                    showToast("error", "Error", "No se pudo cargar la solicitud");
+                    return;
+                }
+                const data = await response.json();
+
+                // Llenar formulario
+                document.getElementById("editTipoServicio").value = data.tipo_servicio || "";
+                document.getElementById("editNombreProyecto").value = data.nombre_proyecto || "";
+                document.getElementById("editNorma").value = data.norma || "";
+                document.getElementById("editNumSkus").value = data.num_skus || "";
+                document.getElementById("editMedidas").value = data.medidas || "";
+                document.getElementById("editPrioridad").value = data.prioridad || "";
+                document.getElementById("editImportador").value = data.importador || "";
+                document.getElementById("editMarca").value = data.marca || "";
+                document.getElementById("editPaisOrigen").value = data.pais_origen || "";
+                document.getElementById("editContenido").value = data.contenido || "";
+                document.getElementById("editComentario").value = "";
+
+                // Cargar imágenes previas
+                const previasContainer = document.getElementById("previasImages");
+                previasContainer.innerHTML = "";
+                const files = Array.isArray(data.files) ? data.files : [];
+
+                files.forEach((file, index) => {
+                    const thumb = document.createElement("div");
+                    thumb.className = "image-thumbnail";
+
+                    if (file.is_image && file.url) {
+                        thumb.style.backgroundImage = `url('${file.url}')`;
+                        thumb.style.backgroundSize = "cover";
+                        thumb.style.backgroundPosition = "center";
+                        thumb.textContent = "";
+                    } else {
+                        thumb.textContent = "📄";
+                    }
+
+                    if (file.is_image && file.file_path) {
+                        const replaceBtn = document.createElement("button");
+                        replaceBtn.type = "button";
+                        replaceBtn.className = "image-replace-btn";
+                        replaceBtn.textContent = "↻";
+                        replaceBtn.title = "Reemplazar imagen";
+
+                        const replaceInput = document.createElement("input");
+                        replaceInput.type = "file";
+                        replaceInput.accept = "image/*";
+                        replaceInput.name = `replace_file_${index}`;
+                        replaceInput.className = "image-replace-input";
+
+                        const targetInput = document.createElement("input");
+                        targetInput.type = "hidden";
+                        targetInput.name = `replace_target_${index}`;
+                        targetInput.value = file.file_path;
+
+                        replaceBtn.addEventListener("click", () => replaceInput.click());
+                        replaceInput.addEventListener("change", () => {
+                            const selected = replaceInput.files[0];
+                            if (!selected) return;
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                thumb.style.backgroundImage = `url('${event.target.result}')`;
+                                thumb.style.backgroundSize = "cover";
+                                thumb.style.backgroundPosition = "center";
+                                thumb.textContent = "";
+                                thumb.classList.add("image-replace-pending");
+                            };
+                            reader.readAsDataURL(selected);
+                        });
+
+                        thumb.appendChild(replaceBtn);
+                        thumb.appendChild(replaceInput);
+                        thumb.appendChild(targetInput);
+                    }
+
+                    previasContainer.appendChild(thumb);
+                });
+
+                // Limpiar input de nuevas imágenes
+                document.getElementById("editImageFiles").value = "";
+                document.getElementById("newImages").innerHTML = "";
+
+                document.getElementById("editModalOverlay").classList.add("open");
+                document.body.style.overflow = "hidden";
+            } catch (error) {
+                console.error("Error:", error);
+                showToast("error", "Error", "Ocurrió un error al cargar la solicitud");
+            }
+        }
+
+        function closeEditModal(e) {
+            if (e && e.target === document.getElementById("editModalOverlay")) closeEditModalBtn();
+        }
+
+        function closeEditModalBtn() {
+            document.getElementById("editModalOverlay").classList.remove("open");
+            document.body.style.overflow = "";
+            currentEditFolio = null;
+            // Limpiar
+            document.getElementById("editImageFiles").value = "";
+            document.getElementById("newImages").innerHTML = "";
+        }
+
+        // Manejador de imágenes nuevas
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.getElementById("editImageFiles");
+            if (fileInput) {
+                fileInput.addEventListener("change", function (e) {
+                    const newImagesContainer = document.getElementById("newImages");
+                    newImagesContainer.innerHTML = "";
+
+                    Array.from(this.files).forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const div = document.createElement("div");
+                            div.className = "image-thumbnail";
+                            div.style.backgroundImage = `url('${event.target.result}')`;
+                            div.style.backgroundSize = 'cover';
+                            div.style.backgroundPosition = 'center';
+                            div.innerHTML = `<button type="button" class="image-remove-btn" onclick="removeNewImage(this, ${index})">×</button>`;
+                            newImagesContainer.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+            }
+        });
+
+        function removeNewImage(btn, index) {
+            const fileInput = document.getElementById("editImageFiles");
+            const dt = new DataTransfer();
+
+            Array.from(fileInput.files).forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+
+            fileInput.files = dt.files;
+
+            // Re-mostrar
+            const event = new Event("change", { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+
+        /* =====================
+           EDIT MODE
+           ===================== */
+        let editModeActive = false;
+
+        function activateEditMode() {
+            editModeActive = true;
+            document.getElementById("mainTable").parentElement.classList.add("edit-mode");
+            document.getElementById("editSection").style.display = "block";
+        }
+
+        function cancelEditMode() {
+            editModeActive = false;
+            document.getElementById("mainTable").parentElement.classList.remove("edit-mode");
+            document.getElementById("editSection").style.display = "none";
+            // Remover selección de todas las filas
+            document.querySelectorAll(".solicitud-row.selected").forEach(row => {
+                row.classList.remove("selected");
+            });
+        }
+
+        function handleRowClick(folio, event) {
+            // Solo activar si estamos en modo edición y no es un click en un botón
+            if (!editModeActive) return;
+
+            // Si el click fue en un botón o link, no hacer nada
+            if (event.target.closest(".action-btn") || event.target.closest(".folio-link")) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            openEditModal(folio);
+            cancelEditMode();
+        }
+
+        async function submitEditForm(e) {
+            e.preventDefault();
+
+            if (!currentEditFolio) {
+                showToast("error", "Error", "Folio no válido");
+                return;
+            }
+
+            const formData = new FormData(document.getElementById("editForm"));
+
+            try {
+                const response = await fetch(`/api/solicitud/${encodeURIComponent(currentEditFolio)}/edit`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showToast("error", "Error", data.error || "No se pudieron guardar los cambios");
+                    return;
+                }
+
+                showToast("success", "Éxito", `Solicitud actualizada. Nuevo ciclo: ${data.ciclo_nuevo}`);
+                closeEditModalBtn();
+
+                // Recargar solicitudes
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                loadSolicitudes();
+            } catch (error) {
+                console.error("Error:", error);
+                showToast("error", "Error", "Ocurrió un error al guardar los cambios");
+            }
+        }
         /* =====================
            BOOT
            ===================== */
