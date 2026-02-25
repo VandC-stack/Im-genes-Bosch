@@ -270,6 +270,29 @@
             text-transform: uppercase;
         }
 
+        .pdf-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .doc-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .office-preview {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         .preview-tile.preview-more img {
             filter: blur(2px);
             transform: scale(1.05);
@@ -592,6 +615,7 @@
             color: var(--neutral-600);
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 
 <body>
@@ -679,8 +703,14 @@
                             class="preview-tile {% if not file.is_image %}document{% endif %} {% if is_more %}preview-more{% endif %}">
                             {% if file.is_image %}
                             <img src="{{ file.url }}" alt="{{ file.filename }}">
+                            {% elif file.ext.lower() == 'pdf' %}
+                            <canvas class="pdf-canvas" data-url="{{ file.url }}"></canvas>
+                            {% elif file.ext.lower() in ['docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt'] %}
+                            <iframe class="office-preview"
+                                src="https://view.officeapps.live.com/op/embed.aspx?src={{ file.url | urlencode }}"
+                                allowfullscreen></iframe>
                             {% else %}
-                            <div>{{ file.ext }}</div>
+                            <div class="doc-icon">{{ file.ext.upper() }}</div>
                             {% endif %}
                             {% if is_more %}
                             <div class="preview-overlay">+{{ group.total_files - 4 }}</div>
@@ -700,9 +730,10 @@
                     <div class="folio-actions">
                         <select class="select-tech" id="folio-tech-{{ group_index }}">
                             <option value="">-- Seleccionar ejecutivo --</option>
-                            {% for ejecutivo in ejecutivos %}
-                            <option value="{{ ejecutivo }}" {% if group.assigned_to==ejecutivo %}selected{% endif %}>
-                                {{ ejecutivo }}
+                            {% for ejecutivo in group.compatible_ejecutivos %}
+                            <option value="{{ ejecutivo.firma }}" {% if group.assigned_to==ejecutivo.firma %}selected{%
+                                endif %}>
+                                {{ ejecutivo.nombre }}
                             </option>
                             {% endfor %}
                         </select>
@@ -770,9 +801,45 @@
     </div>
 
     <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Render PDF previews
+        function renderPDFPreviews() {
+            const canvases = document.querySelectorAll('.pdf-canvas');
+            canvases.forEach(canvas => {
+                const url = canvas.dataset.url;
+                if (!url) return;
+
+                pdfjsLib.getDocument(url).promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const scale = 1.5;
+                        const viewport = page.getViewport({ scale });
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+
+                        const renderContext = {
+                            canvasContext: canvas.getContext('2d'),
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                    }).catch(() => {
+                        // Fallback si no se puede renderizar
+                        canvas.style.display = 'none';
+                    });
+                }).catch(() => {
+                    // Fallback si falla la carga
+                    canvas.style.display = 'none';
+                });
+            });
+        }
+
         function clearFilters() {
             window.location.href = '/solicitudes';
         }
+
+        // Render PDFs when page loads
+        document.addEventListener('DOMContentLoaded', renderPDFPreviews);
 
         async function assignFolio(button) {
             const folio = button.dataset.folio;

@@ -155,6 +155,53 @@ def verify_password(stored: str, provided: str) -> bool:
     return hmac.compare_digest(stored, provided)
 
 
+def parse_normas(normas_string: Optional[str]) -> set:
+    """Parse normas string (separated by ; or ,) into a set of normalized normas"""
+    if not normas_string:
+        return set()
+    normas = re.split(r'[;,]', str(normas_string))
+    return {n.strip().upper() for n in normas if n.strip()}
+
+
+def get_compatible_ejecutivos(folio_normas: Optional[str]) -> list:
+    """Get ejecutivos from Users.json whose normas are compatible with folio normas"""
+    users = load_users()
+    compatible = []
+    
+    # If no normas specified in folio, all ejecutivos are compatible
+    folio_normas_set = parse_normas(folio_normas)
+    if not folio_normas_set:
+        for user in users:
+            if user.get("PUESTO", "").lower() in ["ejecutivo", "supervisor"]:
+                compatible.append({
+                    "firma": user.get("FIRMA"),
+                    "nombre": user.get("NOMBRE"),
+                    "puesto": user.get("PUESTO"),
+                    "all_normas": parse_normas(user.get("NORMAS"))
+                })
+        return compatible
+    
+    # Filter to only ejecutivos that have all required normas
+    for user in users:
+        if user.get("PUESTO", "").lower() not in ["ejecutivo", "supervisor"]:
+            continue
+        
+        user_normas_set = parse_normas(user.get("NORMAS"))
+        
+        # Check if user has all the required normas from folio
+        if folio_normas_set.issubset(user_normas_set):
+            compatible.append({
+                "firma": user.get("FIRMA"),
+                "nombre": user.get("NOMBRE"),
+                "puesto": user.get("PUESTO"),
+                "all_normas": user_normas_set
+            })
+    
+    # Sort by nombre
+    compatible.sort(key=lambda x: x.get("nombre", ""))
+    return compatible
+
+
 def get_upload_folder(username: Optional[str] = None):
     config = load_config()
     folder = None
@@ -1397,6 +1444,8 @@ def solicitudes():
     for group in groups:
         group["files"] = sorted(group["files"], key=lambda x: x["modified"], reverse=True)
         group["total_files"] = len(group["files"])
+        # Add compatible ejecutivos for this folio
+        group["compatible_ejecutivos"] = get_compatible_ejecutivos(group.get("norma"))
 
     groups = sorted(groups, key=lambda x: x["latest_modified"], reverse=True)
 
@@ -1410,9 +1459,9 @@ def solicitudes():
     start_index = start + 1 if total_folios else 0
     end_index = min(end, total_folios)
     
-    # Obtener lista de ejecutivos
-    ejecutivos = [u for u, data in config.get("clients", {}).items() 
-                   if normalize_role(data.get("role")) == ROLE_EJECUTIVO]
+    # Obtener lista de ejecutivos de Users.json
+    all_ejecutivos = get_compatible_ejecutivos(None)  # Get all ejecutivos when no norma filter
+    ejecutivos = [e.get("firma") for e in all_ejecutivos]
     
     return render_template(
         "solicitudes.html",
