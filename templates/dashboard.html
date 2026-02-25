@@ -1633,8 +1633,12 @@
         function handleCicloClick(el) {
             const ciclo = el.dataset.ciclo || "1";
             const folio = decodeURIComponent(el.dataset.folio || "");
-            const detail = folio ? `Folio ${folio} — Ciclo ${ciclo}` : `Ciclo ${ciclo}`;
-            showToast("success", "Ciclo seleccionado", detail);
+            if (folio) {
+                // Redirigir a la vista de historial
+                window.location.href = `/historial/${encodeURIComponent(folio)}`;
+            } else {
+                showToast("error", "Error", "No se encontró el folio de la solicitud");
+            }
         }
 
         function formatDate(str) {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Solicitud — SEA</title>
+    <title>Historial de Solicitud — GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -66,6 +66,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .topbar-brand:hover {
+            opacity: 0.7;
         }
 
         .brand-dot {
@@ -77,6 +85,11 @@
             align-items: center;
             justify-content: center;
             font-size: 15px;
+        }
+
+        .brand-dot img {
+            width: 16px;
+            height: 16px;
         }
 
         .brand-name {
@@ -175,6 +188,26 @@
             font-weight: 600;
         }
 
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--dark);
+            background: var(--surface2);
+        }
+
         /* ── CARD ── */
         .card {
             background: var(--surface);
@@ -202,6 +235,15 @@
             justify-content: center;
             font-size: 17px;
             flex-shrink: 0;
+        }
+
+        .card-icon-dark {
+            background: var(--dark) !important;
+        }
+
+        .card-icon img {
+            width: 18px;
+            height: 18px;
         }
 
         .card-head-title {
@@ -261,6 +303,10 @@
             border-radius: 999px;
             font-size: 11px;
             font-weight: 700;
+        }
+
+        .badge img {
+            flex-shrink: 0;
         }
 
         .badge-dot {
@@ -403,6 +449,13 @@
         .step-name {
             font-size: 13px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .step-name img {
+            flex-shrink: 0;
         }
 
         .step-date {
@@ -737,6 +790,10 @@
             font-weight: 600;
         }
 
+        .attach-chip img {
+            flex-shrink: 0;
+        }
+
         .attach-chip-remove {
             background: none;
             border: none;
@@ -1013,10 +1070,10 @@
 
     <!-- TOPBAR -->
     <nav class="topbar">
-        <div class="topbar-brand">
-            <div class="brand-dot">📁</div>
-            <span class="brand-name">FileVault</span>
-        </div>
+        <a href="/dashboard" class="topbar-brand">
+            <div class="brand-dot"><img src="/static/folder.svg" alt=""></div>
+            <span class="brand-name">Historial</span>
+        </a>
         <div class="topbar-right">
             <div class="user-chip">
                 <div class="user-avatar" id="avatarInitial">U</div>
@@ -1030,10 +1087,8 @@
 
         <!-- Breadcrumb -->
         <div class="breadcrumb">
-            <a href="/dashboard">Dashboard</a>
-            <span class="sep">›</span>
-            <a href="/dashboard">Mis solicitudes</a>
-            <span class="sep">›</span>
+            <a href="/dashboard" class="back-btn">← Volver al Dashboard</a>
+            <span class="sep" style="margin: 0 4px;">›</span>
             <span class="current" id="breadFolio">—</span>
         </div>
 
@@ -1042,7 +1097,7 @@
             <!-- Tarjeta resumen -->
             <div class="card" style="margin-bottom:18px;">
                 <div class="card-head">
-                    <div class="card-icon">📋</div>
+                    <div class="card-icon"><img src="/static/document.svg" alt=""></div>
                     <div>
                         <div class="card-head-title" id="headFolio">—</div>
                         <div class="card-head-sub">Resumen de solicitud</div>
@@ -1054,7 +1109,7 @@
             <!-- Tarjeta progreso -->
             <div class="card">
                 <div class="card-head">
-                    <div class="card-icon">🚦</div>
+                    <div class="card-icon card-icon-dark"><img src="/static/Graficas.svg" alt="Progreso"></div>
                     <div>
                         <div class="card-head-title">Progreso del ciclo</div>
                         <div class="card-head-sub">Etapas de la solicitud</div>
@@ -1073,7 +1128,7 @@
             <!-- Historial card -->
             <div class="card">
                 <div class="card-head">
-                    <div class="card-icon">🕐</div>
+                    <div class="card-icon"><img src="/static/comentarios.svg" alt=""></div>
                     <div>
                         <div class="card-head-title">Historial de actividad</div>
                         <div class="card-head-sub">Cambios, eventos y comentarios del ciclo</div>
@@ -1094,7 +1149,8 @@
                 <!-- Timeline -->
                 <div class="timeline" id="timeline"></div>
                 <div class="tl-empty" id="tlEmpty">
-                    <div class="tl-empty-icon">💬</div>
+                    <div class="tl-empty-icon"><img src="/static/comentarios.svg"
+                            style="width:32px; height:32px; opacity:0.35;"></div>
                     No hay entradas para este filtro.
                 </div>
             </div>
@@ -1102,7 +1158,7 @@
             <!-- Comentar card -->
             <div class="card">
                 <div class="card-head">
-                    <div class="card-icon">✏️</div>
+                    <div class="card-icon"><img src="/static/texto.svg" alt="Comentario"></div>
                     <div>
                         <div class="card-head-title">Agregar comentario</div>
                         <div class="card-head-sub">Visible para el equipo SEA y el cliente</div>
@@ -1112,7 +1168,8 @@
                 <div class="comment-box">
                     <!-- Supervisor: cambio de estatus -->
                     <div class="supervisor-bar" id="supervisorBar">
-                        🔒 Modo supervisor — puedes cambiar el estatus de la solicitud
+                        <img src="/static/foco.svg" style="width:14px; height:14px;"> Modo supervisor — puedes cambiar
+                        el estatus de la solicitud
                     </div>
 
                     <div class="status-select-row" id="statusChangeRow" style="display:none;">
@@ -1133,7 +1190,8 @@
                     <div class="attach-chips" id="attachChips"></div>
 
                     <div class="comment-footer">
-                        <button class="comment-attach" onclick="triggerAttach()">📎 Adjuntar archivo</button>
+                        <button class="comment-attach" onclick="triggerAttach()"><img src="/static/upload.svg"
+                                style="width:14px; height:14px; margin-right:2px;"> Adjuntar archivo</button>
                         <input type="file" id="attachInput" multiple style="display:none" onchange="handleAttach(this)">
                         <button class="btn btn-yellow" id="sendBtn" onclick="sendComment()">Enviar ↗</button>
                     </div>
@@ -1182,10 +1240,10 @@
         let HISTORIAL = [];
 
         const ETAPAS = [
-            { key: "PENDIENTE", label: "Recibida", icon: "📥" },
-            { key: "EN PROCESO", label: "En proceso", icon: "⚙️" },
-            { key: "EN REVISIÓN", label: "En revisión", icon: "🔍" },
-            { key: "FINALIZADO", label: "Finalizada", icon: "✅" },
+            { key: "PENDIENTE", label: "Recibida", icon: "<img src='/static/download.svg' style='width:14px; height:14px; filter: invert(1);'>" },
+            { key: "EN PROCESO", label: "En proceso", icon: "<img src='/static/organizacion.svg' style='width:14px; height:14px;'>" },
+            { key: "EN REVISIÓN", label: "En revisión", icon: "<img src='/static/lupa.svg' style='width:14px; height:14px;'>" },
+            { key: "FINALIZADO", label: "Finalizada", icon: "<img src='/static/check.svg' style='width:14px; height:14px; filter: invert(1);'>" },
         ];
 
         let CURRENT_ROLE = "cliente";
@@ -1198,7 +1256,7 @@
         (function init() {
             // Avatar
             const uname = document.getElementById("usernameDisplay").textContent.trim();
-            if (uname && !uname.includes("{{"))
+            if (uname && uname.length > 0 && uname !== "username")
                 document.getElementById("avatarInitial").textContent = uname[0].toUpperCase();
 
             // ID de solicitud desde la URL: /historial/:id
@@ -1206,13 +1264,13 @@
 
             // Cargar rol + datos en paralelo
             Promise.all([
-                fetch(`/api/solicitudes/${solicitudId}`).then(r => r.json()),
-                fetch(`/api/solicitudes/${solicitudId}/historial`).then(r => r.json()),
+                fetch(`/api/solicitud/${solicitudId}`).then(r => r.json()),
+                fetch(`/api/solicitud/${solicitudId}/historial`).then(r => r.json()),
                 fetch('/api/user-role').then(r => r.json()).catch(() => ({ role: "cliente" }))
             ])
-                .then(([solicitud, historial, userRole]) => {
+                .then(([solicitud, historialData, userRole]) => {
                     SOLICITUD = solicitud;
-                    HISTORIAL = historial;
+                    HISTORIAL = historialData.historial || [];
                     CURRENT_ROLE = userRole.role || "cliente";
                     applyRoleUI();
                     renderSummary();
@@ -1250,22 +1308,23 @@
                 "CANCELADO": ["badge-pendiente", "Cancelado"],
             };
 
-            const [sCls, sLabel] = statusMap[SOLICITUD.estatus] || ["badge-pendiente", SOLICITUD.estatus];
+            const estatus = SOLICITUD.estatus || "PENDIENTE";
+            const [sCls, sLabel] = statusMap[estatus] || ["badge-pendiente", estatus];
             const prioLabel = SOLICITUD.prioridad === "urgente"
-                ? `<span class="badge badge-urgente">⚡ Urgente</span>`
-                : `<span class="badge badge-regular">🔵 Regular</span>`;
+                ? `<span class="badge badge-urgente"><img src="/static/etiqueta.svg" style="width:10px; height:10px; filter: brightness(0.5)"> Urgente</span>`
+                : `<span class="badge badge-regular"><img src="/static/etiqueta.svg" style="width:10px; height:10px;"> Regular</span>`;
 
             const rows = [
                 ["Folio", SOLICITUD.folio],
-                ["Tipo", SOLICITUD.tipo],
-                ["Proyecto", SOLICITUD.proyecto],
+                ["Tipo", SOLICITUD.tipo_servicio || "—"],
+                ["Proyecto", SOLICITUD.nombre_proyecto || "—"],
                 ["Norma", SOLICITUD.norma],
-                ["SKU's", SOLICITUD.num_skus],
+                ["SKU's", SOLICITUD.num_skus || "—"],
                 ["Medidas", SOLICITUD.medidas],
                 ["Prioridad", prioLabel],
                 ["Estatus", `<span class="badge ${sCls}"><span class="badge-dot"></span>${sLabel}</span>`],
-                ["Recepción", SOLICITUD.fecha_recepcion],
-                ["Envío", SOLICITUD.fecha_envio || "—"],
+                ["Recepción", SOLICITUD.fecha_recepcion ? SOLICITUD.fecha_recepcion.substring(0, 10) : "—"],
+                ["Envío", SOLICITUD.fecha_envio ? SOLICITUD.fecha_envio.substring(0, 10) : "—"],
             ];
 
             document.getElementById("summaryBody").innerHTML = rows.map(([l, v]) => `
@@ -1287,7 +1346,7 @@
                 const isDone = i < currentIdx;
                 const isActive = i === currentIdx;
                 const cls = isDone ? "done" : isActive ? "active" : "";
-                const nodeContent = isDone ? "✓" : (i + 1);
+                const nodeContent = isDone ? "<img src='/static/check.svg' style='width:10px; height:10px; filter: invert(1);'>" : (i + 1);
 
                 // Find date from historial
                 const entry = HISTORIAL.find(h => h.estatus_nuevo === etapa.key);
@@ -1356,7 +1415,7 @@
                     }
                     contentHtml = `
                 <div class="tl-event">
-                    <span class="tl-event-icon">${entry.icono || "🔔"}</span>
+                    <span class="tl-event-icon">${entry.icono || "<img src='/static/comentarios.svg' style='width:16px; height:16px;'>"}</span>
                     <div class="tl-event-text">${entry.texto}${statusChange}</div>
                 </div>`;
                 } else {
@@ -1366,7 +1425,7 @@
                     <div class="tl-attachments">
                         ${entry.archivos.map(f => `
                             <a href="#" class="tl-attachment">
-                                📄 ${f.nombre}
+                                <img src="/static/document.svg" style="width:12px; height:12px;"> ${f.nombre}
                                 <span class="ext">${f.ext.toUpperCase()} · ${f.size}</span>
                             </a>
                         `).join("")}
@@ -1433,7 +1492,7 @@
             const container = document.getElementById("attachChips");
             container.innerHTML = attachedFiles.map((f, i) => `
         <div class="attach-chip">
-            📎 ${f.name}
+            <img src="/static/document.svg" style="width:12px; height:12px;"> ${f.name}
             <button class="attach-chip-remove" onclick="removeAttach(${i})">×</button>
         </div>
     `).join("");
@@ -1450,26 +1509,21 @@
                 return;
             }
 
-            const now = new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
+            const solicitudId = window.location.pathname.split("/").filter(Boolean).pop();
+            const promises = [];
 
-            // Status change event
+            // Status change (only supervisor)
             if (status && CURRENT_ROLE === "supervisor") {
-                const prev = SOLICITUD.estatus;
-                SOLICITUD.estatus = status;
-
-                HISTORIAL.push({
-                    id: Date.now(), tipo: "evento", fecha: now,
-                    autor: document.getElementById("usernameDisplay").textContent.trim() || "Supervisor",
-                    rol: "supervisor",
-                    icono: "🔄",
-                    texto: "Cambio de estatus:",
-                    estatus_anterior: prev,
-                    estatus_nuevo: status,
-                });
-
-                document.getElementById("statusSelect").value = "";
-                renderSummary();
-                renderProgress();
+                promises.push(
+                    fetch(`/api/solicitud/${solicitudId}/estatus`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            estatus: status,
+                            comentario: text
+                        })
+                    }).then(r => r.json())
+                );
             }
 
             // Comment entry
@@ -1480,24 +1534,42 @@
                     size: (f.size / 1024).toFixed(0) + " KB"
                 }));
 
-                HISTORIAL.push({
-                    id: Date.now() + 1, tipo: "comentario", fecha: now,
-                    autor: document.getElementById("usernameDisplay").textContent.trim() || "Usuario",
-                    rol: CURRENT_ROLE,
-                    texto: text || "(sin texto)",
-                    ...(archivos.length ? { archivos } : {})
-                });
+                promises.push(
+                    fetch(`/api/solicitud/${solicitudId}/comentarios`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            texto: text,
+                            archivos: archivos
+                        })
+                    }).then(r => r.json())
+                );
             }
 
-            // Reset
-            document.getElementById("commentText").value = "";
-            attachedFiles = [];
-            renderAttachChips();
-            renderTimeline();
-            showToast("success", "Comentario enviado", "Tu mensaje fue registrado en el historial.");
+            // Execute all promises
+            Promise.all(promises)
+                .then(() => {
+                    // Reset
+                    document.getElementById("commentText").value = "";
+                    attachedFiles = [];
+                    renderAttachChips();
+                    document.getElementById("statusSelect").value = "";
+                    showToast("success", "Enviado", "Tu mensaje fue registrado.");
 
-            // Scroll timeline to top (newest)
-            document.getElementById("timeline").scrollIntoView({ behavior: "smooth", block: "start" });
+                    // Recargar historial desde el servidor
+                    fetch(`/api/solicitud/${solicitudId}/historial`)
+                        .then(r => r.json())
+                        .then(data => {
+                            HISTORIAL = data.historial || [];
+                            renderTimeline();
+                            renderSummary();
+                            renderProgress();
+                        });
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    showToast("error", "Error", "No se pudo enviar el comentario.");
+                });
         }
 
         /* ══════════════════════════════════════
@@ -1509,7 +1581,12 @@
             const t = document.getElementById("toast");
             document.getElementById("toastTitle").textContent = title;
             document.getElementById("toastDesc").textContent = desc;
-            document.getElementById("toastIcon").textContent = type === "success" ? "✓" : "✕";
+            const iconEl = document.getElementById("toastIcon");
+            if (type === "success") {
+                iconEl.innerHTML = "<img src='/static/check.svg' style='width:20px; height:20px; filter: invert(1);'>";
+            } else {
+                iconEl.innerHTML = "✕";
+            }
             t.className = `toast ${type} show`;
             clearTimeout(toastTimer);
             toastTimer = setTimeout(hideToast, 4500);

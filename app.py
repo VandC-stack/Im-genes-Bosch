@@ -728,6 +728,15 @@ def captura():
     """Formulario para crear una nueva solicitud"""
     return render_template("captura.html", username=session.get("username"))
 
+
+@app.route("/historial/<folio>")
+@login_required
+@role_required(ROLE_CLIENTE)
+def historial(folio):
+    """Vista de historial detallado de una solicitud"""
+    return render_template("historial.html", username=session.get("username"), folio=folio)
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -1131,6 +1140,9 @@ def get_solicitud(folio):
         "pais_origen": solicitud.get("pais_origen", ""),
         "contenido": solicitud.get("contenido", ""),
         "ciclo_actual": ciclo_actual,
+        "estatus": solicitud.get("estatus", "PENDIENTE"),
+        "fecha_recepcion": solicitud.get("created_at"),
+        "fecha_envio": solicitud.get("completed_at"),
         "historial": solicitud.get("historial", []),
         "created_at": solicitud.get("created_at"),
         "files": files
@@ -1373,7 +1385,7 @@ def get_solicitud_historial(folio):
     solicitud = None
     for r in requests_data:
         if r.get("folio") == folio:
-            # Verificar permiso: cliente solo ve su propia, ejecutivo ve la del cliente
+            # Verificar permiso: cliente solo ve su propia
             if role == ROLE_CLIENTE and r.get("client") != username:
                 return jsonify({"error": "No autorizado"}), 403
             solicitud = r
@@ -1382,8 +1394,176 @@ def get_solicitud_historial(folio):
     if solicitud is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
     
-    historial = solicitud.get("historial", [])
-    return jsonify({"historial": historial})
+    # Construir historial con evento inicial
+    historial_formateado = []
+    
+    # Evento inicial: Solicitud recibida
+    created_at = solicitud.get("created_at")
+    if created_at:
+        try:
+            if 'T' in created_at:
+                dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+            else:
+                dt = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
+            fecha_str = dt.strftime("%Y-%m-%d %H:%M")
+        except:
+            fecha_str = created_at
+    else:
+        fecha_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    
+    historial_formateado.append({
+        "id": 0,
+        "tipo": "evento",
+        "fecha": fecha_str,
+        "autor": "Sistema",
+        "rol": "system",
+        "icono": "📥",
+        "texto": f"Solicitud {folio} recibida por {solicitud.get('client', 'cliente')}",
+        "estatus_anterior": None,
+        "estatus_nuevo": "PENDIENTE"
+    })
+    
+    # Agregar entradas del historial
+    historial_raw = solicitud.get("historial", [])
+    for idx, entry in enumerate(historial_raw, start=1):
+        if entry.get("tipo") == "edicion_cliente":
+            historial_formateado.append({
+                "id": idx,
+                "tipo": "comentario",
+                "fecha": entry.get("timestamp", "").split("T")[0].replace("-", "-") if "T" in entry.get("timestamp", "") else entry.get("timestamp", ""),
+                "autor": entry.get("usuario", "Cliente"),
+                "rol": "cliente",
+                "texto": entry.get("comentario", ""),
+                "archivos": []
+            })
+        elif entry.get("tipo") == "comentario":
+            historial_formateado.append({
+                "id": idx,
+                "tipo": "comentario",
+                "fecha": entry.get("timestamp", ""),
+                "autor": entry.get("autor", "Usuario"),
+                "rol": entry.get("rol", "cliente"),
+                "texto": entry.get("texto", ""),
+                "archivos": entry.get("archivos", [])
+            })
+        elif entry.get("tipo") == "cambio_estatus":
+            historial_formateado.append({
+                "id": idx,
+                "tipo": "evento",
+                "fecha": entry.get("timestamp", ""),
+                "autor": entry.get("usuario", "Supervisor"),
+                "rol": entry.get("rol", "supervisor"),
+                "icono": "🔄",
+                "texto": f"Cambio de estatus",
+                "estatus_anterior": entry.get("estatus_anterior"),
+                "estatus_nuevo": entry.get("estatus_nuevo")
+            })
+    
+    return jsonify({"historial": historial_formateado})
+
+
+@app.route("/api/solicitud/<folio>/comentarios", methods=["POST"])
+@login_required
+def add_solicitud_comentario(folio):
+    """Agregar un comentario a una solicitud"""
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    requests_data = load_service_requests()
+    
+    # Buscar la solicitud
+    req_index = None
+    solicitud = None
+    for i, r in enumerate(requests_data):
+        if r.get("folio") == folio:
+            # Verificar permiso: cliente solo comenta la suya, supervisor cualquiera
+            if role == ROLE_CLIENTE and r.get("client") != username:
+                return jsonify({"error": "No autorizado"}), 403
+            solicitud = r
+            req_index = i
+            break
+    
+    if solicitud is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+    
+    data = request.get_json() or {}
+    texto = data.get("texto", "").strip()
+    archivos = data.get("archivos", [])
+    
+    if not texto and not archivos:
+        return jsonify({"error": "Comentario vacío"}), 400
+    
+    # Crear entrada de historial
+    historial = solicitud.setdefault("historial", [])
+    historial.append({
+        "id": len(historial),
+        "tipo": "comentario",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "usuario": username,
+        "autor": username,
+        "rol": role,
+        "texto": texto,
+        "archivos": archivos
+    })
+    
+    # Guardar
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+    
+    return jsonify({"status": "ok", "message": "Comentario agregado"})
+
+
+@app.route("/api/solicitud/<folio>/estatus", methods=["POST"])
+@login_required
+@role_required(ROLE_SUPERVISOR)
+def update_solicitud_estatus(folio):
+    """Cambiar el estatus de una solicitud (solo supervisor)"""
+    username = session.get("username")
+    requests_data = load_service_requests()
+    
+    # Buscar la solicitud
+    req_index = None
+    solicitud = None
+    for i, r in enumerate(requests_data):
+        if r.get("folio") == folio:
+            solicitud = r
+            req_index = i
+            break
+    
+    if solicitud is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+    
+    data = request.get_json() or {}
+    nuevo_estatus = data.get("estatus", "").strip().upper()
+    comentario = data.get("comentario", "").strip()
+    
+    estatus_validos = ["PENDIENTE", "EN PROCESO", "EN REVISIÓN", "FINALIZADO", "CANCELADO"]
+    if nuevo_estatus not in estatus_validos:
+        return jsonify({"error": "Estatus inválido"}), 400
+    
+    estatus_anterior = solicitud.get("estatus", "PENDIENTE")
+    if estatus_anterior == nuevo_estatus:
+        return jsonify({"error": "El estatus es el mismo"}), 400
+    
+    # Actualizar solicitud
+    solicitud["estatus"] = nuevo_estatus
+    
+    # Crear entrada de historial
+    historial = solicitud.setdefault("historial", [])
+    historial.append({
+        "tipo": "cambio_estatus",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "usuario": username,
+        "rol": "supervisor",
+        "texto": comentario,
+        "estatus_anterior": estatus_anterior,
+        "estatus_nuevo": nuevo_estatus
+    })
+    
+    # Guardar
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+    
+    return jsonify({"status": "ok", "message": "Estatus actualizado", "nuevo_estatus": nuevo_estatus})
 
 
 @app.route("/api/assignment/<file_path>/action", methods=["POST"])
