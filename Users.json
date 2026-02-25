@@ -4,6 +4,7 @@
         "CORREO": "operaciones@vyc.com.mx",
         "FIRMA": "ASANCHEZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -11,6 +12,7 @@
         "CORREO": "tecnico4@vyc.com.mx",
         "FIRMA": "ICEDILLO",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-024-SCFI-2013"
     },
     {
@@ -18,6 +20,7 @@
         "CORREO": "tecnico10@vyc.com.mx",
         "FIRMA": "AMERLIN",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021"
     },
     {
@@ -25,6 +28,7 @@
         "CORREO": "brenda.velazquez@vyc.com.mx",
         "FIRMA": "BVELAZQUEZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-189-SSA1\/SCFI-2018"
     },
     {
@@ -32,6 +36,7 @@
         "CORREO": "tecnico12@vyc.com.mx",
         "FIRMA": "SMADRID",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-020-SCFI-1997; NOM-050-SCFI-2004"
     },
     {
@@ -39,6 +44,7 @@
         "CORREO": "tecnico9@vyc.com.mx",
         "FIRMA": "AMARTINEZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
     },
     {
@@ -46,6 +52,7 @@
         "CORREO": "soporte2@vyc.com.mx",
         "FIRMA": "AMORENO",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997"
     },
     {
@@ -53,6 +60,7 @@
         "CORREO": "andrea.ramos@vyc.com.mx",
         "FIRMA": "ARAMOS",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-142-SSA1\/SCFI-2014; NOM-051-SCFI\/SSA1-2010; NOM-235-SE-2020; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -60,6 +68,7 @@
         "CORREO": "tecnico7@vyc.com.mx",
         "FIRMA": "IPOZOS",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -67,6 +76,7 @@
         "CORREO": "ivan.cortes@vyc.com.mx",
         "FIRMA": "ICORTES",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -74,6 +84,7 @@
         "CORREO": "tecnico3@vyc.com.mx",
         "FIRMA": "BCHONTAL",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-050-SCFI-2004"
     },
     {
@@ -81,6 +92,7 @@
         "CORREO": "tecnico6@vyc.com.mx",
         "FIRMA": "BMAGANDA",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -88,6 +100,7 @@
         "CORREO": "tecnico5@vyc.com.mx",
         "FIRMA": "DGARCIA",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
     },
     {
@@ -95,6 +108,7 @@
         "CORREO": "tecnico8@vyc.com.mx",
         "FIRMA": "EORNELAS",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-020-SCFI-1997; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010"
     },
     {
@@ -102,6 +116,7 @@
         "CORREO": "flor.marquez@vyc.com.mx",
         "FIRMA": "FMARQUEZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018"
     },
     {
@@ -109,6 +124,7 @@
         "CORREO": "gabriel.ramirez@vyc.com.mx",
         "FIRMA": "GRAMIREZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-142-SSA1\/SCFI-2014"
     },
     {
@@ -116,6 +132,7 @@
         "CORREO": "eduardo.reyes@vyc.com.mx",
         "FIRMA": "EREYES",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012; NOM-189-SSA1\/SCFI-2018"
     },
     {
@@ -123,6 +140,7 @@
         "CORREO": "tecnico2@vyc.com.mx",
         "FIRMA": "AESTRADA",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
     },
     {
@@ -130,6 +148,7 @@
         "CORREO": "marcos.flores@vyc.com.mx",
         "FIRMA": "MFLORES",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NMX-COE-001-SCFI-2018; NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-116-SCFI-2018; NOM-141-SSA1\/SCFI-2012; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018; NOM-199-SCFI-2017; NOM-235-SE-2020"
     },
     {
@@ -137,6 +156,7 @@
         "CORREO": "mario.terrez@vyc.com.mx",
         "FIRMA": "MTERREZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NMX-COE-001-SCFI-2018; NOM-004-SE-2021; NOM-015-SCFI-2007; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-051-SCFI\/SSA1-2010; NOM-116-SCFI-2018; NOM-141-SSA1\/SCFI-2012; NOM-142-SSA1\/SCFI-2014; NOM-189-SSA1\/SCFI-2018; NOM-199-SCFI-2017"
     },
     {
@@ -144,13 +164,23 @@
         "CORREO": "tecnico1@vyc.com.mx",
         "FIRMA": "OPEREZ",
         "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-004-SE-2021; NOM-020-SCFI-1997; NOM-024-SCFI-2013; NOM-050-SCFI-2004; NOM-141-SSA1\/SCFI-2012"
     },
     {
-        "NOMBRE": null,
+        "NOMBRE": "prueba",
         "CORREO": null,
-        "FIRMA": null,
-        "PUESTO": null,
+        "FIRMA": "ins1",
+        "PUESTO": "Ejecutivo",
+        "CONTRASEÑA": "123",
         "NORMAS": "NOM-020-SCFI-1997"
+    },
+    {
+        "NOMBRE": "admin",
+        "CORREO": null,
+        "FIRMA": "admin",
+        "PUESTO": "Supervisor",
+        "CONTRASEÑA": "123",
+        "NORMAS": null
     }
 ]

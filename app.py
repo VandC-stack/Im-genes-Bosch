@@ -15,6 +15,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("APP_SECRET_KEY", "change-me")
 
 CONFIG_FILE = "config.json"
+USERS_FILE = "Users.json"
 HISTORY_FILE = "upload_history.json"
 ASSIGNMENTS_FILE = "assignments.json"
 COMMITS_FILE = "commits.json"
@@ -68,6 +69,15 @@ def load_config():
     return data
 
 
+def load_users():
+    """Load users from Users.json (ejecutivos and supervisors)"""
+    if not os.path.exists(USERS_FILE):
+        return []
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data if isinstance(data, list) else []
+
+
 def save_config(path):
     data = load_config()
     data["destination_folder"] = path
@@ -103,8 +113,26 @@ def sanitize_filename(name: str) -> str:
 
 
 def get_client(username: str):
+    """Get user from Users.json (ejecutivos/supervisors) or config.json (clients)"""
     if not username:
         return None
+    
+    # First, check Users.json for ejecutivos and supervisors
+    users = load_users()
+    for user in users:
+        firma = user.get("FIRMA")
+        if firma and firma.strip().lower() == username.strip().lower():
+            # Return in the same format as config clients
+            return {
+                "password": user.get("CONTRASEÑA", ""),
+                "role": user.get("PUESTO", "Ejecutivo"),
+                "folder": None,  # Ejecutivos and supervisors don't have their own folder
+                "nombre": user.get("NOMBRE"),
+                "correo": user.get("CORREO"),
+                "normas": user.get("NORMAS")
+            }
+    
+    # If not found in Users.json, check config.json for clients
     return load_config().get("clients", {}).get(username)
 
 
@@ -114,6 +142,8 @@ def normalize_role(role: Optional[str]) -> str:
     normalized = role.strip().lower()
     if normalized == "inspector":
         return ROLE_EJECUTIVO
+    if normalized == "supervisor":
+        return ROLE_SUPERVISOR
     return normalized if normalized in ALLOWED_ROLES else ROLE_CLIENTE
 
 
