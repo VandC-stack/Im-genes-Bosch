@@ -1,0 +1,9 @@
+<svg id="icon-performance-general" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <rect id="Rectángulo_382" data-name="Rectángulo 382" width="24" height="24" fill="none"/>
+  <g id="ic-statistics-2">
+    <line id="Línea_469" data-name="Línea 469" x2="20" transform="translate(2 20)" fill="none" stroke="#ecd925" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+    <path id="Trazado_366" data-name="Trazado 366" d="M5,23V8.25A.229.229,0,0,1,5.2,8H7.8a.229.229,0,0,1,.2.25V23" transform="translate(0 -3)" fill="none" stroke="#ecd925" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+    <path id="Trazado_367" data-name="Trazado 367" d="M11,16.125V4.2a.2.2,0,0,1,.2-.2h2.6a.2.2,0,0,1,.2.2v11.92" transform="translate(0 3.875)" fill="none" stroke="#ecd925" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+    <path id="Trazado_368" data-name="Trazado 368" d="M17,18.5V11.125c0-.067.09-.125.2-.125h2.6c.11,0,.2.058.2.125V18.5" transform="translate(0 1.5)" fill="none" stroke="#ecd925" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+  </g>
+</svg>

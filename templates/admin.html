@@ -1,0 +1,567 @@
+<!--====================================================================================================
+    # Panel de administracion para gestionar clientes, crear o editar registros y ver listados.
+    #====================================================================================================-->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Clientes</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title span {
+            width: 48px;
+            height: 48px;
+            background: #ecd925;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #ecd925;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .panel h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #ecd925;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 6px;
+        }
+
+        .form-field input,
+        .form-field select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #f5f5f5;
+            font-size: 14px;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: #ecd925;
+        }
+
+        .form-field select option {
+            background: #1a1a1a;
+            color: #f5f5f5;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead {
+            background: rgba(236, 217, 37, 0.1);
+        }
+
+        .users-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            color: #ecd925;
+            border-bottom: 2px solid rgba(236, 217, 37, 0.3);
+        }
+
+        .users-table td {
+            padding: 12px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .users-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .role-supervisor {
+            background: rgba(236, 217, 37, 0.2);
+            color: #ecd925;
+        }
+
+        .role-cliente {
+            background: rgba(64, 141, 83, 0.2);
+            color: #408D53;
+        }
+
+        .role-ejecutivo {
+            background: rgba(108, 108, 108, 0.2);
+            color: #6C6C6C;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-delete:hover {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .folder-path {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            color: #a0a0a0;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 24px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .users-table {
+                font-size: 12px;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 8px;
+            }
+        }
+
+        /* INLINE SVG ICONS */
+        .inline-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Style guide overrides */
+        :root {
+            --primary: #484848;
+            --secondary: #ECD925;
+            --accent: #6C6C6C;
+            --success: #408D53;
+            --warning: #D15300;
+            --error: #D74A3D;
+            --info: #F6DF06;
+            --neutral-900: #282828;
+            --neutral-800: #404040;
+            --neutral-700: #4B4B4B;
+            --neutral-600: #626262;
+            --neutral-500: #6C6C6C;
+            --neutral-400: #878787;
+            --neutral-300: #ADADAD;
+            --neutral-200: #DBDBDB;
+            --neutral-100: #FFFFFF;
+            --yellow-900: #382C00;
+            --yellow-800: #585400;
+            --yellow-700: #867E00;
+            --yellow-600: #B8AA00;
+            --yellow-500: #ECD925;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--neutral-100);
+            color: var(--neutral-800);
+        }
+
+        .title span {
+            background: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--neutral-100);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--neutral-800);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--yellow-900);
+            border: 1px solid var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--yellow-600);
+        }
+
+        .panel {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel h2 {
+            color: var(--neutral-900);
+        }
+
+        .form-field label {
+            color: var(--neutral-600);
+        }
+
+        .form-field input,
+        .form-field select {
+            background: var(--neutral-100);
+            border-color: var(--neutral-300);
+            color: var(--neutral-800);
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(236, 217, 37, 0.2);
+        }
+
+        .users-table thead {
+            background: var(--neutral-100);
+        }
+
+        .users-table th {
+            color: var(--neutral-700);
+            border-bottom: 2px solid var(--neutral-200);
+        }
+
+        .users-table td {
+            border-bottom: 1px solid var(--neutral-200);
+            color: var(--neutral-800);
+        }
+
+        .users-table tr:hover {
+            background: var(--neutral-200);
+        }
+
+        .role-supervisor {
+            background: rgba(236, 217, 37, 0.2);
+            color: var(--yellow-800);
+        }
+
+        .role-cliente {
+            background: rgba(64, 141, 83, 0.15);
+            color: var(--success);
+        }
+
+        .role-ejecutivo {
+            background: rgba(108, 108, 108, 0.2);
+            color: var(--accent);
+        }
+
+        .btn-delete {
+            background: rgba(215, 74, 61, 0.12);
+            color: var(--error);
+            border-color: rgba(215, 74, 61, 0.35);
+        }
+
+        .alert-success {
+            background: rgba(64, 141, 83, 0.12);
+            color: var(--success);
+            border-color: rgba(64, 141, 83, 0.35);
+        }
+
+        .alert-error {
+            background: rgba(215, 74, 61, 0.12);
+            color: var(--error);
+            border-color: rgba(215, 74, 61, 0.35);
+        }
+
+        .folder-path {
+            color: var(--neutral-600);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">
+                <span><img src="/static/icon-user.svg" alt="usuarios" class="inline-icon"
+                        style="width: 24px; height: 24px; margin: 0;"></span>
+                Administración de Clientes
+            </div>
+            <div class="header-actions">
+                <a class="btn btn-secondary" href="/solicitudes">← Volver a Solicitudes</a>
+                <a class="btn btn-secondary" href="/logout">Cerrar sesión</a>
+            </div>
+        </header>
+
+        <div id="alert" style="display: none;"></div>
+
+        <div class="panel">
+            <h2>Crear Nuevo Cliente</h2>
+            <form id="createUserForm" onsubmit="createUser(event)">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Cliente *</label>
+                        <input type="text" id="username" required placeholder="Ej: juan_perez">
+                    </div>
+                    <div class="form-field">
+                        <label>Contraseña *</label>
+                        <input type="password" id="password" required placeholder="Ingrese contraseña">
+                    </div>
+                    <div class="form-field">
+                        <label>Rol *</label>
+                        <select id="role" required>
+                            <option value="Cliente">Cliente</option>
+                            <option value="Ejecutivo">Ejecutivo</option>
+                            <option value="Supervisor">Supervisor</option>
+                        </select>
+                    </div>
+                    <div class="form-field" style="grid-column: 1 / -1;">
+                        <label>Carpeta de destino *</label>
+                        <input type="text" id="folder" required placeholder="C:\Ruta\A\Carpeta">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">➥ Crear Cliente</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Clientes Registrados</h2>
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Rol</th>
+                        <th>Carpeta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.username }}</strong></td>
+                        <td>
+                            <span class="role-badge role-{{ user.role.lower() }}">{{ user.role }}</span>
+                        </td>
+                        <td class="folder-path">{{ user.folder }}</td>
+                        <td>
+                            {% if user.username != session.username %}
+                            <button class="btn-delete" onclick="deleteUser('{{ user.username }}')">Eliminar
+                                Eliminar</button>
+                            {% else %}
+                            <span style="color: #666; font-size: 11px;">Tu cuenta</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        async function createUser(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const folder = document.getElementById('folder').value.trim();
+
+            if (!username || !password || !folder) {
+                showAlert('Todos los campos son requeridos', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/create-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role, folder })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showAlert('Cliente creado exitosamente', 'success');
+                    document.getElementById('createUserForm').reset();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert('✗ ' + data.error, 'error');
+                }
+            } catch (e) {
+                showAlert('Error al crear cliente: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`¿Estás seguro de eliminar al cliente "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/delete-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showAlert('Cliente eliminado exitosamente', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert('✗ ' + data.error, 'error');
+                }
+            } catch (e) {
+                showAlert('Error al eliminar cliente: ' + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

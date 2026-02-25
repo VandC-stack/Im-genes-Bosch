@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+  <!-- Disk body -->
+  <rect x="3" y="3" width="18" height="18" rx="2" stroke="#282828" stroke-width="2" stroke-linejoin="round"></rect>
+
+  <!-- Label area -->
+  <rect x="7" y="3" width="10" height="5" stroke="#282828" stroke-width="2"></rect>
+
+  <!-- Shutter -->
+  <rect x="8" y="13" width="8" height="5" stroke="#282828" stroke-width="2"></rect>
+
+</svg>

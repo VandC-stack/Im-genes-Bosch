@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+  <!-- Tag body -->
+  <path d="M3 12l9-9h7v7l-9 9-7-7z" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Hole -->
+  <circle cx="16" cy="8" r="1.5" stroke="#282828" stroke-width="2"></circle>
+
+  <!-- String: exits the hole toward upper-right (emoji-correct) -->
+  <path d="M17.2 6.8C19 5.2 20.8 4.8 22 5.2" stroke="#282828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+
+</svg>

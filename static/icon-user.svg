@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="icon-user" transform="translate(-224 -3688)">
+    <rect id="Rectángulo_433" data-name="Rectángulo 433" width="24" height="24" transform="translate(224 3688)" fill="none"/>
+    <g id="icon-user-2" data-name="icon-user" transform="translate(0.111)">
+      <path id="Elipse_5" data-name="Elipse 5" d="M4,1.5A2.5,2.5,0,1,0,6.5,4,2.5,2.5,0,0,0,4,1.5M4,0A4,4,0,1,1,0,4,4,4,0,0,1,4,0Z" transform="translate(232 3691)" fill="#282828"/>
+      <path id="Trazado_42" data-name="Trazado 42" d="M13.812,20.606a.75.75,0,0,1-.75-.75V17.6s0-.005,0-.008a4.26,4.26,0,0,0-2.02-3.935,4.751,4.751,0,0,0-4.643.012A4.263,4.263,0,0,0,4.34,17.594s0,0,0,.007v2.255a.75.75,0,0,1-1.5,0V17.6a6.267,6.267,0,0,1,.775-3.189,5.518,5.518,0,0,1,2.031-2.042,6.21,6.21,0,0,1,6.151-.01A5.421,5.421,0,0,1,13.8,14.4a6.36,6.36,0,0,1,.757,3.2v2.253A.75.75,0,0,1,13.812,20.606Z" transform="translate(227.3 3688.478)" fill="#282828"/>
+    </g>
+  </g>
+</svg>

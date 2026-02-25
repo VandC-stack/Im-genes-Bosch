@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+  <!-- Document -->
+  <path d="M6 2h9l5 5v15H6z" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Fold -->
+  <path d="M15 2v5h5" stroke="#282828" stroke-width="2" stroke-linejoin="round"></path>
+
+</svg>

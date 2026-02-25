@@ -1,0 +1,397 @@
+<!--====================================================================================================
+    # Pantalla de inicio de sesion con formulario de acceso y material visual.
+    #====================================================================================================-->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
+    <link rel="icon" href="/static/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #111;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-shell {
+            width: 100%;
+            max-width: 1100px;
+            min-height: 560px;
+            display: flex;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+        }
+
+        .left {
+            flex: 1;
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .right {
+            flex: 1;
+            position: relative;
+            background: #ecd925;
+            background-image: url('/static/diseñoama.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .carousel {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 24px 24px;
+        }
+
+        .carousel-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+
+        .carousel-figure {
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 16px;
+        }
+
+        .carousel-image-container {
+            width: 100%;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel img {
+            width: 100%;
+            height: 320px;
+            object-fit: contain;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            opacity: 1;
+            transition: opacity 0.35s ease;
+        }
+
+        .carousel-content.fade-out {
+            opacity: 0;
+        }
+
+        .carousel-caption {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+            margin-bottom: 6px;
+        }
+
+        .carousel-subtext {
+            font-size: 15px;
+            font-weight: 400;
+            color: #fff;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            line-height: 1.4;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: transparent;
+        }
+
+        .brand-logo {
+            width: 140px;
+            height: auto;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+            color: #111;
+        }
+
+        p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            opacity: 0.75;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 42px 12px 40px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background: #f6f6f6;
+            color: #111;
+            font-size: 14px;
+        }
+
+        .input-control {
+            margin-bottom: 0;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .toggle-password img {
+            width: 18px;
+            height: 18px;
+            opacity: 0.75;
+        }
+
+        .toggle-password .eye-off {
+            display: inline;
+        }
+
+        .toggle-password .eye-on {
+            display: none;
+        }
+
+        .toggle-password.is-visible .eye-on {
+            display: inline;
+        }
+
+        .toggle-password.is-visible .eye-off {
+            display: none;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ecd925;
+            background: #fffef5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ecd925 0%, #d4c320 100%);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .error {
+            background: #ffe9e9;
+            color: #a32020;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 14px;
+            border: 1px solid #ffc2c2;
+        }
+
+        @media (max-width: 900px) {
+            .login-shell {
+                flex-direction: column;
+                min-height: auto;
+            }
+
+            .left {
+                padding: 32px;
+            }
+
+            .right {
+                min-height: 320px;
+            }
+
+            .carousel-image-container {
+                height: 200px;
+            }
+
+            .carousel img {
+                width: 100%;
+                height: 200px;
+            }
+
+            .carousel-figure {
+                width: 90%;
+            }
+
+            .carousel-caption {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-shell">
+        <div class="left">
+            <div class="card">
+                <img class="brand-logo" src="/static/Logo%20Hd.png" alt="Logo de la empresa">
+                <h1>Iniciar sesión</h1>
+                <p>Bienvenido de vuelta</p>
+
+                {% if error %}
+                <div class="error">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST">
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <label for="username">Nombre de cliente</label>
+                    <div class="input-group">
+                        <img class="input-icon" src="/static/icon-user.svg" alt="Cliente">
+                        <input class="input-control" type="text" id="username" name="username" required>
+                    </div>
+
+                    <label for="password">Contraseña</label>
+                    <div class="input-group">
+                        <img class="input-icon" src="/static/icon-password.svg" alt="Contraseña">
+                        <input class="input-control" type="password" id="password" name="password" required>
+                        <button class="toggle-password" type="button" aria-label="Mostrar contraseña">
+                            <img class="eye-off" src="/static/icon-eye-off.svg" alt="Mostrar contraseña">
+                            <img class="eye-on" src="/static/icon-eye-on.svg" alt="Ocultar contraseña">
+                        </button>
+                    </div>
+
+                    <button class="btn" type="submit">Entrar</button>
+                </form>
+            </div>
+        </div>
+        <div class="right">
+            <div class="carousel">
+                <div class="carousel-content" id="carouselContent">
+                    <div class="carousel-figure">
+                        <div class="carousel-image-container">
+                            <img id="carouselImage" src="/static/disponible.png" alt="Siempre disponible">
+                        </div>
+                        <div id="carouselCaption" class="carousel-caption">Siempre disponible</div>
+                        <div id="carouselSubtext" class="carousel-subtext">Nuestro acceso 24/7</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const carouselSlides = [
+            {
+                src: "/static/disponible.png",
+                text: "Siempre disponible",
+                subtext: "Nuestro acceso 24/7",
+                alt: "Siempre disponible"
+            },
+            {
+                src: "/static/Gestion.png",
+                text: "Gestion simplificada",
+                subtext: "Una rápida y fácil administración de los procesos",
+                alt: "Gestion simplificada"
+            },
+            {
+                src: "/static/transparencia.png",
+                text: "Transparencia",
+                subtext: "Total visualización de sus operación de principio a fin",
+                alt: "Transparencia"
+            }
+        ];
+
+        const carouselContent = document.getElementById("carouselContent");
+        const carouselImage = document.getElementById("carouselImage");
+        const carouselCaption = document.getElementById("carouselCaption");
+        const carouselSubtext = document.getElementById("carouselSubtext");
+        let carouselIndex = 0;
+
+        setInterval(() => {
+            carouselContent.classList.add("fade-out");
+
+            setTimeout(() => {
+                carouselIndex = (carouselIndex + 1) % carouselSlides.length;
+                const slide = carouselSlides[carouselIndex];
+                carouselImage.src = slide.src;
+                carouselImage.alt = slide.alt;
+                carouselCaption.textContent = slide.text;
+                carouselSubtext.textContent = slide.subtext;
+                carouselContent.classList.remove("fade-out");
+            }, 350);
+        }, 3600);
+
+        const passwordInput = document.getElementById("password");
+        const togglePasswordButton = document.querySelector(".toggle-password");
+
+        if (togglePasswordButton && passwordInput) {
+            togglePasswordButton.addEventListener("click", () => {
+                const isVisible = passwordInput.type === "text";
+                passwordInput.type = isVisible ? "password" : "text";
+                togglePasswordButton.classList.toggle("is-visible", !isVisible);
+                togglePasswordButton.setAttribute(
+                    "aria-label",
+                    isVisible ? "Mostrar contraseña" : "Ocultar contraseña"
+                );
+            });
+        }
+    </script>
+</body>
+
+</html>

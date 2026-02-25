@@ -1,0 +1,18 @@
+# Core Framework
+Flask>=2.2,<3.0
+Werkzeug>=2.2.0
+
+# Production Server (opcional, para despliegue)
+# gunicorn>=20.1.0  # Para Linux/macOS
+# waitress>=2.1.0   # Para Windows
+
+# Environment Management
+python-dotenv>=0.19.0
+
+# Image Processing (opcional, si se requiere procesamiento en servidor)
+# Pillow>=9.0.0
+
+# Security (ya incluido con Flask, pero especificado por uso explícito)
+# Las funciones de seguridad de Werkzeug ya están incluidas
+
+# Add other dependencies here if you extend the project

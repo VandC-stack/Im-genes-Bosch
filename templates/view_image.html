@@ -1,0 +1,978 @@
+<!--====================================================================================================
+    # Vista de revision de un archivo con herramientas y acciones de aprobacion o rechazo.
+    #====================================================================================================-->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisión - {{ filename }}</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            padding: 0;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== TOPBAR ========== */
+        .topbar {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #ECD925 0%, #f4e66e 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .topbar-info h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .topbar-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            word-break: break-word;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: #ECD925;
+            border-color: #ECD925;
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            background: #f4e66e;
+            border-color: #f4e66e;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* ========== LAYOUT ========== */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+        }
+
+        /* ========== IMAGE SECTION ========== */
+        .image-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .image-container-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ECD925, transparent);
+        }
+
+        .image-container {
+            width: 100%;
+            min-height: 420px;
+            max-height: 700px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            max-height: 700px;
+            display: block;
+        }
+
+        .image-details {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .details-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 20px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            word-break: break-word;
+            text-align: right;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ECD925, transparent);
+            opacity: 0.5;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-icon {
+            font-size: 20px;
+        }
+
+        /* ========== STATUS BADGE ========== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+
+        .status-badge span:first-child {
+            font-size: 20px;
+        }
+
+        .status-accepted {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            color: #34d399;
+        }
+
+        .status-rejected {
+            background: #D74A3D;
+            border: 1px solid #D74A3D;
+            color: #ffffff;
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        .status-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-info-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-info-row strong {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-info-row span {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .inline-icon {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            margin-right: 4px;
+            filter: brightness(0) invert(1);
+            opacity: 0.5;
+        }
+
+        /* ========== ASSIGNMENT DETAILS ========== */
+        .assignment-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .assignment-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .assignment-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .assignment-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* ========== TIMELINE ========== */
+        .status-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 32px;
+            bottom: -16px;
+            width: 2px;
+            background: rgba(236, 217, 37, 0.2);
+        }
+
+        .timeline-dot {
+            width: 16px;
+            height: 16px;
+            background: #ECD925;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 2px;
+            box-shadow: 0 0 0 4px rgba(236, 217, 37, 0.1);
+        }
+
+        .timeline-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .timeline-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .timeline-value {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ========== COMMENTS ========== */
+        .comments-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .comment-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .comment-author {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .comment-role-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: #ECD925;
+            background: rgba(236, 217, 37, 0.1);
+            border: 1px solid rgba(236, 217, 37, 0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .no-comments-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 12px 16px;
+            }
+
+            .topbar-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .topbar-right {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .image-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Style guide overrides */
+        :root {
+            --primary: #484848;
+            --secondary: #ECD925;
+            --accent: #6C6C6C;
+            --success: #408D53;
+            --warning: #D15300;
+            --error: #D74A3D;
+            --info: #F6DF06;
+            --neutral-900: #282828;
+            --neutral-800: #404040;
+            --neutral-700: #4B4B4B;
+            --neutral-600: #626262;
+            --neutral-500: #6C6C6C;
+            --neutral-400: #878787;
+            --neutral-300: #ADADAD;
+            --neutral-200: #DBDBDB;
+            --neutral-100: #FFFFFF;
+            --yellow-900: #382C00;
+            --yellow-800: #585400;
+            --yellow-700: #867E00;
+            --yellow-600: #B8AA00;
+            --yellow-500: #ECD925;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--neutral-100);
+            color: var(--neutral-800);
+        }
+
+        .topbar {
+            background: var(--neutral-100);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .topbar-icon {
+            background: var(--secondary);
+            color: var(--yellow-900);
+        }
+
+        .topbar-info h1 {
+            color: var(--neutral-900);
+        }
+
+        .topbar-subtitle {
+            color: var(--neutral-600);
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .btn-ghost {
+            background: var(--neutral-100);
+            color: var(--neutral-700);
+            border-color: var(--neutral-200);
+        }
+
+        .btn-ghost:hover {
+            background: var(--neutral-200);
+            border-color: var(--neutral-300);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--neutral-100);
+        }
+
+        .btn-primary:hover {
+            background: var(--neutral-800);
+            border-color: var(--neutral-800);
+        }
+
+        .image-container-wrapper,
+        .image-details,
+        .sidebar-card {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .image-container-wrapper::before,
+        .sidebar-card::before {
+            background: linear-gradient(90deg, var(--secondary), transparent);
+        }
+
+        .details-title,
+        .sidebar-title {
+            color: var(--neutral-900);
+        }
+
+        .detail-label {
+            color: var(--neutral-600);
+        }
+
+        .detail-value {
+            color: var(--neutral-800);
+        }
+
+        .status-accepted {
+            background: rgba(64, 141, 83, 0.12);
+            border-color: rgba(64, 141, 83, 0.35);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: #D74A3D;
+            border-color: #D74A3D;
+            color: #ffffff;
+        }
+
+        .status-pending {
+            background: rgba(246, 223, 6, 0.12);
+            border-color: rgba(246, 223, 6, 0.35);
+            color: var(--yellow-800);
+        }
+
+        .status-info-row {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .status-info-row strong {
+            color: var(--neutral-600);
+        }
+
+        .status-info-row span {
+            color: var(--neutral-800);
+        }
+
+        .assignment-item {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .assignment-label {
+            color: var(--neutral-600);
+        }
+
+        .assignment-value {
+            color: var(--neutral-900);
+        }
+
+        .timeline-label {
+            color: var(--neutral-900);
+        }
+
+        .timeline-value {
+            color: var(--neutral-600);
+        }
+
+        .comment-card {
+            background: var(--neutral-100);
+            border-color: var(--neutral-200);
+        }
+
+        .comment-author {
+            color: var(--neutral-900);
+        }
+
+        .comment-role-badge {
+            color: var(--yellow-900);
+            background: rgba(236, 217, 37, 0.15);
+            border-color: rgba(236, 217, 37, 0.3);
+        }
+
+        .comment-text {
+            color: var(--neutral-800);
+        }
+
+        .comment-time,
+        .no-comments {
+            color: var(--neutral-600);
+        }
+
+        .inline-icon {
+            filter: none;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-content">
+            <div class="topbar-left">
+                <div class="topbar-icon"><img src="/static/lupa.svg" alt="buscar" style="width: 22px; height: 22px;">
+                </div>
+                <div class="topbar-info">
+                    <h1>Revisión de Imagen</h1>
+                    <div class="topbar-subtitle">{{ filename }}</div>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <a href="/gallery{% if folio %}?folio={{ folio }}{% endif %}" class="btn btn-ghost">← Volver a Mis
+                    Archivos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <!-- Image Section -->
+            <div class="image-section">
+                <!-- Image Container -->
+                <div class="image-container-wrapper">
+                    <div class="image-container">
+                        {% if image_url %}
+                        <img src="{{ image_url }}" alt="{{ filename }}"
+                            onerror="this.style.display='none';document.getElementById('imageFallback').style.display='block';">
+                        {% endif %}
+                        <div id="imageFallback"
+                            style="padding: 80px; text-align: center; {% if image_url %}display: none;{% else %}display: block;{% endif %}">
+                            <div style="font-size: 64px; margin-bottom: 16px;"><img src="/static/document.svg"
+                                    alt="documento" style="width: 64px; height: 64px; opacity: 0.7;"></div>
+                            <div
+                                style="font-size: 16px; font-weight: 700; color: var(--yellow-800); text-transform: uppercase;">
+                                {{ file_ext or 'ARCHIVO' }}</div>
+                            <div style="font-size: 13px; color: var(--neutral-700); margin-top: 8px;">Este archivo no
+                                puede ser visualizado</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Details -->
+                <div class="image-details">
+                    <div class="details-title"><img src="/static/document.svg" alt=""
+                            style="width:18px;height:18px;vertical-align:middle;"> Información del Archivo</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Nombre</div>
+                        <div class="detail-value">{{ filename }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Cliente</div>
+                        <div class="detail-value">{{ client_name }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Folio</div>
+                        <div class="detail-value">{{ folio or 'N/A' }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Tamaño</div>
+                        <div class="detail-value">{{ '%.2f KB' | format(file_size / 1024) if file_size else 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Fecha de carga</div>
+                        <div class="detail-value">{{ upload_date or 'N/A' }}</div>
+                    </div>
+
+                    <div class="image-actions">
+                        <a href="{{ image_url }}" target="_blank" class="btn btn-ghost"><img src="/static/eye.svg"
+                                alt="ver" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                            Ver original</a>
+                        <a href="{{ image_url }}" download="{{ filename }}" class="btn btn-primary"><img
+                                src="/static/download.svg" alt="descargar"
+                                style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">
+                            Descargar</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Status Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-title">
+                        <div class="sidebar-icon"><img src="/static/Graficas.svg" alt="graficas" width="20" height="20">
+                        </div>
+                        Estatus de Inspección
+                    </div>
+
+                    {% if status == 'aceptado' %}
+                    <div class="status-badge status-accepted">
+                        <span>✓</span>
+                        <span>APROBADA</span>
+                    </div>
+                    <div class="status-info">
+                        <div class="status-info-row">
+                            <strong>Ciclo:</strong>
+                            <span>Imagen aprobada y validada exitosamente</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
+                            <span>{{ assigned_to }}</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong>Resultado:</strong>
+                            <span>Tu solicitud ha sido aprobada y procesada correctamente</span>
+                        </div>
+                    </div>
+
+                    {% elif status == 'rechazado' %}
+                    <div class="status-badge status-rejected">
+                        <span>✗</span>
+                        <span>RECHAZADA</span>
+                    </div>
+                    <div class="status-info">
+                        <div class="status-info-row">
+                            <strong>Ciclo:</strong>
+                            <span>Imagen rechazada - Revisión requerida</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
+                            <span>{{ assigned_to }}</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong>Motivo:</strong>
+                            <span>Consulta los comentarios abajo para más detalles sobre el rechazo</span>
+                        </div>
+                    </div>
+
+                    {% elif status == 'en_revision' %}
+                    <div class="status-badge status-pending">
+                        <span>⧖</span>
+                        <span>EN REVISIÓN</span>
+                    </div>
+                    <div class="status-info">
+                        <div class="status-info-row">
+                            <strong>Ciclo:</strong>
+                            <span>El ejecutivo está revisando tu solicitud</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
+                            <span>{{ assigned_to }}</span>
+                        </div>
+                        {% if assigned_by %}
+                        <div class="status-info-row">
+                            <strong>Asignada por:</strong>
+                            <span>{{ assigned_by }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% elif status == 'asignado' %}
+                    <div class="status-badge status-pending">
+                        <span>⊙</span>
+                        <span>ASIGNADO</span>
+                    </div>
+                    <div class="status-info">
+                        <div class="status-info-row">
+                            <strong>Ciclo:</strong>
+                            <span>Solicitud asignada a un ejecutivo</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong><img src="/static/icon-user.svg" alt="ejecutivo" class="inline-icon">
+                                Ejecutivo:</strong>
+                            <span>{{ assigned_to }}</span>
+                        </div>
+                        {% if assigned_by %}
+                        <div class="status-info-row">
+                            <strong>Asignada por:</strong>
+                            <span>{{ assigned_by }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% else %}
+                    <div class="status-badge status-pending">
+                        <span>↑</span>
+                        <span>SUBIDO</span>
+                    </div>
+                    <div class="status-info">
+                        <div class="status-info-row">
+                            <strong>Ciclo:</strong>
+                            <span>Tu solicitud fue recibida y está en espera de asignación</span>
+                        </div>
+                        <div class="status-info-row">
+                            <strong>Tiempo estimado:</strong>
+                            <span>1-2 días hábiles</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Comments -->
+                <div class="sidebar-card">
+                    <div class="sidebar-title">
+                        <div class="sidebar-icon"><img src="/static/comentarios.svg" alt="comentarios"
+                                style="width: 20px; height: 20px;"></div>
+                        Comentarios ({{ comments|length }})
+                    </div>
+
+                    {% if comments %}
+                    <div class="comments-container">
+                        {% for comment in comments %}
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <div class="comment-author">{{ comment.author }}</div>
+                                <div class="comment-role-badge">{{ comment.role }}</div>
+                            </div>
+                            <div class="comment-text">{{ comment.text }}</div>
+                            <div class="comment-time">
+                                {{ (comment.timestamp|datetime_format('%d/%m/%Y %H:%M')) if comment.timestamp else 'N/A'
+                                }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-comments">
+                        <div class="no-comments-icon"><img src="/static/comentarios.svg" alt="comentarios"
+                                style="width: 40px; height: 40px; opacity: 0.5;"></div>
+                        <div>No hay comentarios aún</div>
+                        <div style="font-size: 12px; margin-top: 8px; color: rgba(255,255,255,0.4);">
+                            Tu ejecutivo puede agregar comentarios cuando revise la imagen
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Formatear timestamps si no están disponibles en Jinja2
+        document.querySelectorAll('.comment-time').forEach(el => {
+            const text = el.textContent.trim();
+            if (text && text.match(/\d{4}-\d{2}-\d{2}T/)) {
+                try {
+                    const date = new Date(text);
+                    el.textContent = date.toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (e) {
+                    // Mantener el formato original si hay error
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

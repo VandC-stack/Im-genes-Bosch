@@ -1,0 +1,490 @@
+<!--====================================================================================================
+    # Pantalla de bienvenida con animacion de carga y transicion al sistema.
+    #====================================================================================================-->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ══════════════════════════════════════
+           FASE 1 — PANTALLA DE CARGA
+        ══════════════════════════════════════ */
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 26px;
+            z-index: 999;
+            transition: opacity 0.6s ease;
+        }
+
+        #loadingScreen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            width: 130px;
+            height: auto;
+            opacity: 0;
+            animation: logoIn 0.5s ease 0.2s forwards;
+        }
+
+        @keyframes logoIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ECD925;
+            animation: dotPulse 1.1s ease-in-out infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.18s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.36s;
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.5);
+                opacity: 0.3;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .progress-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 290px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #ECD925;
+            border-radius: 99px;
+            transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .loading-label {
+            font-size: 13px;
+            color: #aaa;
+            letter-spacing: 0.02em;
+            text-align: center;
+            min-height: 18px;
+        }
+
+        /* ══════════════════════════════════════
+           FASE 2 — BIENVENIDA OSTENTOSA
+        ══════════════════════════════════════ */
+        #welcomeScreen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        #welcomeScreen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Burst ring */
+        .burst-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 3px solid #ECD925;
+            opacity: 0;
+            transform: scale(0.4);
+        }
+
+        .burst-ring.fire {
+            animation: burstRing 0.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+        }
+
+        @keyframes burstRing {
+            0% {
+                opacity: 0.9;
+                transform: scale(0.4);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(2.6);
+            }
+        }
+
+        .burst-ring-2 {
+            animation-delay: 0.15s !important;
+            width: 160px;
+            height: 160px;
+        }
+
+        .burst-ring-3 {
+            animation-delay: 0.3s !important;
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Avatar circle */
+        .avatar-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+        }
+
+        .avatar-wrap.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .avatar-glow {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: #ECD925;
+            filter: blur(22px);
+            opacity: 0.5;
+        }
+
+        .avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #ECD925;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            position: relative;
+            box-shadow: 0 0 0 6px #fffde6, 0 0 0 10px #ECD92530;
+        }
+
+        .avatar img {
+            width: 46px;
+            height: 46px;
+            display: block;
+        }
+
+        /* BIENVENIDO text */
+        .big-text-wrap {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .word-bienvenido {
+            display: block;
+            font-size: clamp(48px, 12vw, 88px);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            color: #111;
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 0.65s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        .word-bienvenido.reveal {
+            clip-path: inset(0 0% 0 0);
+        }
+
+        /* Yellow underline accent */
+        .underline-accent {
+            display: block;
+            height: 7px;
+            background: #ECD925;
+            border-radius: 99px;
+            width: 0;
+            margin: 8px auto 0;
+            transition: width 0.5s ease 0.55s;
+        }
+
+        .underline-accent.grow {
+            width: 80%;
+        }
+
+        /* Username */
+        .username-line {
+            font-size: clamp(18px, 4vw, 28px);
+            color: #555;
+            font-weight: 400;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
+            margin-bottom: 10px;
+        }
+
+        .username-line.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .username-line strong {
+            color: #111;
+            font-weight: 700;
+        }
+
+        /* Subtitle */
+        .subtitle {
+            font-size: 14px;
+            color: #bbb;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.9s;
+            margin-bottom: 40px;
+        }
+
+        .subtitle.show {
+            opacity: 1;
+        }
+
+        /* CTA button */
+        .cta-btn {
+            display: inline-block;
+            padding: 16px 48px;
+            background: #ECD925;
+            color: #000;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 14px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.5s ease 1.1s, transform 0.5s ease 1.1s,
+                background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 20px rgba(236, 217, 37, 0.35);
+        }
+
+        .cta-btn.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cta-btn:hover {
+            background: #d4c220;
+            box-shadow: 0 10px 30px rgba(236, 217, 37, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Decorative corner shapes */
+        .deco {
+            position: fixed;
+            border-radius: 50%;
+            background: #ECD925;
+            opacity: 0.07;
+            pointer-events: none;
+        }
+
+        .deco-1 {
+            width: 320px;
+            height: 320px;
+            top: -100px;
+            right: -80px;
+        }
+
+        .deco-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -60px;
+            left: -50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══ FASE 1: CARGA ══ -->
+    <div id="loadingScreen">
+        <img class="loading-logo" src="{{ url_for('static', filename='Logo Hd.png') }}" alt="Logo"
+            onerror="this.style.display='none'">
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="progress-wrap">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="loading-label" id="loadingLabel">Iniciando sesión…</div>
+        </div>
+    </div>
+
+    <!-- ══ FASE 2: BIENVENIDA ══ -->
+    <div id="welcomeScreen">
+        <div class="deco deco-1"></div>
+        <div class="deco deco-2"></div>
+
+        <!-- Burst rings (se activan por JS) -->
+        <div class="burst-ring" id="ring1"></div>
+        <div class="burst-ring burst-ring-2" id="ring2"></div>
+        <div class="burst-ring burst-ring-3" id="ring3"></div>
+
+        <!-- Avatar -->
+        <div class="avatar-wrap" id="avatarWrap">
+            <div class="avatar-glow"></div>
+            <div class="avatar" id="avatarEl">
+                <img src="{{ url_for('static', filename='icon-user.svg') }}" alt="Usuario"
+                    onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <!-- BIENVENIDO -->
+        <div class="big-text-wrap">
+            <span class="word-bienvenido" id="bigWord">BIENVENIDO</span>
+            <span class="underline-accent" id="underline"></span>
+        </div>
+
+        <div class="username-line" id="usernameLine">
+            Nos alegra verte, <strong id="userDisplay">{{ username }}</strong>
+        </div>
+
+        <div class="subtitle" id="subtitle">Tu espacio de trabajo está listo</div>
+
+        <a class="cta-btn" id="ctaBtn" href="{{ url_for('dashboard') }}">Empezar →</a>
+    </div>
+
+    <script>
+        /* ══ PASO 1: FAKE LOADER ══ */
+        const steps = [
+            { pct: 15, label: "Verificando credenciales…" },
+            { pct: 34, label: "Cargando perfil de usuario…" },
+            { pct: 53, label: "Sincronizando datos…" },
+            { pct: 72, label: "Preparando galería…" },
+            { pct: 88, label: "Aplicando permisos…" },
+            { pct: 100, label: "¡Todo listo!" },
+        ];
+
+        const fill = document.getElementById("progressFill");
+        const label = document.getElementById("loadingLabel");
+        let idx = 0;
+
+        function runStep() {
+            if (idx >= steps.length) { setTimeout(launchWelcome, 420); return; }
+            const s = steps[idx++];
+            fill.style.width = s.pct + "%";
+            label.textContent = s.label;
+            const delay = idx === steps.length ? 500 : 340 + Math.random() * 380;
+            setTimeout(runStep, delay);
+        }
+        setTimeout(runStep, 450);
+
+        /* ══ PASO 2: LANZAR BIENVENIDA ══ */
+        function launchWelcome() {
+            // Ocultar loader
+            document.getElementById("loadingScreen").classList.add("fade-out");
+            setTimeout(() => {
+                document.getElementById("loadingScreen").style.display = "none";
+            }, 620);
+
+            // Mostrar pantalla
+            const ws = document.getElementById("welcomeScreen");
+            ws.classList.add("active");
+
+            // Secuencia de animaciones
+            setTimeout(() => {
+                document.getElementById("ring1").classList.add("fire");
+                document.getElementById("ring2").classList.add("fire");
+                document.getElementById("ring3").classList.add("fire");
+                document.getElementById("avatarWrap").classList.add("show");
+            }, 80);
+
+            setTimeout(() => {
+                document.getElementById("bigWord").classList.add("reveal");
+                document.getElementById("underline").classList.add("grow");
+            }, 300);
+
+            setTimeout(() => document.getElementById("usernameLine").classList.add("show"), 600);
+            setTimeout(() => document.getElementById("subtitle").classList.add("show"), 750);
+            setTimeout(() => document.getElementById("ctaBtn").classList.add("show"), 950);
+        }
+
+        /* ══ DATOS DE USUARIO ══ */
+        const username = "{{ username }}";
+
+        if (username && username !== "{{ username }}") {
+            document.getElementById("userDisplay").textContent = username;
+        }
+
+        /* Género del saludo heurístico (opcional, basado en última letra) */
+        const lastChar = (username || "").slice(-1).toLowerCase();
+        if (lastChar === "a") {
+            document.getElementById("bigWord").textContent = "BIENVENIDA";
+        }
+    </script>
+</body>
+
+</html>
