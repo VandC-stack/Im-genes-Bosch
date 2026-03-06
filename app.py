@@ -202,6 +202,18 @@ def get_compatible_ejecutivos(folio_normas: Optional[str]) -> list:
     return compatible
 
 
+def parse_iso_date(value: Optional[str]):
+    """Parsea un string ISO 8601 a datetime"""
+    if not value:
+        return None
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    return None
+
+
 def get_upload_folder(username: Optional[str] = None):
     config = load_config()
     folder = None
@@ -336,6 +348,73 @@ def save_service_requests(data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+def format_file_size(size_bytes: int) -> str:
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    if size_bytes < 1024 * 1024:
+        return f"{round(size_bytes / 1024)} KB"
+    return f"{round(size_bytes / (1024 * 1024), 1)} MB"
+
+
+def can_access_solicitud(solicitud: dict, role: str, username: str) -> bool:
+    if not isinstance(solicitud, dict):
+        return False
+    if role == ROLE_CLIENTE:
+        return solicitud.get("client") == username
+    return role in {ROLE_SUPERVISOR, ROLE_EJECUTIVO, ROLE_BOSCH}
+
+
+def get_attachment_folder_for_solicitud(solicitud: dict, folio: str) -> str:
+    client_username = solicitud.get("client")
+    base_folder = get_upload_folder(client_username)
+    folder = os.path.join(base_folder, "_comentarios", folio)
+    os.makedirs(folder, exist_ok=True)
+    return folder
+
+
+def normalize_comment_attachments(attachments: list, folio: str) -> list:
+    normalized = []
+    for attachment in attachments:
+        if not isinstance(attachment, dict):
+            continue
+
+        nombre = os.path.basename(str(attachment.get("nombre", "")).strip())
+        ext = str(attachment.get("ext", "")).strip().lower()
+        if not ext and "." in nombre:
+            ext = nombre.rsplit(".", 1)[1].lower()
+
+        item: dict[str, object] = {
+            "nombre": nombre or "archivo",
+            "ext": ext,
+            "size": str(attachment.get("size", "")).strip()
+        }
+
+        attachment_id = str(attachment.get("id", "")).strip()
+        if attachment_id:
+            item["id"] = attachment_id
+
+        stored_name = str(attachment.get("stored_name", "")).strip()
+        if stored_name:
+            item["stored_name"] = stored_name
+
+        file_path = str(attachment.get("file_path", "")).strip()
+        if file_path:
+            item["file_path"] = file_path
+
+        size_bytes = attachment.get("size_bytes")
+        if isinstance(size_bytes, int) and size_bytes >= 0:
+            item["size_bytes"] = size_bytes
+
+        if item.get("id"):
+            item["url"] = url_for("download_solicitud_attachment", folio=folio, attachment_id=item["id"])
+        elif item.get("file_path"):
+            item["url"] = url_for("serve_file_by_path", file_path=item["file_path"])
+
+        normalized.append(item)
+
+    return normalized
+
+
 # =========================
 # JINJA2 FILTERS
 # =========================
@@ -406,6 +485,11 @@ def ensure_assignment_fields(assignments: list) -> bool:
             folio = generate_folio(existing_folios)
             assignment["folio"] = folio
             existing_folios.add(folio)
+            changed = True
+        
+        # Inicializar ciclo_actual si tiene folio y no existe el campo
+        if assignment.get("folio") and "ciclo_actual" not in assignment:
+            assignment["ciclo_actual"] = 1
             changed = True
 
     return changed
@@ -731,9 +815,19 @@ def captura():
 
 @app.route("/historial/<folio>")
 @login_required
-@role_required(ROLE_CLIENTE)
 def historial(folio):
     """Vista de historial detallado de una solicitud"""
+    # Verificar acceso: clientes solo ven sus solicitudes, ejecutivos y supervisores ven todas
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    
+    if role == ROLE_CLIENTE:
+        # Verificar que la solicitud pertenece al cliente
+        requests_data = load_service_requests()
+        solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+        if not solicitud or solicitud.get("client") != username:
+            abort(403)
+    
     return render_template("historial.html", username=session.get("username"), folio=folio)
 
 
@@ -965,16 +1059,6 @@ def api_solicitudes():
 
         return jsonify({"status": "ok", "folio": folio})
 
-    def parse_iso(value):
-        if not value:
-            return None
-        if isinstance(value, str):
-            try:
-                return datetime.fromisoformat(value.replace("Z", "+00:00"))
-            except ValueError:
-                return None
-        return value
-
     def request_status(statuses):
         if not statuses:
             return "PENDIENTE"
@@ -1015,8 +1099,8 @@ def api_solicitudes():
         statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
         status_label = request_status(statuses)
 
-        created_at = parse_iso(req.get("created_at"))
-        completion_dates = [parse_iso(a.get("status_updated_at")) for a in linked]
+        created_at = parse_iso_date(req.get("created_at"))
+        completion_dates = [parse_iso_date(a.get("status_updated_at")) for a in linked]
         completion_dates = [d for d in completion_dates if d]
         completed_at = max(completion_dates) if completion_dates else None
 
@@ -1052,11 +1136,11 @@ def api_solicitudes():
 
         created_at = None
         for a in linked:
-            created_at = parse_iso(a.get("uploaded_at")) or created_at
+            created_at = parse_iso_date(a.get("uploaded_at")) or created_at
             if created_at:
                 break
 
-        completion_dates = [parse_iso(a.get("status_updated_at")) for a in linked]
+        completion_dates = [parse_iso_date(a.get("status_updated_at")) for a in linked]
         completion_dates = [d for d in completion_dates if d]
         completed_at = max(completion_dates) if completion_dates else None
 
@@ -1090,23 +1174,29 @@ def api_solicitudes():
 
 @app.route("/api/solicitud/<folio>", methods=["GET"])
 @login_required
-@role_required(ROLE_CLIENTE)
 def get_solicitud(folio):
     """Obtener detalles completos de una solicitud"""
     username = session.get("username")
+    role = normalize_role(session.get("role"))
     requests_data = load_service_requests()
-    
+
     # Buscar la solicitud
-    solicitud = next((r for r in requests_data if r.get("folio") == folio and r.get("client") == username), None)
-    
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+
     if not solicitud:
         return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if role == ROLE_CLIENTE and solicitud.get("client") != username:
+        return jsonify({"error": "No autorizado"}), 403
     
     # Obtener ciclo desde assignments
     assignments = load_assignments()
     linked = [a for a in assignments if a.get("folio") == folio]
     ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
     ciclo_actual = max(ciclos) if ciclos else 1
+    
+    # Leer estatus directamente de service_requests (fuente única de verdad)
+    estatus = solicitud.get("estatus", "PENDIENTE")
 
     files = []
     for entry in solicitud.get("files", []):
@@ -1140,7 +1230,7 @@ def get_solicitud(folio):
         "pais_origen": solicitud.get("pais_origen", ""),
         "contenido": solicitud.get("contenido", ""),
         "ciclo_actual": ciclo_actual,
-        "estatus": solicitud.get("estatus", "PENDIENTE"),
+        "estatus": estatus,
         "fecha_recepcion": solicitud.get("created_at"),
         "fecha_envio": solicitud.get("completed_at"),
         "historial": solicitud.get("historial", []),
@@ -1394,6 +1484,22 @@ def get_solicitud_historial(folio):
     if solicitud is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
     
+    # Obtener assignments vinculados para calcular cambios de estado
+    assignments = load_assignments()
+    linked = [a for a in assignments if a.get("folio") == folio]
+    
+    # Función para calcular estado a partir de statuses
+    def calc_status(statuses):
+        if not statuses:
+            return "PENDIENTE"
+        if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
+            return "FINALIZADO"
+        if any(s == STATUS_IN_REVIEW for s in statuses):
+            return "EN REVISIÓN"
+        if any(s == STATUS_ASSIGNED for s in statuses):
+            return "EN PROCESO"
+        return "PENDIENTE"
+    
     # Construir historial con evento inicial
     historial_formateado = []
     
@@ -1417,18 +1523,100 @@ def get_solicitud_historial(folio):
         "fecha": fecha_str,
         "autor": "Sistema",
         "rol": "system",
-        "icono": "📥",
-        "texto": f"Solicitud {folio} recibida por {solicitud.get('client', 'cliente')}",
+        "icono": "<img src='/static/document.svg' style='width:16px; height:16px;'>",
+        "texto": f"Solicitud {folio} recibida",
         "estatus_anterior": None,
         "estatus_nuevo": "PENDIENTE"
     })
+    
+    # Generar eventos de cambio de estado a partir de assignments
+    if linked:
+        # Encontrar cuando el estado cambió a "EN PROCESO" (primer assignment)
+        first_assignment = min(linked, key=lambda a: parse_iso_date(a.get("assigned_at")) or datetime.min)
+        if first_assignment.get("assigned_at"):
+            try:
+                if 'T' in first_assignment.get("assigned_at", ""):
+                    dt = datetime.fromisoformat(first_assignment.get("assigned_at").replace('Z', '+00:00'))
+                else:
+                    dt = datetime.strptime(first_assignment.get("assigned_at"), "%Y-%m-%d %H:%M:%S")
+                fecha_str = dt.strftime("%Y-%m-%d %H:%M")
+                historial_formateado.append({
+                    "id": len(historial_formateado),
+                    "tipo": "evento",
+                    "fecha": fecha_str,
+                    "autor": "Sistema",
+                    "rol": "system",
+                    "icono": "🔄",
+                    "texto": "Cambio de estatus",
+                    "estatus_anterior": "PENDIENTE",
+                    "estatus_nuevo": "EN PROCESO"
+                })
+            except:
+                pass
+        
+        # Buscar cambios adicionales de estado
+        # Si hay algún assignment en revisión, generar evento
+        in_review = [a for a in linked if normalize_status(a.get("status"), a.get("assigned_to")) == STATUS_IN_REVIEW]
+        if in_review:
+            review_assignment = min(in_review, key=lambda a: parse_iso_date(a.get("status_updated_at")) or datetime.min)
+            if review_assignment.get("status_updated_at"):
+                try:
+                    if 'T' in review_assignment.get("status_updated_at", ""):
+                        dt = datetime.fromisoformat(review_assignment.get("status_updated_at").replace('Z', '+00:00'))
+                    else:
+                        dt = datetime.strptime(review_assignment.get("status_updated_at"), "%Y-%m-%d %H:%M:%S")
+                    fecha_str = dt.strftime("%Y-%m-%d %H:%M")
+                    historial_formateado.append({
+                        "id": len(historial_formateado),
+                        "tipo": "evento",
+                        "fecha": fecha_str,
+                        "autor": review_assignment.get("status_updated_by", "Sistema"),
+                        "rol": "ejecutivo",
+                        "icono": "🔄",
+                        "texto": "Cambio de estatus",
+                        "estatus_anterior": "EN PROCESO",
+                        "estatus_nuevo": "EN REVISIÓN"
+                    })
+                except:
+                    pass
+        
+        # Si hay algún assignment finalizado, generar evento
+        finalized = [a for a in linked if normalize_status(a.get("status"), a.get("assigned_to")) in {STATUS_ACCEPTED, STATUS_REJECTED}]
+        if finalized:
+            final_assignment = min(finalized, key=lambda a: parse_iso_date(a.get("status_updated_at")) or datetime.min)
+            if final_assignment.get("status_updated_at"):
+                try:
+                    if 'T' in final_assignment.get("status_updated_at", ""):
+                        dt = datetime.fromisoformat(final_assignment.get("status_updated_at").replace('Z', '+00:00'))
+                    else:
+                        dt = datetime.strptime(final_assignment.get("status_updated_at"), "%Y-%m-%d %H:%M:%S")
+                    fecha_str = dt.strftime("%Y-%m-%d %H:%M")
+                    
+                    # Determinar estatus anterior
+                    estatus_anterior = "EN PROCESO"
+                    if in_review:
+                        estatus_anterior = "EN REVISIÓN"
+                    
+                    historial_formateado.append({
+                        "id": len(historial_formateado),
+                        "tipo": "evento",
+                        "fecha": fecha_str,
+                        "autor": final_assignment.get("status_updated_by", "Sistema"),
+                        "rol": "ejecutivo",
+                        "icono": "🔄",
+                        "texto": "Cambio de estatus",
+                        "estatus_anterior": estatus_anterior,
+                        "estatus_nuevo": "FINALIZADO"
+                    })
+                except:
+                    pass
     
     # Agregar entradas del historial
     historial_raw = solicitud.get("historial", [])
     for idx, entry in enumerate(historial_raw, start=1):
         if entry.get("tipo") == "edicion_cliente":
             historial_formateado.append({
-                "id": idx,
+                "id": len(historial_formateado),
                 "tipo": "comentario",
                 "fecha": entry.get("timestamp", "").split("T")[0].replace("-", "-") if "T" in entry.get("timestamp", "") else entry.get("timestamp", ""),
                 "autor": entry.get("usuario", "Cliente"),
@@ -1437,18 +1625,19 @@ def get_solicitud_historial(folio):
                 "archivos": []
             })
         elif entry.get("tipo") == "comentario":
+            archivos = normalize_comment_attachments(entry.get("archivos", []), folio)
             historial_formateado.append({
-                "id": idx,
+                "id": len(historial_formateado),
                 "tipo": "comentario",
                 "fecha": entry.get("timestamp", ""),
                 "autor": entry.get("autor", "Usuario"),
                 "rol": entry.get("rol", "cliente"),
                 "texto": entry.get("texto", ""),
-                "archivos": entry.get("archivos", [])
+                "archivos": archivos
             })
         elif entry.get("tipo") == "cambio_estatus":
             historial_formateado.append({
-                "id": idx,
+                "id": len(historial_formateado),
                 "tipo": "evento",
                 "fecha": entry.get("timestamp", ""),
                 "autor": entry.get("usuario", "Supervisor"),
@@ -1487,7 +1676,7 @@ def add_solicitud_comentario(folio):
     
     data = request.get_json() or {}
     texto = data.get("texto", "").strip()
-    archivos = data.get("archivos", [])
+    archivos = normalize_comment_attachments(data.get("archivos", []), folio)
     
     if not texto and not archivos:
         return jsonify({"error": "Comentario vacío"}), 400
@@ -1510,6 +1699,112 @@ def add_solicitud_comentario(folio):
     save_service_requests(requests_data)
     
     return jsonify({"status": "ok", "message": "Comentario agregado"})
+
+
+@app.route("/api/solicitud/<folio>/adjuntos", methods=["POST"])
+@login_required
+def upload_solicitud_attachments(folio):
+    """Subir adjuntos para comentarios de una solicitud"""
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    requests_data = load_service_requests()
+
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if not can_access_solicitud(solicitud, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    files = request.files.getlist("files")
+    if not files:
+        single = request.files.get("file")
+        if single:
+            files = [single]
+
+    if not files:
+        return jsonify({"error": "No se enviaron archivos"}), 400
+
+    attachment_folder = get_attachment_folder_for_solicitud(solicitud, folio)
+    uploaded = []
+
+    for file_obj in files:
+        if not file_obj or not file_obj.filename:
+            continue
+
+        original_name = os.path.basename(file_obj.filename)
+        if not is_allowed_extension(original_name):
+            return jsonify({"error": f"Extensión no permitida: {original_name}"}), 400
+
+        base_name, extension = os.path.splitext(original_name)
+        safe_base = sanitize_filename(base_name) or "archivo"
+        extension = extension.lower()
+
+        stored_name = (
+            f"{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}_"
+            f"{secrets.token_hex(6)}_{safe_base}{extension}"
+        )
+        full_path = os.path.join(attachment_folder, stored_name)
+        file_obj.save(full_path)
+
+        size_bytes = os.path.getsize(full_path)
+        attachment_id = secrets.token_hex(10)
+        uploaded.append({
+            "id": attachment_id,
+            "nombre": original_name,
+            "ext": extension.lstrip("."),
+            "size": format_file_size(size_bytes),
+            "size_bytes": size_bytes,
+            "stored_name": stored_name,
+            "file_path": full_path,
+            "url": url_for("download_solicitud_attachment", folio=folio, attachment_id=attachment_id)
+        })
+
+    if not uploaded:
+        return jsonify({"error": "No se recibieron adjuntos válidos"}), 400
+
+    return jsonify({"status": "ok", "archivos": uploaded})
+
+
+@app.route("/api/solicitud/<folio>/adjuntos/<attachment_id>", methods=["GET"])
+@login_required
+def download_solicitud_attachment(folio, attachment_id):
+    """Descargar adjunto ligado a comentarios de una solicitud"""
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    requests_data = load_service_requests()
+
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if not can_access_solicitud(solicitud, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    attachment = None
+    for entry in solicitud.get("historial", []):
+        if entry.get("tipo") != "comentario":
+            continue
+        for file_data in entry.get("archivos", []):
+            if not isinstance(file_data, dict):
+                continue
+            if str(file_data.get("id", "")).strip() == attachment_id:
+                attachment = file_data
+                break
+        if attachment:
+            break
+
+    if not attachment:
+        return jsonify({"error": "Adjunto no encontrado"}), 404
+
+    file_path = str(attachment.get("file_path", "")).strip()
+    if not file_path or not os.path.exists(file_path):
+        return jsonify({"error": "Archivo no disponible"}), 404
+
+    directory = os.path.dirname(file_path)
+    filename = os.path.basename(file_path)
+    download_name = str(attachment.get("nombre") or filename)
+    return send_from_directory(directory, filename, as_attachment=True, download_name=download_name, max_age=0)
 
 
 @app.route("/api/solicitud/<folio>/estatus", methods=["POST"])
@@ -1630,8 +1925,8 @@ def serve_file(filename):
     username = session.get("username")
     role = normalize_role(session.get("role"))
     
-    # Supervisor: puede servir archivos de cualquier cliente
-    if role == ROLE_SUPERVISOR:
+    # Supervisor y Bosch: pueden servir archivos de cualquier cliente
+    if role in {ROLE_SUPERVISOR, ROLE_BOSCH}:
         config = load_config()
         for client_name, client_data in config.get("clients", {}).items():
             folder = client_data.get("folder")
@@ -1641,7 +1936,7 @@ def serve_file(filename):
             if os.path.exists(file_path):
                 return send_from_directory(folder, filename)
     
-    # Cliente/Técnico: solo puede servir sus propios archivos
+    # Cliente/Ejecutivo: solo puede servir sus propios archivos
     folder = get_upload_folder(username)
     return send_from_directory(folder, filename)
 
@@ -1660,8 +1955,8 @@ def serve_file_by_path():
     username = session.get("username")
     role = normalize_role(session.get("role"))
     
-    # Supervisor y Ejecutivo: pueden acceder a archivos asignados
-    if role == ROLE_SUPERVISOR:
+    # Supervisor y Bosch: pueden acceder a todos los archivos
+    if role in {ROLE_SUPERVISOR, ROLE_BOSCH}:
         directory = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
         return send_from_directory(directory, filename, max_age=0)
@@ -1674,12 +1969,6 @@ def serve_file_by_path():
             None
         )
         if assignment:
-            current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
-            if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
-                assignment["status"] = STATUS_IN_REVIEW
-                assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
-                assignment["status_updated_by"] = username
-                save_assignments(assignments)
             directory = os.path.dirname(file_path)
             filename = os.path.basename(file_path)
             return send_from_directory(directory, filename, max_age=0)
@@ -1703,7 +1992,7 @@ def can_access_file_path(file_path: str, role: str, username: str) -> bool:
     if not file_path:
         return False
 
-    if role == ROLE_SUPERVISOR:
+    if role in {ROLE_SUPERVISOR, ROLE_BOSCH}:
         return True
 
     assignments = load_assignments()
@@ -1952,6 +2241,7 @@ def solicitudes():
                 "document_count": 0,
                 "assigned_count": 0,
                 "norma": request_data.get("norma") if request_data else "",
+                "nombre_proyecto": request_data.get("nombre_proyecto") if request_data else "",
                 "assigned_to": entry.get("assigned_to") if entry.get("assigned_to") else None
             }
             grouped[folio] = group
@@ -2260,13 +2550,6 @@ def image_editor():
     
     if not assignment:
         return "Archivo no asignado a este ejecutivo", 403
-
-    current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
-    if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
-        assignment["status"] = STATUS_IN_REVIEW
-        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
-        assignment["status_updated_by"] = username
-        save_assignments(assignments)
     
     return render_template("image_editor.html", 
                          filename=filename, 

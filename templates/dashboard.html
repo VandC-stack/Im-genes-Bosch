@@ -940,6 +940,18 @@
             background: var(--text-muted);
         }
 
+        #modalBody {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #modalBody::-webkit-scrollbar {
+            display: none;
+        }
+
         /* ── IMAGES SECTION ── */
         .images-section {
             margin-top: 20px;

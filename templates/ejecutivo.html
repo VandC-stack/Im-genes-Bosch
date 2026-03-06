@@ -196,44 +196,94 @@
 
         /* ========== TASKS GRID ========== */
         .tasks-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
             margin-bottom: 48px;
         }
 
+        /* ========== FOLIO GROUPS ========== */
+        .folio-group {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .folio-group-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: #fffef5;
+            border-bottom: 1px solid #e8e4a0;
+        }
+
+        .folio-group-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .folio-group-number {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+        }
+
+        .folio-group-count {
+            font-size: 12px;
+            font-weight: 500;
+            color: #888;
+            margin-left: auto;
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .folio-group-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 16px;
+            gap: 16px;
+        }
+
         @media (max-width: 1600px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: repeat(6, 1fr);
             }
         }
 
         @media (max-width: 1400px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: repeat(5, 1fr);
             }
         }
 
         @media (max-width: 1200px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
         }
 
         @media (max-width: 900px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
         @media (max-width: 600px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 400px) {
-            .tasks-grid {
+            .folio-group-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -412,6 +462,13 @@
         .page-ellipsis {
             color: #999999;
             padding: 0 8px;
+        }
+
+        .page-info {
+            font-size: 12px;
+            font-weight: 500;
+            color: #999;
+            margin-left: 8px;
         }
 
         /* ========== MODALS ========== */
@@ -1012,57 +1069,80 @@
     <script>
         // Datos de las imágenes
         const allImages = {{ images | tojson | safe }};
-        const ITEMS_PER_PAGE = 42; // 7x6
+        const FOLIOS_PER_PAGE = 7;
         let currentPage = 1;
         let currentReplaceFile = null;
         let currentReplacePath = null;
         let currentReplaceFilename = null;
 
-        // Calcular total de páginas
-        const totalPages = Math.ceil(allImages.length / ITEMS_PER_PAGE);
+        const statusMap = {
+            'subido': 'Subido',
+            'asignado': 'Asignado',
+            'en_revision': 'En revisión',
+            'aceptado': 'Aceptado',
+            'rechazado': 'Rechazado'
+        };
 
-        // Renderizar tarjetas
+        // Agrupar TODOS los archivos por folio (una sola vez)
+        const allGroups = [];
+        const folioIndex = {};
+        allImages.forEach((image, idx) => {
+            const folio = image.folio || 'S/F';
+            if (folioIndex[folio] === undefined) {
+                folioIndex[folio] = allGroups.length;
+                allGroups.push({ folio, items: [] });
+            }
+            allGroups[folioIndex[folio]].items.push({ image, globalIdx: idx });
+        });
+
+        const totalPages = Math.ceil(allGroups.length / FOLIOS_PER_PAGE);
+
+        // Renderizar tarjetas agrupadas por folio
         function renderCards() {
             const grid = document.getElementById('tasksGrid');
             if (!grid) return;
 
-            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIdx = startIdx + ITEMS_PER_PAGE;
-            const pageImages = allImages.slice(startIdx, endIdx);
+            const startGroup = (currentPage - 1) * FOLIOS_PER_PAGE;
+            const pageGroups = allGroups.slice(startGroup, startGroup + FOLIOS_PER_PAGE);
 
-            grid.innerHTML = pageImages.map((image, idx) => {
-                const statusMap = {
-                    'subido': 'Subido',
-                    'asignado': 'Asignado',
-                    'en_revision': 'En revisión',
-                    'aceptado': 'Aceptado',
-                    'rechazado': 'Rechazado'
-                };
+            let html = '';
+            pageGroups.forEach(group => {
+                html += `
+                    <div class="folio-group">
+                        <div class="folio-group-header">
+                            <span class="folio-group-label">Folio</span>
+                            <span class="folio-group-number">${group.folio}</span>
+                            <span class="folio-group-count">${group.items.length} archivo${group.items.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="folio-group-grid">
+                `;
+                group.items.forEach(({ image, globalIdx }) => {
+                    const imageHtml = image.is_image
+                        ? `<div class="card-image" style="background-image: url('${image.url}');">
+                             <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
+                           </div>`
+                        : `<div class="card-image card-file">
+                             <span>${image.ext || 'FILE'}</span>
+                             <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
+                           </div>`;
 
-                const imageHtml = image.is_image
-                    ? `<div class="card-image" style="background-image: url('${image.url}');">
-                         <div class="card-badge">${image.folio || 'S/F'}</div>
-                         <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
-                       </div>`
-                    : `<div class="card-image card-file">
-                         <span>${image.ext || 'FILE'}</span>
-                         <div class="card-badge">${image.folio || 'S/F'}</div>
-                         <div class="status-badge status-${image.status}">${statusMap[image.status] || image.status}</div>
-                       </div>`;
-
-                return `
-                    <div class="card" onclick="openDetailModal(${startIdx + idx})">
-                        ${imageHtml}
-                        <div class="card-content">
-                            <div class="card-title" title="${image.filename}">${image.filename}</div>
-                            <div class="card-meta">
-                                <div>Cliente: ${image.client}</div>
-                                <div>Asignado: ${image.assigned_at ? image.assigned_at.substring(0, 10) : 'N/A'}</div>
+                    html += `
+                        <div class="card" onclick="openDetailModal(${globalIdx})">
+                            ${imageHtml}
+                            <div class="card-content">
+                                <div class="card-title" title="${image.filename}">${image.filename}</div>
+                                <div class="card-meta">
+                                    <div>Cliente: ${image.client}</div>
+                                    <div>Asignado: ${image.assigned_at ? image.assigned_at.substring(0, 10) : 'N/A'}</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                });
+                html += `</div></div>`;
+            });
+
+            grid.innerHTML = html;
         }
 
         // Renderizar paginación
@@ -1076,40 +1156,30 @@
             pagination.style.display = 'flex';
 
             let buttons = '';
-
-            // Botón anterior
             buttons += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
 
-            // Lógica de paginación
             if (totalPages <= 7) {
-                // Mostrar todas las páginas
                 for (let i = 1; i <= totalPages; i++) {
                     buttons += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
                 }
             } else {
-                // Paginación con elipsis
                 buttons += `<button class="page-btn ${currentPage === 1 ? 'active' : ''}" onclick="changePage(1)">1</button>`;
-
-                if (currentPage > 3) {
-                    buttons += `<span class="page-ellipsis">...</span>`;
-                }
+                if (currentPage > 3) buttons += `<span class="page-ellipsis">...</span>`;
 
                 const start = Math.max(2, currentPage - 1);
                 const end = Math.min(totalPages - 1, currentPage + 1);
-
                 for (let i = start; i <= end; i++) {
                     buttons += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
                 }
 
-                if (currentPage < totalPages - 2) {
-                    buttons += `<span class="page-ellipsis">...</span>`;
-                }
-
+                if (currentPage < totalPages - 2) buttons += `<span class="page-ellipsis">...</span>`;
                 buttons += `<button class="page-btn ${currentPage === totalPages ? 'active' : ''}" onclick="changePage(${totalPages})">${totalPages}</button>`;
             }
 
-            // Botón siguiente
             buttons += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+
+            // Info de página
+            buttons += `<span class="page-info">Folios ${(currentPage - 1) * FOLIOS_PER_PAGE + 1}–${Math.min(currentPage * FOLIOS_PER_PAGE, allGroups.length)} de ${allGroups.length}</span>`;
 
             pagination.innerHTML = buttons;
         }
@@ -1194,6 +1264,9 @@
             content += `<button type="button" class="modal-btn btn-replace" onclick="openReplaceModal('${encodeURIComponent(image.file_path)}', '${encodeURIComponent(image.filename)}')">Reemplazar</button>`;
             content += `<button type="button" class="modal-btn btn-accept" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'aceptado')">✓ Aceptar</button>`;
             content += `<button type="button" class="modal-btn btn-reject" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'rechazado')">✗ Rechazar</button>`;
+            if (image.folio && image.folio !== 'N/A' && image.folio !== 'S/F') {
+                content += `<a href="/historial/${encodeURIComponent(image.folio)}" class="modal-btn btn-download" style="background:#0ea5e9;">📋 Ver historial</a>`;
+            }
 
             content += `</div>`;
 

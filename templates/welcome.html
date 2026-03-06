@@ -418,6 +418,29 @@
     </div>
 
     <script>
+        /* ══ SKIP CON DOBLE ESPACIO ══ */
+        let spaceCount = 0;
+        let spaceTimeout;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                spaceCount++;
+
+                clearTimeout(spaceTimeout);
+
+                if (spaceCount === 2) {
+                    // Saltar directamente al dashboard
+                    window.location.href = "{{ url_for('dashboard') }}";
+                }
+
+                // Resetear contador después de 800ms
+                spaceTimeout = setTimeout(() => {
+                    spaceCount = 0;
+                }, 800);
+            }
+        });
+
         /* ══ PASO 1: FAKE LOADER ══ */
         const steps = [
             { pct: 15, label: "Verificando credenciales…" },

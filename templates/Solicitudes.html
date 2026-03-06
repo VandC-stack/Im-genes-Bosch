@@ -723,7 +723,11 @@
                     <div class="folio-title">Folio: <strong>{{ group.folio or 'N/A' }}</strong></div>
                     <div class="folio-meta">
                         Cliente: <strong>{{ group.client }}</strong> · Archivos: {{ group.total_files }} · Imágenes: {{
-                        group.image_count }} · Docs: {{ group.document_count }} · Norma: <strong>{{ group.norma or '—'
+                        group.image_count }} · Docs: {{ group.document_count }}
+                        {% if group.nombre_proyecto %}
+                        · Proyecto: <strong>{{ group.nombre_proyecto }}</strong>
+                        {% endif %}
+                        · Norma: <strong>{{ group.norma or '—'
                             }}</strong>
                     </div>
                     {% if group.folio != 'SIN-FOLIO' %}
@@ -742,6 +746,8 @@
                             {% if group.assigned_to and group.assigned_to != 'Varios' %}Reasignar{% else %}Asignar{%
                             endif %}
                         </button>
+                        <a href="/historial/{{ group.folio }}" class="btn-assign"
+                            style="text-decoration:none; text-align:center;">📋 Historial</a>
                         {% if group.assigned_to %}
                         <div class="mini-meta">Asignada a: <strong>{{ group.assigned_to }}</strong></div>
                         {% endif %}

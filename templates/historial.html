@@ -214,6 +214,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
+            -webkit-overflow-scrolling: auto;
         }
 
         .card-head {
@@ -916,7 +917,8 @@
             gap: 6px;
             padding: 16px 24px 0;
             border-bottom: 1px solid var(--border);
-            overflow-x: auto;
+            overflow: visible;
+            flex-wrap: wrap;
         }
 
         .filter-tab {
@@ -1111,8 +1113,7 @@
                 <div class="card-head">
                     <div class="card-icon card-icon-dark"><img src="/static/Graficas.svg" alt="Progreso"></div>
                     <div>
-                        <div class="card-head-title">Progreso del ciclo</div>
-                        <div class="card-head-sub">Etapas de la solicitud</div>
+                        <div class="card-head-title">Etapas de la solicitud</div>
                     </div>
                 </div>
                 <div class="progress-track">
@@ -1161,7 +1162,6 @@
                     <div class="card-icon"><img src="/static/texto.svg" alt="Comentario"></div>
                     <div>
                         <div class="card-head-title">Agregar comentario</div>
-                        <div class="card-head-sub">Visible para el equipo SEA y el cliente</div>
                     </div>
                 </div>
 
@@ -1191,8 +1191,11 @@
 
                     <div class="comment-footer">
                         <button class="comment-attach" onclick="triggerAttach()"><img src="/static/upload.svg"
-                                style="width:14px; height:14px; margin-right:2px;"> Adjuntar archivo</button>
-                        <input type="file" id="attachInput" multiple style="display:none" onchange="handleAttach(this)">
+                                alt="Adjuntar" style="width:14px; height:14px; margin-right:2px;"> Adjuntar
+                            archivo</button>
+                        <input type="file" id="attachInput" multiple
+                            accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                            style="display:none" onchange="handleAttach(this)">
                         <button class="btn btn-yellow" id="sendBtn" onclick="sendComment()">Enviar ↗</button>
                     </div>
                 </div>
@@ -1339,12 +1342,13 @@
            PROGRESS TRACKER
         ══════════════════════════════════════ */
         function renderProgress() {
-            const currentIdx = ETAPAS.findIndex(e => e.key === SOLICITUD.estatus);
+            const estatus = SOLICITUD.estatus || "PENDIENTE";
+            const currentIdx = ETAPAS.findIndex(e => e.key === estatus);
             const el = document.getElementById("progressSteps");
 
             el.innerHTML = ETAPAS.map((etapa, i) => {
-                const isDone = i < currentIdx;
-                const isActive = i === currentIdx;
+                const isDone = currentIdx >= 0 && i < currentIdx;
+                const isActive = currentIdx >= 0 && i === currentIdx;
                 const cls = isDone ? "done" : isActive ? "active" : "";
                 const nodeContent = isDone ? "<img src='/static/check.svg' style='width:10px; height:10px; filter: invert(1);'>" : (i + 1);
 
@@ -1424,9 +1428,9 @@
                         attachHtml = `
                     <div class="tl-attachments">
                         ${entry.archivos.map(f => `
-                            <a href="#" class="tl-attachment">
+                            <a href="${f.url || '#'}" class="tl-attachment" ${f.url ? 'target="_blank" rel="noopener noreferrer"' : ''}>
                                 <img src="/static/document.svg" style="width:12px; height:12px;"> ${f.nombre}
-                                <span class="ext">${f.ext.toUpperCase()} · ${f.size}</span>
+                                <span class="ext">${(f.ext || '').toUpperCase()} · ${f.size || ''}</span>
                             </a>
                         `).join("")}
                     </div>`;
@@ -1454,15 +1458,36 @@
         }
 
         function avatarClass(rol) {
-            return { system: "av-system", cliente: "av-cliente", agente: "av-agente", supervisor: "av-supervisor" }[rol] || "av-agente";
+            return {
+                system: "av-system",
+                cliente: "av-cliente",
+                agente: "av-agente",
+                ejecutivo: "av-agente",
+                bosch: "av-agente",
+                supervisor: "av-supervisor"
+            }[rol] || "av-agente";
         }
 
         function roleClass(rol) {
-            return { system: "role-system", cliente: "role-cliente", agente: "role-agente", supervisor: "role-supervisor" }[rol] || "role-agente";
+            return {
+                system: "role-system",
+                cliente: "role-cliente",
+                agente: "role-agente",
+                ejecutivo: "role-agente",
+                bosch: "role-agente",
+                supervisor: "role-supervisor"
+            }[rol] || "role-agente";
         }
 
         function roleLabel(rol) {
-            return { system: "Sistema", cliente: "Cliente", agente: "Agente SEA", supervisor: "Supervisor" }[rol] || rol;
+            return {
+                system: "Sistema",
+                cliente: "Cliente",
+                agente: "Agente SEA",
+                ejecutivo: "Ejecutivo SEA",
+                bosch: "Bosch",
+                supervisor: "Supervisor"
+            }[rol] || rol;
         }
 
         function badgeClass(estatus) {
@@ -1500,9 +1525,30 @@
 
         function removeAttach(i) { attachedFiles.splice(i, 1); renderAttachChips(); }
 
-        function sendComment() {
+        async function uploadAttachments(solicitudId) {
+            if (!attachedFiles.length) {
+                return [];
+            }
+
+            const formData = new FormData();
+            attachedFiles.forEach(file => formData.append("files", file));
+
+            const res = await fetch(`/api/solicitud/${solicitudId}/adjuntos`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "No se pudieron subir los adjuntos");
+            }
+
+            return Array.isArray(data.archivos) ? data.archivos : [];
+        }
+
+        async function sendComment() {
             const text = document.getElementById("commentText").value.trim();
             const status = document.getElementById("statusSelect")?.value || "";
+            const sendBtn = document.getElementById("sendBtn");
 
             if (!text && !status && !attachedFiles.length) {
                 showToast("error", "Comentario vacío", "Escribe algo antes de enviar.");
@@ -1511,65 +1557,69 @@
 
             const solicitudId = window.location.pathname.split("/").filter(Boolean).pop();
             const promises = [];
+            sendBtn.disabled = true;
 
-            // Status change (only supervisor)
-            if (status && CURRENT_ROLE === "supervisor") {
-                promises.push(
-                    fetch(`/api/solicitud/${solicitudId}/estatus`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            estatus: status,
-                            comentario: text
+            try {
+                // Status change (only supervisor)
+                if (status && CURRENT_ROLE === "supervisor") {
+                    promises.push(
+                        fetch(`/api/solicitud/${solicitudId}/estatus`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                estatus: status,
+                                comentario: text
+                            })
+                        }).then(async (r) => {
+                            const data = await r.json();
+                            if (!r.ok) throw new Error(data.error || "No se pudo actualizar el estatus");
+                            return data;
                         })
-                    }).then(r => r.json())
-                );
-            }
+                    );
+                }
 
-            // Comment entry
-            if (text || attachedFiles.length) {
-                const archivos = attachedFiles.map(f => ({
-                    nombre: f.name,
-                    ext: f.name.split(".").pop().toLowerCase(),
-                    size: (f.size / 1024).toFixed(0) + " KB"
-                }));
+                // Comment entry
+                if (text || attachedFiles.length) {
+                    const archivos = await uploadAttachments(solicitudId);
 
-                promises.push(
-                    fetch(`/api/solicitud/${solicitudId}/comentarios`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            texto: text,
-                            archivos: archivos
+                    promises.push(
+                        fetch(`/api/solicitud/${solicitudId}/comentarios`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                texto: text,
+                                archivos: archivos
+                            })
+                        }).then(async (r) => {
+                            const data = await r.json();
+                            if (!r.ok) throw new Error(data.error || "No se pudo guardar el comentario");
+                            return data;
                         })
-                    }).then(r => r.json())
-                );
+                    );
+                }
+
+                await Promise.all(promises);
+
+                // Reset
+                document.getElementById("commentText").value = "";
+                attachedFiles = [];
+                renderAttachChips();
+                document.getElementById("statusSelect").value = "";
+                showToast("success", "Enviado", "Tu mensaje fue registrado.");
+
+                // Recargar historial desde el servidor
+                const historyRes = await fetch(`/api/solicitud/${solicitudId}/historial`);
+                const historyData = await historyRes.json();
+                HISTORIAL = historyData.historial || [];
+                renderTimeline();
+                renderSummary();
+                renderProgress();
+            } catch (err) {
+                console.error("Error:", err);
+                showToast("error", "Error", err.message || "No se pudo enviar el comentario.");
+            } finally {
+                sendBtn.disabled = false;
             }
-
-            // Execute all promises
-            Promise.all(promises)
-                .then(() => {
-                    // Reset
-                    document.getElementById("commentText").value = "";
-                    attachedFiles = [];
-                    renderAttachChips();
-                    document.getElementById("statusSelect").value = "";
-                    showToast("success", "Enviado", "Tu mensaje fue registrado.");
-
-                    // Recargar historial desde el servidor
-                    fetch(`/api/solicitud/${solicitudId}/historial`)
-                        .then(r => r.json())
-                        .then(data => {
-                            HISTORIAL = data.historial || [];
-                            renderTimeline();
-                            renderSummary();
-                            renderProgress();
-                        });
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    showToast("error", "Error", "No se pudo enviar el comentario.");
-                });
         }
 
         /* ══════════════════════════════════════
