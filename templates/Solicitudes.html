@@ -228,6 +228,17 @@
             padding: 12px;
         }
 
+        .no-files-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            color: #888;
+            font-size: 0.85rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -694,6 +705,9 @@
             {% set group_index = loop.index %}
             <div class="folio-card">
                 <div class="folio-preview">
+                    {% if group.total_files == 0 %}
+                    <div class="no-files-placeholder">Sin archivos adjuntos</div>
+                    {% else %}
                     <div
                         class="preview-grid{% if group.total_files == 1 %} single{% elif group.total_files == 2 %} two{% endif %}">
                         {% set preview_files = group.files[:4] %}
@@ -718,6 +732,7 @@
                         </div>
                         {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
                 <div class="folio-body">
                     <div class="folio-title">Folio: <strong>{{ group.folio or 'N/A' }}</strong></div>
@@ -727,6 +742,8 @@
                         {% if group.nombre_proyecto %}
                         · Proyecto: <strong>{{ group.nombre_proyecto }}</strong>
                         {% endif %}
+                        · Ciclo: <strong>{{ group.ciclo_actual }}</strong>
+                        · Comentarios cliente: <strong>{{ group.comentarios_cliente }}</strong>
                         · Norma: <strong>{{ group.norma or '—'
                             }}</strong>
                     </div>
@@ -746,8 +763,9 @@
                             {% if group.assigned_to and group.assigned_to != 'Varios' %}Reasignar{% else %}Asignar{%
                             endif %}
                         </button>
-                        <a href="/historial/{{ group.folio }}" class="btn-assign"
-                            style="text-decoration:none; text-align:center;">📋 Historial</a>
+                        <a href="/historial/{{ group.folio }}" class="btn-assign">Ciclo {{ group.ciclo_actual }}</a>
+                        <a href="/historial/{{ group.folio }}" class="btn-assign">Comentarios {{
+                            group.comentarios_cliente }}</a>
                         {% if group.assigned_to %}
                         <div class="mini-meta">Asignada a: <strong>{{ group.assigned_to }}</strong></div>
                         {% endif %}

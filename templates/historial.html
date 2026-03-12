@@ -1072,7 +1072,7 @@
 
     <!-- TOPBAR -->
     <nav class="topbar">
-        <a href="/dashboard" class="topbar-brand">
+        <a href="{{ back_url }}" class="topbar-brand">
             <div class="brand-dot"><img src="/static/folder.svg" alt=""></div>
             <span class="brand-name">Historial</span>
         </a>
@@ -1089,7 +1089,7 @@
 
         <!-- Breadcrumb -->
         <div class="breadcrumb">
-            <a href="/dashboard" class="back-btn">← Volver al Dashboard</a>
+            <a href="{{ back_url }}" class="back-btn">← {{ back_label }}</a>
             <span class="sep" style="margin: 0 4px;">›</span>
             <span class="current" id="breadFolio">—</span>
         </div>
@@ -1319,23 +1319,38 @@
 
             const rows = [
                 ["Folio", SOLICITUD.folio],
-                ["Tipo", SOLICITUD.tipo_servicio || "—"],
+                ["Cliente", SOLICITUD.client || "—"],
+                ["Ciclo actual", `Ciclo ${SOLICITUD.ciclo_actual || 1}`],
+                ["Tipo de servicio", SOLICITUD.tipo_servicio || "—"],
                 ["Proyecto", SOLICITUD.nombre_proyecto || "—"],
-                ["Norma", SOLICITUD.norma],
+                ["Norma", SOLICITUD.norma || "—"],
                 ["SKU's", SOLICITUD.num_skus || "—"],
-                ["Medidas", SOLICITUD.medidas],
+                ["Medidas", SOLICITUD.medidas || "—"],
+                ["Importador", SOLICITUD.importador || "—"],
+                ["Marca", SOLICITUD.marca || "—"],
+                ["País de origen", SOLICITUD.pais_origen || "—"],
                 ["Prioridad", prioLabel],
                 ["Estatus", `<span class="badge ${sCls}"><span class="badge-dot"></span>${sLabel}</span>`],
                 ["Recepción", SOLICITUD.fecha_recepcion ? SOLICITUD.fecha_recepcion.substring(0, 10) : "—"],
                 ["Envío", SOLICITUD.fecha_envio ? SOLICITUD.fecha_envio.substring(0, 10) : "—"],
             ];
 
+            // Descripción de contenido al final (puede ser larga)
+            let contenidoHtml = "";
+            if (SOLICITUD.contenido) {
+                contenidoHtml = `
+        <div class="summary-row" style="flex-direction:column; gap:6px;">
+            <span class="summary-label">Descripción / Contenido</span>
+            <span class="summary-value" style="max-width:100%; text-align:left; font-weight:400; line-height:1.55; color:var(--text)">${SOLICITUD.contenido}</span>
+        </div>`;
+            }
+
             document.getElementById("summaryBody").innerHTML = rows.map(([l, v]) => `
         <div class="summary-row">
             <span class="summary-label">${l}</span>
             <span class="summary-value">${v}</span>
         </div>
-    `).join("");
+    `).join("") + contenidoHtml;
         }
 
         /* ══════════════════════════════════════
@@ -1607,9 +1622,16 @@
                 document.getElementById("statusSelect").value = "";
                 showToast("success", "Enviado", "Tu mensaje fue registrado.");
 
-                // Recargar historial desde el servidor
-                const historyRes = await fetch(`/api/solicitud/${solicitudId}/historial`);
-                const historyData = await historyRes.json();
+                // Recargar historial y resumen desde el servidor
+                const [solicitudRes, historyRes] = await Promise.all([
+                    fetch(`/api/solicitud/${solicitudId}`),
+                    fetch(`/api/solicitud/${solicitudId}/historial`)
+                ]);
+                const [solicitudData, historyData] = await Promise.all([
+                    solicitudRes.json(),
+                    historyRes.json()
+                ]);
+                SOLICITUD = solicitudData;
                 HISTORIAL = historyData.historial || [];
                 renderTimeline();
                 renderSummary();

@@ -106,7 +106,7 @@ def is_image_extension(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in IMAGE_EXTENSIONS
 
 
-def sanitize_filename(name: str) -> str:
+def sanitize_filename(name: str) -> Optional[str]:
     name = name.strip()
     name = re.sub(r"[^\w\-]+", "_", name)
     return name or None
@@ -212,6 +212,52 @@ def parse_iso_date(value: Optional[str]):
         except ValueError:
             return None
     return None
+
+
+def normalize_cycle_value(value) -> int:
+    """Normaliza el valor de ciclo a entero positivo."""
+    try:
+        cycle = int(value)
+    except (TypeError, ValueError):
+        return 1
+    return cycle if cycle > 0 else 1
+
+
+def get_max_cycle(assignments: list, folio: Optional[str] = None) -> int:
+    """Obtiene el ciclo maximo de un folio a partir de sus assignments."""
+    cycles = []
+    for assignment in assignments:
+        if folio is not None and assignment.get("folio") != folio:
+            continue
+        cycles.append(normalize_cycle_value(assignment.get("ciclo_actual", 1)))
+    return max(cycles) if cycles else 1
+
+
+def count_client_comments(solicitud: Optional[dict]) -> int:
+    """Cuenta comentarios o ediciones registradas por el cliente en el historial."""
+    if not isinstance(solicitud, dict):
+        return 0
+
+    client_username = solicitud.get("client")
+    total = 0
+    for entry in solicitud.get("historial", []):
+        if not isinstance(entry, dict):
+            continue
+
+        entry_type = entry.get("tipo")
+        if entry_type == "edicion_cliente":
+            total += 1
+            continue
+
+        if entry_type != "comentario":
+            continue
+
+        entry_role = normalize_role(entry.get("rol")) if entry.get("rol") else ""
+        entry_author = entry.get("usuario") or entry.get("autor")
+        if entry_role == ROLE_CLIENTE or (client_username and entry_author == client_username):
+            total += 1
+
+    return total
 
 
 def get_upload_folder(username: Optional[str] = None):
@@ -548,7 +594,7 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
 
                 try:
                     stats = os.stat(full_path)
-                    mtime = datetime.fromtimestamp(stats.st_mtime)
+                    mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
                     assignment = assignments_by_path.get(full_path)
                     if not assignment:
                         folio = generate_folio(existing_folios)
@@ -607,7 +653,7 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
 
             try:
                 stats = os.stat(full_path)
-                mtime = datetime.fromtimestamp(stats.st_mtime)
+                mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
                 filename = assignment.get("filename") or os.path.basename(full_path)
                 status = normalize_status(
                     assignment.get("status") if assignment else None,
@@ -644,7 +690,7 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
 
             try:
                 stats = os.stat(full_path)
-                mtime = datetime.fromtimestamp(stats.st_mtime)
+                mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
                 assignment = assignments_by_path.get(full_path)
                 if not assignment:
                     folio = generate_folio(existing_folios)
@@ -820,6 +866,15 @@ def historial(folio):
     # Verificar acceso: clientes solo ven sus solicitudes, ejecutivos y supervisores ven todas
     username = session.get("username")
     role = normalize_role(session.get("role"))
+
+    back_url = url_for("dashboard")
+    back_label = "Volver al Dashboard"
+    if role == ROLE_EJECUTIVO:
+        back_url = url_for("ejecutivo_panel")
+        back_label = "Volver al Panel"
+    elif role == ROLE_SUPERVISOR:
+        back_url = url_for("solicitudes")
+        back_label = "Volver a Solicitudes"
     
     if role == ROLE_CLIENTE:
         # Verificar que la solicitud pertenece al cliente
@@ -828,7 +883,13 @@ def historial(folio):
         if not solicitud or solicitud.get("client") != username:
             abort(403)
     
-    return render_template("historial.html", username=session.get("username"), folio=folio)
+    return render_template(
+        "historial.html",
+        username=session.get("username"),
+        folio=folio,
+        back_url=back_url,
+        back_label=back_label
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1105,8 +1166,7 @@ def api_solicitudes():
         completed_at = max(completion_dates) if completion_dates else None
 
         # Obtener el ciclo máximo de los assignments vinculados
-        ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
-        ciclo_actual = max(ciclos) if ciclos else 1
+        ciclo_actual = get_max_cycle(linked)
 
         solicitudes.append({
             "fecha": req.get("created_at"),
@@ -1145,8 +1205,7 @@ def api_solicitudes():
         completed_at = max(completion_dates) if completion_dates else None
 
         # Obtener el ciclo máximo de los assignments vinculados
-        ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
-        ciclo_actual = max(ciclos) if ciclos else 1
+        ciclo_actual = get_max_cycle(linked)
 
         project_hint = linked[0].get("filename") if linked else "—"
         solicitudes.append({
@@ -1192,8 +1251,7 @@ def get_solicitud(folio):
     # Obtener ciclo desde assignments
     assignments = load_assignments()
     linked = [a for a in assignments if a.get("folio") == folio]
-    ciclos = [a.get("ciclo_actual", 1) for a in linked if a.get("ciclo_actual")]
-    ciclo_actual = max(ciclos) if ciclos else 1
+    ciclo_actual = get_max_cycle(linked)
     
     # Leer estatus directamente de service_requests (fuente única de verdad)
     estatus = solicitud.get("estatus", "PENDIENTE")
@@ -1219,6 +1277,7 @@ def get_solicitud(folio):
     
     return jsonify({
         "folio": folio,
+        "client": solicitud.get("client", ""),
         "tipo_servicio": solicitud.get("tipo_servicio", ""),
         "nombre_proyecto": solicitud.get("nombre_proyecto", ""),
         "norma": solicitud.get("norma", ""),
@@ -1444,11 +1503,14 @@ def edit_solicitud(folio):
     # Incrementar ciclo en los assignments vinculados
     for assignment in assignments:
         if assignment.get("folio") == folio:
-            ciclo_actual = assignment.get("ciclo_actual", 1)
+            ciclo_actual = normalize_cycle_value(assignment.get("ciclo_actual", 1))
             assignment["ciclo_actual"] = ciclo_actual + 1
             assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
             assignment["last_edited_by"] = username
     
+    if req_index is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
     # Guardar cambios
     requests_data[req_index] = solicitud
     save_service_requests(requests_data)
@@ -1459,7 +1521,7 @@ def edit_solicitud(folio):
     return jsonify({
         "status": "ok",
         "message": "Solicitud actualizada correctamente",
-        "ciclo_nuevo": max([a.get("ciclo_actual", 1) for a in assignments if a.get("folio") == folio] or [1])
+        "ciclo_nuevo": get_max_cycle(assignments, folio)
     })
 
 
@@ -1694,6 +1756,9 @@ def add_solicitud_comentario(folio):
         "archivos": archivos
     })
     
+    if req_index is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
     # Guardar
     requests_data[req_index] = solicitud
     save_service_requests(requests_data)
@@ -1854,6 +1919,9 @@ def update_solicitud_estatus(folio):
         "estatus_nuevo": nuevo_estatus
     })
     
+    if req_index is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
     # Guardar
     requests_data[req_index] = solicitud
     save_service_requests(requests_data)
@@ -2158,6 +2226,20 @@ def solicitudes():
     requests_by_folio = {
         r.get("folio"): r for r in requests_data if r.get("folio")
     }
+    assignments = load_assignments()
+    cycle_by_folio = {}
+    for assignment in assignments:
+        folio = assignment.get("folio")
+        if not folio:
+            continue
+        cycle_by_folio[folio] = max(
+            cycle_by_folio.get(folio, 1),
+            normalize_cycle_value(assignment.get("ciclo_actual", 1))
+        )
+    comments_by_folio = {
+        folio: count_client_comments(request_data)
+        for folio, request_data in requests_by_folio.items()
+    }
     
     for username, client_data in config.get("clients", {}).items():
         # Saltar supervisores, solo mostrar archivos de clientes y ejecutivos
@@ -2198,7 +2280,7 @@ def solicitudes():
             
             try:
                 stats = os.stat(full_path)
-                mtime = datetime.fromtimestamp(stats.st_mtime)
+                mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
                 assignment = get_assignment_by_path(full_path)
                 status = normalize_status(
                     assignment.get("status") if assignment else None,
@@ -2242,7 +2324,9 @@ def solicitudes():
                 "assigned_count": 0,
                 "norma": request_data.get("norma") if request_data else "",
                 "nombre_proyecto": request_data.get("nombre_proyecto") if request_data else "",
-                "assigned_to": entry.get("assigned_to") if entry.get("assigned_to") else None
+                "assigned_to": entry.get("assigned_to") if entry.get("assigned_to") else None,
+                "ciclo_actual": cycle_by_folio.get(folio, 1),
+                "comentarios_cliente": comments_by_folio.get(folio, 0)
             }
             grouped[folio] = group
         else:
@@ -2264,6 +2348,37 @@ def solicitudes():
 
         if entry.get("modified") and entry["modified"] > group["latest_modified"]:
             group["latest_modified"] = entry["modified"]
+
+    # Incluir solicitudes sin archivos adjuntos (solo formulario de texto)
+    for folio, request_data in requests_by_folio.items():
+        if folio in grouped:
+            continue
+        client = request_data.get("client", "")
+        if client_filter and client != client_filter:
+            continue
+        try:
+            created_at_str = request_data.get("created_at", "")
+            latest_dt = (
+                datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+                if created_at_str
+                else datetime.now(timezone.utc)
+            )
+        except Exception:
+            latest_dt = datetime.now(timezone.utc)
+        grouped[folio] = {
+            "folio": folio,
+            "client": client,
+            "files": [],
+            "latest_modified": latest_dt,
+            "image_count": 0,
+            "document_count": 0,
+            "assigned_count": 0,
+            "norma": request_data.get("norma", ""),
+            "nombre_proyecto": request_data.get("nombre_proyecto", ""),
+            "assigned_to": None,
+            "ciclo_actual": cycle_by_folio.get(folio, 1),
+            "comentarios_cliente": comments_by_folio.get(folio, 0),
+        }
 
     groups = list(grouped.values())
     for group in groups:
@@ -2395,6 +2510,18 @@ def ejecutivo_panel():
     
     # Filtrar solo las asignaciones de este ejecutivo
     my_assignments = [a for a in assignments if a.get("assigned_to") == username]
+    requests_by_folio = {
+        r.get("folio"): r for r in load_service_requests() if r.get("folio")
+    }
+    cycle_by_folio = {}
+    for assignment in my_assignments:
+        folio = assignment.get("folio")
+        if not folio:
+            continue
+        cycle_by_folio[folio] = max(
+            cycle_by_folio.get(folio, 1),
+            normalize_cycle_value(assignment.get("ciclo_actual", 1))
+        )
     
     assigned_images = []
     
@@ -2409,7 +2536,7 @@ def ejecutivo_panel():
         
         try:
             stats = os.stat(file_path)
-            mtime = datetime.fromtimestamp(stats.st_mtime)
+            mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
             
             assigned_images.append({
                 "filename": filename,
@@ -2424,6 +2551,8 @@ def ejecutivo_panel():
                 "assigned_by": assignment.get("assigned_by"),
                 "status": normalize_status(assignment.get("status"), assignment.get("assigned_to")),
                 "folio": assignment.get("folio"),
+                "ciclo_actual": cycle_by_folio.get(assignment.get("folio"), 1),
+                "comentarios_cliente": count_client_comments(requests_by_folio.get(assignment.get("folio"))),
                 "is_image": is_image_extension(filename),
                 "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else ""
             })

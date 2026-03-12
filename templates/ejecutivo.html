@@ -218,6 +218,7 @@
             padding: 16px 24px;
             background: #fffef5;
             border-bottom: 1px solid #e8e4a0;
+            flex-wrap: wrap;
         }
 
         .folio-group-label {
@@ -243,6 +244,39 @@
             background: #f0f0f0;
             padding: 3px 10px;
             border-radius: 20px;
+        }
+
+        .folio-group-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .folio-group-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .folio-group-link:hover {
+            border-color: #ECD925;
+            background: #fffef5;
+        }
+
+        .folio-group-link.comments-link {
+            color: #075985;
+            border-color: #bae6fd;
+            background: #f0f9ff;
         }
 
         .folio-group-grid {
@@ -1107,12 +1141,21 @@
 
             let html = '';
             pageGroups.forEach(group => {
+                const groupImage = group.items[0]?.image || {};
+                const groupCiclo = groupImage.ciclo_actual || 1;
+                const groupComentarios = groupImage.comentarios_cliente || 0;
+                const hasHistorial = group.folio && group.folio !== 'S/F';
                 html += `
                     <div class="folio-group">
                         <div class="folio-group-header">
                             <span class="folio-group-label">Folio</span>
                             <span class="folio-group-number">${group.folio}</span>
                             <span class="folio-group-count">${group.items.length} archivo${group.items.length !== 1 ? 's' : ''}</span>
+                            ${hasHistorial ? `
+                            <div class="folio-group-tools">
+                                <a class="folio-group-link" href="/historial/${encodeURIComponent(group.folio)}">Ciclo ${groupCiclo}</a>
+                                <a class="folio-group-link comments-link" href="/historial/${encodeURIComponent(group.folio)}">Comentarios ${groupComentarios}</a>
+                            </div>` : ''}
                         </div>
                         <div class="folio-group-grid">
                 `;
@@ -1245,7 +1288,11 @@
                     </div>
                     <div class="info-row">
                         <div class="info-label">Ciclo</div>
-                        <div class="info-value">${statusMap[image.status] || image.status}</div>
+                        <div class="info-value">Ciclo ${image.ciclo_actual || 1}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Comentarios cliente</div>
+                        <div class="info-value">${image.comentarios_cliente || 0}</div>
                     </div>
                 </div>
             `;
@@ -1265,7 +1312,7 @@
             content += `<button type="button" class="modal-btn btn-accept" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'aceptado')">✓ Aceptar</button>`;
             content += `<button type="button" class="modal-btn btn-reject" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'rechazado')">✗ Rechazar</button>`;
             if (image.folio && image.folio !== 'N/A' && image.folio !== 'S/F') {
-                content += `<a href="/historial/${encodeURIComponent(image.folio)}" class="modal-btn btn-download" style="background:#0ea5e9;">📋 Ver historial</a>`;
+                content += `<a href="/historial/${encodeURIComponent(image.folio)}" class="modal-btn btn-download">Comentarios e historial</a>`;
             }
 
             content += `</div>`;
