@@ -402,7 +402,7 @@ def format_file_size(size_bytes: int) -> str:
     return f"{round(size_bytes / (1024 * 1024), 1)} MB"
 
 
-def can_access_solicitud(solicitud: dict, role: str, username: str) -> bool:
+def can_access_solicitud(solicitud: dict, role: str, username: Optional[str]) -> bool:
     if not isinstance(solicitud, dict):
         return False
     if role == ROLE_CLIENTE:
@@ -909,9 +909,12 @@ def login():
 
         session["username"] = username
         session["role"] = normalize_role(client.get("role"))
-        if not is_safe_next(next_url):
-            next_url = url_for("welcome") if session["role"] == ROLE_CLIENTE else url_for("index")
-        return redirect(next_url)
+        if is_safe_next(next_url):
+            assert next_url is not None
+            safe_next_url = next_url
+        else:
+            safe_next_url = url_for("welcome") if session["role"] == ROLE_CLIENTE else url_for("index")
+        return redirect(safe_next_url)
 
     return render_template("login.html", error=None, next=request.args.get("next", ""))
 
@@ -2056,7 +2059,7 @@ def serve_file_by_path():
     abort(403)
 
 
-def can_access_file_path(file_path: str, role: str, username: str) -> bool:
+def can_access_file_path(file_path: str, role: str, username: Optional[str]) -> bool:
     if not file_path:
         return False
 
