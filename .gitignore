@@ -51,6 +51,7 @@ temp/
 # =========================
 ngrok.exe
 ngrok.yml
+tmp_ngrok_test.py
 
 # =========================
 # IDEs / Editores

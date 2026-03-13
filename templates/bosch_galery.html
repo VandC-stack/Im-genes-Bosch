@@ -31,6 +31,12 @@
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06)
         }
 
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .brand {
             display: flex;
             align-items: center;
@@ -236,16 +242,16 @@
             font-size: 14px
         }
 
-        /* ── GRID: 15 columnas en desktop ── */
+        /* ── GRID: tarjetas más grandes ── */
         .grid {
             display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            gap: 8px
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 12px
         }
 
         @media(max-width:1024px) {
             .grid {
-                grid-template-columns: repeat(12, 1fr)
+                grid-template-columns: repeat(6, minmax(0, 1fr))
             }
         }
 
@@ -260,8 +266,8 @@
             }
 
             .grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 5px
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px
             }
 
             .topbar {
@@ -294,16 +300,35 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px
+            font-size: 22px
+        }
+
+        .card-icon-btn {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .card-body {
-            padding: 4px 5px 5px
+            padding: 8px 8px 10px
         }
 
         .card-code {
             font-family: monospace;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 700;
             color: #111;
             white-space: nowrap;
@@ -312,12 +337,12 @@
         }
 
         .card-name {
-            font-size: 9px;
+            font-size: 18px;
             color: #888;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 3px
+            margin-bottom: 6px
         }
 
         .badge {
@@ -387,7 +412,7 @@
 
         .main-toolbar {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
@@ -402,6 +427,47 @@
             padding: 7px 10px;
             background: #fff;
         }
+
+        .topbar-back {
+            font-weight: 600;
+        }
+
+        .preview-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+
+        .preview-modal.active {
+            display: flex;
+        }
+
+        .preview-image {
+            max-width: min(92vw, 900px);
+            max-height: 88vh;
+            border-radius: 10px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+            background: #fff;
+        }
+
+        .preview-close {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: #fff;
+            color: #111;
+            font-size: 22px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -412,20 +478,23 @@
             <div class="brand-badge">G</div>
             <span class="brand-name">GALERIA</span>
         </div>
-        <div class="user-chip">
-            <div class="avatar" id="avatarInitial">U</div>
-            <span id="usernameDisplay">{{ username }}</span>
+        <div class="topbar-right">
+            <a href="/index" class="back-link topbar-back">Volver</a>
+            <div class="user-chip">
+                <div class="avatar" id="avatarInitial">U</div>
+                <span id="usernameDisplay">{{ username }}</span>
+            </div>
         </div>
     </div>
 
     <div class="layout">
         <div class="sidebar">
             <div>
-                <div class="section-label">Búsqueda por ítems</div>
+                <div class="section-label">Busqueda por nombre</div>
                 <textarea id="codesInput"
-                    placeholder="Pega folios aquí&#10;uno por línea o separados&#10;por coma o espacio"></textarea>
+                    placeholder="Escribe nombres de archivo&#10;uno por linea o separados&#10;por coma o espacio"></textarea>
                 <div class="tags-row tags-row-space" id="tagsRow"></div>
-                <button class="search-btn search-btn-space" onclick="applySearch()">Buscar ítems</button>
+                <button class="search-btn search-btn-space" onclick="applySearch()">Buscar nombre</button>
                 <p class="hint">Insensible a mayúsculas y minúsculas.</p>
             </div>
             <div class="filter-group">
@@ -465,41 +534,69 @@
         <div class="main">
             <div class="main-toolbar">
                 <div id="tagsDisplay" class="tags-row"></div>
-                <a href="/index" class="back-link">Volver</a>
             </div>
             <div id="gallery"></div>
             <div id="pagination" class="pagination"></div>
         </div>
     </div>
 
+    <div id="previewModal" class="preview-modal" role="dialog" aria-modal="true" aria-label="Vista previa de imagen">
+        <button id="previewClose" class="preview-close" aria-label="Cerrar vista previa">×</button>
+        <img id="previewImage" class="preview-image" alt="Vista previa">
+    </div>
+
     <script id="boschItemsData" type="application/json">{{ items | tojson }}</script>
     <script>
-        const PER = 60; let page = 1, codes = [], filtered = [];
+        const PER = 60; let page = 1, searchTerms = [], filtered = [];
         const RAW_ITEMS = JSON.parse(document.getElementById('boschItemsData').textContent || '[]');
         const DATA = RAW_ITEMS.map(item => ({
             ...item,
-            code: (item.code || "").toUpperCase(),
+            name: (item.name || ""),
             date: item.date ? new Date(item.date) : null,
             icon: item.type === "imagen" ? "🖼️" : "📄"
         }));
-        function parseCodes(v) { return v.split(/[\n,;\s]+/).map(s => s.trim().toUpperCase()).filter(Boolean); }
-        function applySearch() { codes = parseCodes(document.getElementById('codesInput').value); renderTags(); page = 1; render(); }
+        const LONG_PRESS_MS = 500;
+        const previewModal = document.getElementById('previewModal');
+        const previewImage = document.getElementById('previewImage');
+        const previewClose = document.getElementById('previewClose');
+
+        function openPreview(url, name) {
+            if (!url) return;
+            previewImage.src = url;
+            previewImage.alt = name || 'Vista previa';
+            previewModal.classList.add('active');
+        }
+
+        function closePreview() {
+            previewModal.classList.remove('active');
+            previewImage.src = '';
+        }
+
+        previewClose.addEventListener('click', closePreview);
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) closePreview();
+        });
+        function parseTerms(v) { return v.split(/[\n,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean); }
+        function applySearch() { searchTerms = parseTerms(document.getElementById('codesInput').value); renderTags(); page = 1; render(); }
         function renderTags() {
             ['tagsRow', 'tagsDisplay'].forEach(id => {
                 const r = document.getElementById(id); r.innerHTML = '';
-                codes.forEach(c => { const el = document.createElement('div'); el.className = 'code-tag'; el.innerHTML = `<div class="code-dot"></div>${c}`; r.appendChild(el); });
+                searchTerms.forEach(term => { const el = document.createElement('div'); el.className = 'code-tag'; el.innerHTML = `<div class="code-dot"></div>${term}`; r.appendChild(el); });
             });
         }
         function applyFilters() { page = 1; render(); }
         function clearAll() {
             document.getElementById('codesInput').value = '';
             ['fEstado', 'fTipo', 'fFecha'].forEach(id => document.getElementById(id).value = '');
-            codes = []; renderTags(); page = 1; render();
+            searchTerms = []; renderTags(); page = 1; render();
         }
         function render() {
             const es = document.getElementById('fEstado').value, ti = document.getElementById('fTipo').value, di = parseInt(document.getElementById('fFecha').value) || 0;
             let items = [...DATA];
-            if (codes.length) items = items.filter(i => codes.includes((i.code || '').toUpperCase()));
+            if (searchTerms.length) items = items.filter(i => {
+                const name = (i.name || '').toLowerCase();
+                return searchTerms.some(term => name.includes(term));
+            });
             if (es) items = items.filter(i => i.status === es);
             if (ti) items = items.filter(i => i.type === ti);
             if (di) { const c = new Date(); c.setDate(c.getDate() - di); items = items.filter(i => i.date && i.date >= c); }
@@ -512,8 +609,50 @@
             g.innerHTML = ''; const gr = document.createElement('div'); gr.className = 'grid';
             slice.forEach(item => {
                 const c = document.createElement('div'); c.className = 'card';
-                c.innerHTML = `<div class="card-img">${item.icon}</div><div class="card-body"><div class="card-code">${item.code || 'SIN-FOLIO'}</div><div class="card-name">${item.name}</div><span class="badge ${item.status === 'aceptado' ? 'b-active' : 'b-inactive'}">${item.status}</span></div>`;
-                c.onclick = () => { if (item.url) { window.location.href = item.url; } };
+                const preview = (item.type === 'imagen' && item.url)
+                    ? `<img src="${item.url}" alt="${item.name}" class="card-thumb" loading="lazy">`
+                    : item.icon;
+                c.innerHTML = `<div class="card-img"><button class="card-icon-btn" type="button" title="Click: detalle | Click largo: vista previa">${preview}</button></div><div class="card-body"><div class="card-name">${item.name}</div><div class="card-code">${item.ext ? item.ext.toUpperCase() : 'ARCHIVO'}</div><span class="badge ${item.status === 'aceptado' ? 'b-active' : 'b-inactive'}">${item.status}</span></div>`;
+
+                const iconBtn = c.querySelector('.card-icon-btn');
+                let pressTimer = null;
+                let longPressed = false;
+
+                const startPress = () => {
+                    longPressed = false;
+                    pressTimer = setTimeout(() => {
+                        longPressed = true;
+                        if (item.type === 'imagen') {
+                            openPreview(item.url, item.name);
+                        }
+                    }, LONG_PRESS_MS);
+                };
+
+                const clearPress = () => {
+                    if (pressTimer) {
+                        clearTimeout(pressTimer);
+                        pressTimer = null;
+                    }
+                };
+
+                iconBtn.addEventListener('mousedown', startPress);
+                iconBtn.addEventListener('touchstart', startPress, { passive: true });
+                iconBtn.addEventListener('mouseup', clearPress);
+                iconBtn.addEventListener('mouseleave', clearPress);
+                iconBtn.addEventListener('touchend', clearPress);
+                iconBtn.addEventListener('touchcancel', clearPress);
+
+                iconBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (longPressed) {
+                        longPressed = false;
+                        return;
+                    }
+                    if (item.detail_url) {
+                        window.location.href = item.detail_url;
+                    }
+                });
+
                 gr.appendChild(c);
             }); g.appendChild(gr);
         }

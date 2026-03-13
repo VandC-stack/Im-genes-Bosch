@@ -571,6 +571,8 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
         a.get("file_path"): a for a in assignments if a.get("file_path")
     }
     existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
+    client_info = get_client(username) if username else None
+    is_bosch_user = normalize_role((client_info or {}).get("role")) == ROLE_BOSCH
     assignments_changed = False
     
     if all_clients and username:
@@ -693,8 +695,9 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
                 mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
                 assignment = assignments_by_path.get(full_path)
                 if not assignment:
-                    folio = generate_folio(existing_folios)
-                    existing_folios.add(folio)
+                    folio = None if is_bosch_user else generate_folio(existing_folios)
+                    if folio:
+                        existing_folios.add(folio)
                     assignment = {
                         "filename": filename,
                         "file_path": full_path,
@@ -935,6 +938,8 @@ def upload():
     custom_names = request.form.getlist("custom_name")
 
     username = session.get("username")
+    role = normalize_role(session.get("role"))
+    is_bosch_user = role == ROLE_BOSCH
     upload_folder = get_upload_folder(username)
 
     saved = []
@@ -981,13 +986,14 @@ def upload():
             assignment["status"] = STATUS_UPLOADED
             assignment["uploaded_at"] = datetime.now(timezone.utc).isoformat()
             # Asegurar que la asignación tenga folio (válido para documentos e imágenes)
-            if not assignment.get("folio"):
+            if (not assignment.get("folio")) and (not is_bosch_user):
                 folio = generate_folio(existing_folios)
                 existing_folios.add(folio)
                 assignment["folio"] = folio
         else:
-            folio = generate_folio(existing_folios)
-            existing_folios.add(folio)
+            folio = None if is_bosch_user else generate_folio(existing_folios)
+            if folio:
+                existing_folios.add(folio)
             assignments.append({
                 "filename": filename,
                 "file_path": file_path,
@@ -2180,13 +2186,14 @@ def gallery():
         bosch_items = []
         for img in images:
             status = normalize_status(img.get("status"), None)
+            folio = img.get("folio")
             bosch_items.append({
-                "code": (img.get("folio") or "").upper(),
                 "name": img.get("name", ""),
                 "status": status,
                 "type": "imagen" if img.get("is_image") else "documento",
                 "date": img.get("modified").isoformat() if img.get("modified") else "",
                 "url": img.get("url", ""),
+                "detail_url": url_for("historial", folio=folio) if folio else "",
                 "ext": img.get("ext", "")
             })
 
@@ -2965,7 +2972,7 @@ def view_image():
         return "Archivo no encontrado", 404
     
     # Permisos: supervisor ve todo, cliente solo ve sus propias asignaciones
-    if role == ROLE_CLIENTE:
+    if role in {ROLE_CLIENTE, ROLE_BOSCH}:
         if assignment.get("client") != username:
             return "No autorizado", 403
     elif role != ROLE_SUPERVISOR:

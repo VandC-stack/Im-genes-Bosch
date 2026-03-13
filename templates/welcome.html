@@ -421,6 +421,11 @@
         /* ══ SKIP CON DOBLE ESPACIO ══ */
         let spaceCount = 0;
         let spaceTimeout;
+        const nextUrl = document.getElementById("ctaBtn").getAttribute("href") || "{{ url_for('dashboard') }}";
+
+        function goNext() {
+            window.location.href = nextUrl;
+        }
 
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
@@ -430,8 +435,8 @@
                 clearTimeout(spaceTimeout);
 
                 if (spaceCount === 2) {
-                    // Saltar directamente al dashboard
-                    window.location.href = "{{ url_for('dashboard') }}";
+                    // Saltar directamente al siguiente paso
+                    goNext();
                 }
 
                 // Resetear contador después de 800ms
@@ -439,6 +444,11 @@
                     spaceCount = 0;
                 }, 800);
             }
+        });
+
+        // Doble click en pantalla para saltar al siguiente paso
+        document.addEventListener('dblclick', () => {
+            goNext();
         });
 
         /* ══ PASO 1: FAKE LOADER ══ */
