@@ -813,7 +813,7 @@
             <div class="topbar-right">
                 <div class="user-badge"><img src="/static/icon-user.svg" alt="usuario" class="inline-icon"> {{ username
                     }}</div>
-                <a href="/dashboard" class="topbar-link">← Volver</a>
+                <a href="{{ back_url or '/index' }}" class="topbar-link">← Volver</a>
                 <a href="/logout" class="topbar-link">Cerrar sesión</a>
             </div>
         </div>

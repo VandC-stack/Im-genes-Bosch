@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria Bosch - GEPI</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f0f0f0;
+            color: #111
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06)
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .brand-badge {
+            width: 28px;
+            height: 28px;
+            background: #ECD925;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #000
+        }
+
+        .brand-name {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #111
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f6f6f6;
+            border: 1px solid #e0e0e0;
+            border-radius: 999px;
+            padding: 6px 14px 6px 8px;
+            font-size: 13px;
+            color: #111
+        }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            background: #ECD925;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #000
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 265px 1fr;
+            min-height: calc(100vh - 57px)
+        }
+
+        .sidebar {
+            border-right: 1px solid #e0e0e0;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            background: #fff
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 8px
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            resize: vertical;
+            padding: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f6f6f6;
+            color: #111;
+            line-height: 1.5
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #c9b800
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 10px;
+            background: #ECD925;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #111;
+            transition: background 0.15s
+        }
+
+        .search-btn:hover {
+            background: #c9b800
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.5;
+            margin-top: 6px
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f6f6f6;
+            color: #111;
+            margin-top: 4px
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #c9b800
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #666
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .clear-btn {
+            width: 100%;
+            padding: 9px;
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.15s
+        }
+
+        .clear-btn:hover {
+            border-color: #bbb;
+            color: #111
+        }
+
+        .main {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background: #f0f0f0
+        }
+
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            min-height: 0
+        }
+
+        .code-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-family: monospace;
+            color: #111
+        }
+
+        .code-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ECD925;
+            flex-shrink: 0
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 14px
+        }
+
+        /* ── GRID: 15 columnas en desktop ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 8px
+        }
+
+        @media(max-width:1024px) {
+            .grid {
+                grid-template-columns: repeat(12, 1fr)
+            }
+        }
+
+        @media(max-width:600px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0
+            }
+
+            .grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 5px
+            }
+
+            .topbar {
+                padding: 12px 16px
+            }
+
+            .main {
+                padding: 14px
+            }
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.15s, border-color 0.15s;
+            cursor: pointer
+        }
+
+        .card:hover {
+            border-color: #ccc;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08)
+        }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #f6f6f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px
+        }
+
+        .card-body {
+            padding: 4px 5px 5px
+        }
+
+        .card-code {
+            font-family: monospace;
+            font-size: 9px;
+            font-weight: 700;
+            color: #111;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .card-name {
+            font-size: 9px;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px
+        }
+
+        .badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block
+        }
+
+        .b-active {
+            background: #e8f5e0;
+            color: #3a6e10
+        }
+
+        .b-inactive {
+            background: #f2f2f2;
+            color: #888
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding-top: 4px
+        }
+
+        .page-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s
+        }
+
+        .page-btn:hover {
+            background: #f6f6f6
+        }
+
+        .page-btn.active {
+            background: #ECD925;
+            border-color: #c9b800;
+            color: #111;
+            font-weight: 600
+        }
+
+        .page-btn:disabled {
+            opacity: 0.35;
+            cursor: default
+        }
+
+        .tags-row-space {
+            margin-top: 8px;
+        }
+
+        .search-btn-space {
+            margin-top: 10px;
+        }
+
+        .main-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .back-link {
+            font-size: 12px;
+            color: #444;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 7px 10px;
+            background: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-badge">G</div>
+            <span class="brand-name">GALERIA</span>
+        </div>
+        <div class="user-chip">
+            <div class="avatar" id="avatarInitial">U</div>
+            <span id="usernameDisplay">{{ username }}</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="sidebar">
+            <div>
+                <div class="section-label">Búsqueda por ítems</div>
+                <textarea id="codesInput"
+                    placeholder="Pega folios aquí&#10;uno por línea o separados&#10;por coma o espacio"></textarea>
+                <div class="tags-row tags-row-space" id="tagsRow"></div>
+                <button class="search-btn search-btn-space" onclick="applySearch()">Buscar ítems</button>
+                <p class="hint">Insensible a mayúsculas y minúsculas.</p>
+            </div>
+            <div class="filter-group">
+                <div class="section-label">Filtros</div>
+                <div>
+                    <div class="filter-label">Estado</div>
+                    <select id="fEstado" title="Filtro por estado" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                        <option value="subido">Subido</option>
+                        <option value="asignado">Asignado</option>
+                        <option value="en_revision">En revision</option>
+                        <option value="aceptado">Aceptado</option>
+                        <option value="rechazado">Rechazado</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-label">Tipo de archivo</div>
+                    <select id="fTipo" title="Filtro por tipo" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                        <option value="imagen">Imagen</option>
+                        <option value="documento">Documento</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="filter-label">Fecha</div>
+                    <select id="fFecha" title="Filtro por fecha" onchange="applyFilters()">
+                        <option value="">Cualquier fecha</option>
+                        <option value="7">Últimos 7 días</option>
+                        <option value="30">Últimos 30 días</option>
+                        <option value="90">Últimos 90 días</option>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick="clearAll()">Limpiar filtros y búsqueda</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="main-toolbar">
+                <div id="tagsDisplay" class="tags-row"></div>
+                <a href="/index" class="back-link">Volver</a>
+            </div>
+            <div id="gallery"></div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </div>
+
+    <script id="boschItemsData" type="application/json">{{ items | tojson }}</script>
+    <script>
+        const PER = 60; let page = 1, codes = [], filtered = [];
+        const RAW_ITEMS = JSON.parse(document.getElementById('boschItemsData').textContent || '[]');
+        const DATA = RAW_ITEMS.map(item => ({
+            ...item,
+            code: (item.code || "").toUpperCase(),
+            date: item.date ? new Date(item.date) : null,
+            icon: item.type === "imagen" ? "🖼️" : "📄"
+        }));
+        function parseCodes(v) { return v.split(/[\n,;\s]+/).map(s => s.trim().toUpperCase()).filter(Boolean); }
+        function applySearch() { codes = parseCodes(document.getElementById('codesInput').value); renderTags(); page = 1; render(); }
+        function renderTags() {
+            ['tagsRow', 'tagsDisplay'].forEach(id => {
+                const r = document.getElementById(id); r.innerHTML = '';
+                codes.forEach(c => { const el = document.createElement('div'); el.className = 'code-tag'; el.innerHTML = `<div class="code-dot"></div>${c}`; r.appendChild(el); });
+            });
+        }
+        function applyFilters() { page = 1; render(); }
+        function clearAll() {
+            document.getElementById('codesInput').value = '';
+            ['fEstado', 'fTipo', 'fFecha'].forEach(id => document.getElementById(id).value = '');
+            codes = []; renderTags(); page = 1; render();
+        }
+        function render() {
+            const es = document.getElementById('fEstado').value, ti = document.getElementById('fTipo').value, di = parseInt(document.getElementById('fFecha').value) || 0;
+            let items = [...DATA];
+            if (codes.length) items = items.filter(i => codes.includes((i.code || '').toUpperCase()));
+            if (es) items = items.filter(i => i.status === es);
+            if (ti) items = items.filter(i => i.type === ti);
+            if (di) { const c = new Date(); c.setDate(c.getDate() - di); items = items.filter(i => i.date && i.date >= c); }
+            filtered = items; renderGrid(); renderPagination();
+        }
+        function renderGrid() {
+            const g = document.getElementById('gallery');
+            const slice = filtered.slice((page - 1) * PER, page * PER);
+            if (!filtered.length) { g.innerHTML = '<div class="no-results">No se encontraron ítems con los criterios seleccionados.</div>'; return; }
+            g.innerHTML = ''; const gr = document.createElement('div'); gr.className = 'grid';
+            slice.forEach(item => {
+                const c = document.createElement('div'); c.className = 'card';
+                c.innerHTML = `<div class="card-img">${item.icon}</div><div class="card-body"><div class="card-code">${item.code || 'SIN-FOLIO'}</div><div class="card-name">${item.name}</div><span class="badge ${item.status === 'aceptado' ? 'b-active' : 'b-inactive'}">${item.status}</span></div>`;
+                c.onclick = () => { if (item.url) { window.location.href = item.url; } };
+                gr.appendChild(c);
+            }); g.appendChild(gr);
+        }
+        function renderPagination() {
+            const pg = document.getElementById('pagination');
+            const total = Math.ceil(filtered.length / PER); pg.innerHTML = ''; if (total <= 1) return;
+            const prev = document.createElement('button'); prev.className = 'page-btn'; prev.textContent = '‹'; prev.disabled = page === 1; prev.onclick = () => { page--; render(); }; pg.appendChild(prev);
+            for (let i = 1; i <= total; i++) {
+                if (total > 7 && i > 2 && i < total - 1 && Math.abs(i - page) > 1) { if (i === 3 || i === total - 2) { const d = document.createElement('span'); d.textContent = '…'; d.style.cssText = 'padding:0 4px;color:#aaa;font-size:13px'; pg.appendChild(d); } continue; }
+                const btn = document.createElement('button'); btn.className = 'page-btn' + (i === page ? ' active' : ''); btn.textContent = i; btn.onclick = (p => () => { page = p; render(); })(i); pg.appendChild(btn);
+            }
+            const next = document.createElement('button'); next.className = 'page-btn'; next.textContent = '›'; next.disabled = page === total; next.onclick = () => { page++; render(); }; pg.appendChild(next);
+        }
+        const uname = document.getElementById('usernameDisplay').textContent.trim();
+        if (uname) document.getElementById('avatarInitial').textContent = uname[0].toUpperCase();
+        render();
+    </script>
+
+</body>
+
+</html>

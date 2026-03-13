@@ -2174,6 +2174,33 @@ def gallery():
 
     username = session.get("username")
     role = normalize_role(session.get("role"))
+
+    if role == ROLE_BOSCH:
+        images = list_images(username, query or None, date_from, date_to, all_clients=False)
+        bosch_items = []
+        for img in images:
+            status = normalize_status(img.get("status"), None)
+            bosch_items.append({
+                "code": (img.get("folio") or "").upper(),
+                "name": img.get("name", ""),
+                "status": status,
+                "type": "imagen" if img.get("is_image") else "documento",
+                "date": img.get("modified").isoformat() if img.get("modified") else "",
+                "url": img.get("url", ""),
+                "ext": img.get("ext", "")
+            })
+
+        return render_template(
+            "bosch_galery.html",
+            username=username,
+            items=bosch_items
+        )
+
+    back_url = url_for("index")
+    if role == ROLE_SUPERVISOR:
+        back_url = url_for("solicitudes")
+    elif role == ROLE_EJECUTIVO:
+        back_url = url_for("ejecutivo_panel")
     
     # Supervisor: ve todas las imágenes de todos los clientes
     all_clients = (role == ROLE_SUPERVISOR)
@@ -2197,7 +2224,8 @@ def gallery():
         date_to=date_to,
         folio=folio_filter,
         history=history,
-        current_folder=get_upload_folder(username)
+        current_folder=get_upload_folder(username),
+        back_url=back_url
     )
 
 
