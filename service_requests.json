@@ -51,8 +51,34 @@
             "size": "459 KB"
           }
         ]
+      },
+      {
+        "tipo": "entregable_final_subido",
+        "timestamp": "2026-03-17T23:00:31.940371+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Entregable final ZIP cargado",
+        "archivo": "geek.zip"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-17T23:00:31.940378+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Solicitud finalizada al cargar el entregable final",
+        "estatus_anterior": "PENDIENTE",
+        "estatus_nuevo": "FINALIZADO"
       }
-    ]
+    ],
+    "entregable_final": {
+      "filename": "geek.zip",
+      "stored_name": "FOL-20260302-3394_entregable_final.zip",
+      "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_entregables\\FOL-20260302-3394\\FOL-20260302-3394_entregable_final.zip",
+      "size_bytes": 2961151,
+      "uploaded_at": "2026-03-17T23:00:31.940343+00:00",
+      "uploaded_by": "ins1"
+    },
+    "estatus": "FINALIZADO"
   },
   {
     "folio": "FOL-20260302-6392",

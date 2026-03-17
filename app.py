@@ -1176,6 +1176,11 @@ def api_solicitudes():
         linked = assignments_by_folio.get(folio, [])
         statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
         status_label = request_status(statuses)
+        
+        # Si la solicitud está explícitamente marcada como FINALIZADO, prevalecer ese estado
+        explicit_estatus = str(req.get("estatus", "")).strip().upper()
+        if explicit_estatus == "FINALIZADO":
+            status_label = "FINALIZADO"
 
         created_at = parse_iso_date(req.get("created_at"))
         completion_dates = [parse_iso_date(a.get("status_updated_at")) for a in linked]
@@ -1753,9 +1758,21 @@ def get_solicitud_historial(folio):
                 "autor": entry.get("usuario", "Supervisor"),
                 "rol": entry.get("rol", "supervisor"),
                 "icono": "🔄",
-                "texto": f"Cambio de estatus",
+                "texto": entry.get("texto") or "Cambio de estatus",
                 "estatus_anterior": entry.get("estatus_anterior"),
                 "estatus_nuevo": entry.get("estatus_nuevo")
+            })
+        elif entry.get("tipo") == "entregable_final_subido":
+            historial_formateado.append({
+                "id": len(historial_formateado),
+                "tipo": "evento",
+                "fecha": entry.get("timestamp", ""),
+                "autor": entry.get("usuario", "Sistema"),
+                "rol": entry.get("rol", "ejecutivo"),
+                "icono": "📦",
+                "texto": entry.get("texto") or "Entregable final ZIP cargado",
+                "estatus_anterior": None,
+                "estatus_nuevo": None
             })
     
     return jsonify({"historial": historial_formateado})
@@ -2005,53 +2022,93 @@ def upload_final_deliverable(folio):
         if not assigned:
             return jsonify({"error": "No autorizado para esta solicitud"}), 403
 
-    uploaded_file = request.files.get("file")
-    if uploaded_file is None or not uploaded_file.filename:
-        return jsonify({"error": "Archivo ZIP requerido"}), 400
-
-    original_name = os.path.basename(uploaded_file.filename)
-    if "." not in original_name or original_name.rsplit(".", 1)[1].lower() != "zip":
-        return jsonify({"error": "Solo se permite formato ZIP"}), 400
+    uploaded_files = request.files.getlist("files[]")
+    if not uploaded_files or all(not f.filename for f in uploaded_files):
+        return jsonify({"error": "Se requiere al menos un archivo"}), 400
 
     deliverable_folder = get_deliverable_folder_for_solicitud(solicitud, folio)
-    stored_name = f"{folio}_entregable_final.zip"
-    file_path = os.path.join(deliverable_folder, stored_name)
+    saved_files = []
 
-    try:
-        uploaded_file.save(file_path)
-    except OSError:
-        return jsonify({"error": "No se pudo guardar el entregable"}), 500
+    # Guardar archivos individuales
+    for file in uploaded_files:
+        if not file or not file.filename:
+            continue
 
-    try:
-        size_bytes = os.path.getsize(file_path)
-    except OSError:
-        size_bytes = 0
+        if not is_allowed_extension(file.filename):
+            continue
+
+        original_name = os.path.basename(file.filename)
+        stored_name = sanitize_filename(original_name) or f"file_{len(saved_files)}"
+        file_path = os.path.join(deliverable_folder, stored_name)
+
+        # Evitar duplicados
+        counter = 1
+        base_name, ext = (stored_name.rsplit(".", 1) if "." in stored_name else (stored_name, ""))
+        while os.path.exists(file_path):
+            if ext:
+                stored_name = f"{base_name}_{counter}.{ext}"
+            else:
+                stored_name = f"{base_name}_{counter}"
+            file_path = os.path.join(deliverable_folder, stored_name)
+            counter += 1
+
+        try:
+            file.save(file_path)
+            size_bytes = os.path.getsize(file_path)
+            relative_path = os.path.relpath(file_path, get_upload_folder(solicitud.get("client")))
+            saved_files.append({
+                "original_name": original_name,
+                "stored_name": stored_name,
+                "file_path": file_path,
+                "relative_path": relative_path,
+                "size_bytes": size_bytes,
+                "uploaded_at": datetime.now(timezone.utc).isoformat()
+            })
+        except OSError:
+            continue
+
+    if not saved_files:
+        return jsonify({"error": "No se pudo guardar ningún archivo"}), 500
 
     solicitud["entregable_final"] = {
-        "filename": original_name,
-        "stored_name": stored_name,
-        "file_path": file_path,
-        "size_bytes": size_bytes,
+        "files": saved_files,
         "uploaded_at": datetime.now(timezone.utc).isoformat(),
         "uploaded_by": username,
     }
 
     historial = solicitud.setdefault("historial", [])
+    estatus_anterior = solicitud.get("estatus", "PENDIENTE")
+    solicitud["estatus"] = "FINALIZADO"
+    
+    # Guardar cambios en service_requests
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+
     historial.append({
         "tipo": "entregable_final_subido",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "usuario": username,
         "rol": role,
-        "texto": "Entregable final ZIP cargado",
-        "archivo": original_name,
+        "texto": f"Archivos finales entregados ({len(saved_files)} archivo(s))",
+        "cantidad_archivos": len(saved_files),
     })
+    if estatus_anterior != "FINALIZADO":
+        historial.append({
+            "tipo": "cambio_estatus",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "usuario": username,
+            "rol": role,
+            "texto": "Solicitud finalizada al entregar archivos finales",
+            "estatus_anterior": estatus_anterior,
+            "estatus_nuevo": "FINALIZADO"
+        })
 
     requests_data[req_index] = solicitud
     save_service_requests(requests_data)
 
     return jsonify({
         "status": "ok",
-        "message": "Entregable final cargado",
+        "message": f"Archivos finales entregados ({len(saved_files)} archivo(s))",
         "entregable_final": solicitud.get("entregable_final"),
     })
 
@@ -2059,6 +2116,9 @@ def upload_final_deliverable(folio):
 @app.route("/api/solicitud/<folio>/entregable-final/download", methods=["GET"])
 @login_required
 def download_final_deliverable(folio):
+    import zipfile
+    import io
+    
     username = session.get("username")
     role = normalize_role(session.get("role"))
 
@@ -2082,12 +2142,41 @@ def download_final_deliverable(folio):
         return jsonify({"error": "El entregable solo se puede descargar cuando la solicitud está FINALIZADA"}), 400
 
     entregable = solicitud.get("entregable_final") or {}
-    file_path = str(entregable.get("file_path") or "").strip()
-    if not file_path or not os.path.exists(file_path):
-        return jsonify({"error": "No hay entregable final disponible"}), 404
+    files_list = entregable.get("files", [])
+    
+    if not files_list:
+        return jsonify({"error": "No hay archivos finales disponibles"}), 404
 
-    download_name = str(entregable.get("filename") or f"{folio}_entregable_final.zip")
-    return send_file(file_path, as_attachment=True, download_name=download_name, max_age=0)
+    # Crear ZIP en memoria
+    zip_buffer = io.BytesIO()
+    try:
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for file_info in files_list:
+                file_path = str(file_info.get("file_path") or "").strip()
+                
+                # Si file_path no existe, intentar con relative_path
+                if not file_path or not os.path.exists(file_path):
+                    relative_path = str(file_info.get("relative_path") or "").strip()
+                    if relative_path:
+                        client_folder = get_upload_folder(solicitud.get("client"))
+                        file_path = os.path.join(client_folder, relative_path)
+                
+                if file_path and os.path.exists(file_path):
+                    arcname = file_info.get("original_name") or os.path.basename(file_path)
+                    zf.write(file_path, arcname=arcname)
+        
+        zip_buffer.seek(0)
+    except Exception as e:
+        return jsonify({"error": f"Error al crear ZIP: {str(e)}"}), 500
+
+    download_name = f"entregable_{folio}.zip"
+    return send_file(
+        zip_buffer,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=download_name,
+        max_age=0
+    )
 
 
 @app.route("/api/assignment/<file_path>/action", methods=["POST"])
@@ -3061,6 +3150,74 @@ def update_assignment_status():
     
     save_assignments(assignments)
     return jsonify({"status": "ok", "new_status": new_status})
+
+
+@app.route("/api/solicitud/<folio>/bulk-status", methods=["POST"])
+@login_required
+@role_required(ROLE_EJECUTIVO, ROLE_SUPERVISOR)
+def update_bulk_folio_status(folio):
+    """Aceptar o rechazar en general todas las asignaciones de un folio."""
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+    data = request.get_json() or {}
+    new_status = str(data.get("status", "")).strip().lower()
+
+    if new_status not in [STATUS_ACCEPTED, STATUS_REJECTED]:
+        return jsonify({"error": "Datos inválidos"}), 400
+
+    requests_data = load_service_requests()
+    req_index = None
+    solicitud = None
+    for i, item in enumerate(requests_data):
+        if item.get("folio") == folio:
+            solicitud = item
+            req_index = i
+            break
+
+    if solicitud is None or req_index is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    assignments = load_assignments()
+    if role == ROLE_SUPERVISOR:
+        linked = [assignment for assignment in assignments if assignment.get("folio") == folio]
+    else:
+        linked = [
+            assignment for assignment in assignments
+            if assignment.get("folio") == folio and assignment.get("assigned_to") == username
+        ]
+
+    if not linked:
+        return jsonify({"error": "No hay archivos asignados para este folio"}), 404
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    for assignment in linked:
+        assignment["status"] = new_status
+        assignment["status_updated_at"] = now_iso
+        assignment["status_updated_by"] = username
+
+    estatus_anterior = solicitud.get("estatus", "PENDIENTE")
+    solicitud["estatus"] = "FINALIZADO"
+    historial = solicitud.setdefault("historial", [])
+    historial.append({
+        "tipo": "cambio_estatus",
+        "timestamp": now_iso,
+        "usuario": username,
+        "rol": role,
+        "texto": f"Solicitud marcada de forma general como {new_status}",
+        "estatus_anterior": estatus_anterior,
+        "estatus_nuevo": "FINALIZADO"
+    })
+
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+    save_assignments(assignments)
+
+    return jsonify({
+        "status": "ok",
+        "new_status": new_status,
+        "affected": len(linked),
+        "solicitud_estatus": "FINALIZADO"
+    })
 
 
 @app.route("/api/reupload-file", methods=["POST"])

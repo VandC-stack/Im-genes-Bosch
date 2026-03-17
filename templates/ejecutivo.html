@@ -251,6 +251,27 @@
             align-items: center;
             gap: 8px;
             margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .folio-group-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .folio-group-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         .folio-group-link {
@@ -1100,7 +1121,8 @@
         </div>
     </div>
 
-    <input type="file" id="finalDeliverableInput" accept=".zip,application/zip" style="display:none;">
+    <input type="file" id="finalDeliverableInput" multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt,.zip" style="display:none;">
 
     <script>
         // Datos de las imágenes
@@ -1158,6 +1180,9 @@
                             <div class="folio-group-tools">
                                 <a class="folio-group-link" href="/historial/${encodeURIComponent(group.folio)}">Ciclo ${groupCiclo}</a>
                                 <a class="folio-group-link comments-link" href="/historial/${encodeURIComponent(group.folio)}">Comentarios ${groupComentarios}</a>
+                                <button type="button" class="folio-group-action btn-accept" onclick="event.stopPropagation(); updateFolioStatus('${encodeURIComponent(group.folio)}', 'aceptado')">✓ Aceptar</button>
+                                <button type="button" class="folio-group-action btn-reject" onclick="event.stopPropagation(); updateFolioStatus('${encodeURIComponent(group.folio)}', 'rechazado')">✗ Rechazar</button>
+                                <button type="button" class="folio-group-action btn-download" onclick="event.stopPropagation(); triggerFinalDeliverableUpload('${encodeURIComponent(group.folio)}')">Subir entregable final (ZIP)</button>
                             </div>` : ''}
                         </div>
                         <div class="folio-group-grid">
@@ -1422,6 +1447,39 @@
             }
         }
 
+        async function updateFolioStatus(encodedFolio, newStatus) {
+            const folio = decodeURIComponent(encodedFolio || '');
+            const statusText = newStatus === 'aceptado' ? 'Aceptar' : 'Rechazar';
+
+            if (!folio) {
+                alert('No se encontró el folio.');
+                return;
+            }
+
+            if (!confirm(`¿Estás seguro de ${statusText.toLowerCase()} todo el folio ${folio}?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(folio)}/bulk-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    alert('✗ ' + (data.error || 'No se pudo actualizar el folio.'));
+                    return;
+                }
+
+                alert(`✓ Folio ${folio} actualizado: ${statusText} general aplicado.`);
+                location.reload();
+            } catch (e) {
+                alert('✗ Error: ' + e.message);
+            }
+        }
+
         function triggerFinalDeliverableUpload(encodedFolio) {
             currentDeliverableFolio = decodeURIComponent(encodedFolio || '');
             const input = document.getElementById('finalDeliverableInput');
@@ -1430,19 +1488,23 @@
             input.click();
         }
 
-        async function uploadFinalDeliverableFile(file) {
+        async function uploadFinalDeliverableFile(files) {
             if (!currentDeliverableFolio) {
                 alert('No se encontró el folio para el entregable.');
                 return;
             }
 
-            if (!file || !file.name || !file.name.toLowerCase().endsWith('.zip')) {
-                alert('Selecciona un archivo ZIP válido.');
+            if (!files || files.length === 0) {
+                alert('Selecciona al menos un archivo.');
                 return;
             }
 
             const formData = new FormData();
-            formData.append('file', file);
+            for (let file of files) {
+                if (file) {
+                    formData.append('files[]', file);
+                }
+            }
 
             try {
                 const res = await fetch(`/api/solicitud/${encodeURIComponent(currentDeliverableFolio)}/entregable-final`, {
@@ -1452,11 +1514,12 @@
 
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    alert('✗ ' + (data.error || 'No se pudo subir el entregable final.'));
+                    alert('✗ ' + (data.error || 'No se pudo subir los archivos finales.'));
                     return;
                 }
 
-                alert('✓ Entregable final cargado correctamente.');
+                alert('✓ Archivos finales entregados correctamente.');
+                location.reload();
             } catch (e) {
                 alert('✗ Error: ' + e.message);
             }
@@ -1473,9 +1536,8 @@
         const finalDeliverableInput = document.getElementById('finalDeliverableInput');
         if (finalDeliverableInput) {
             finalDeliverableInput.addEventListener('change', function () {
-                const file = this.files && this.files[0];
-                if (file) {
-                    uploadFinalDeliverableFile(file);
+                if (this.files && this.files.length > 0) {
+                    uploadFinalDeliverableFile(this.files);
                 }
             });
         }
