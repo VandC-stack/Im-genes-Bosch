@@ -614,6 +614,11 @@
             transform: scale(1.05);
         }
 
+        .strip-thumb.active-photo {
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 2px rgba(236, 217, 37, 0.35);
+        }
+
         .strip-thumb img {
             width: 100%;
             height: 100%;
@@ -649,6 +654,37 @@
             gap: 7px;
             flex-wrap: wrap;
             align-items: center;
+        }
+
+        .slot-row {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .slot-btn {
+            border: 1.5px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slot-btn:hover {
+            border-color: #aaa;
+            color: var(--text);
+        }
+
+        .slot-btn.active {
+            border-color: var(--yellow-dark);
+            background: var(--yellow-light);
+            color: #222;
         }
 
         .layout-btn {
@@ -940,15 +976,20 @@
                     <div class="layout-row" id="layoutRow"></div>
                 </div>
 
-                <!-- 3. Preview canvas -->
                 <div>
-                    <span class="strip-label">3 · Vista previa</span>
+                    <span class="strip-label">3 · Ubicar fotos</span>
+                    <div class="slot-row" id="slotRow"></div>
+                </div>
+
+                <!-- 4. Preview canvas -->
+                <div>
+                    <span class="strip-label">4 · Vista previa</span>
                     <div class="collage-preview-wrap">
                         <canvas id="collageCanvas"></canvas>
                         <div class="collage-hint" id="collageHint">
                             <span class="collage-hint-icon"><img src="/static/foto.svg"
                                     style="width:30px;height:30px;"></span>
-                            <span>Agrega fotos y elige un layout</span>
+                            <span>Agrega fotos, elige layout y asigna cada celda</span>
                         </div>
                     </div>
                 </div>
@@ -1199,6 +1240,8 @@
 
         let collagePhotos = [];
         let activeLayout = LAYOUTS[3]; // 2×2 default
+        let slotAssignments = Array(activeLayout.slots).fill(null);
+        let activeSlot = 0;
 
         // Build layout buttons
         (function () {
@@ -1207,7 +1250,15 @@
                 const btn = document.createElement("button");
                 btn.className = "layout-btn" + (l.id === activeLayout.id ? " active" : "");
                 btn.title = l.label;
-                btn.onclick = () => { activeLayout = l; row.querySelectorAll(".layout-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active"); drawCollage(); };
+                btn.onclick = () => {
+                    activeLayout = l;
+                    adaptAssignmentsToLayout();
+                    row.querySelectorAll(".layout-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    renderSlotPicker();
+                    renderStrip();
+                    drawCollage();
+                };
                 const prev = document.createElement("div");
                 prev.className = `layout-preview ${l.tpl}`;
                 l.cells.forEach(c => { const d = document.createElement("div"); d.className = "cell" + (c.cls ? " " + c.cls : ""); prev.appendChild(d); });
@@ -1215,6 +1266,8 @@
                 row.appendChild(btn);
             });
         })();
+
+        renderSlotPicker();
 
         document.getElementById("collageInput").onchange = async e => { await loadCollageFiles(Array.from(e.target.files)); e.target.value = ""; };
         document.getElementById("collageCamInput").onchange = async e => { await loadCollageFiles(Array.from(e.target.files)); e.target.value = ""; };
@@ -1229,8 +1282,10 @@
                 img.src = URL.createObjectURL(blob);
                 await new Promise(r => img.onload = r);
                 collagePhotos.push({ img, blob, name: f.name });
+                autoAssignLastPhoto();
             }
             renderStrip();
+            renderSlotPicker();
             drawCollage();
         }
 
@@ -1240,13 +1295,84 @@
             strip.querySelectorAll(".strip-thumb").forEach(el => el.remove());
             collagePhotos.forEach((p, i) => {
                 const wrap = document.createElement("div");
-                wrap.className = "strip-thumb";
-                wrap.innerHTML = `<img src="${p.img.src}"><button class="strip-remove" onclick="removeCollagePhoto(${i})">×</button>`;
+                const activePhoto = slotAssignments[activeSlot] === i;
+                wrap.className = "strip-thumb" + (activePhoto ? " active-photo" : "");
+                const slots = slotAssignments.map((idx, pos) => idx === i ? pos + 1 : null).filter(Boolean);
+                wrap.title = slots.length
+                    ? `${p.name} · celda${slots.length > 1 ? "s" : ""} ${slots.join(", ")}`
+                    : `${p.name} · sin asignar`;
+                wrap.onclick = () => assignPhotoToActiveSlot(i);
+                wrap.innerHTML = `<img src="${p.img.src}"><button class="strip-remove" onclick="event.stopPropagation(); removeCollagePhoto(${i})">×</button>`;
                 strip.appendChild(wrap);
             });
         }
 
-        function removeCollagePhoto(i) { collagePhotos.splice(i, 1); renderStrip(); drawCollage(); }
+        function removeCollagePhoto(i) {
+            collagePhotos.splice(i, 1);
+            slotAssignments = slotAssignments.map(idx => {
+                if (idx === null) return null;
+                if (idx === i) return null;
+                return idx > i ? idx - 1 : idx;
+            });
+            renderStrip();
+            renderSlotPicker();
+            drawCollage();
+        }
+
+        function renderSlotPicker() {
+            const row = document.getElementById("slotRow");
+            row.innerHTML = "";
+            for (let i = 0; i < activeLayout.slots; i++) {
+                const btn = document.createElement("button");
+                btn.className = "slot-btn" + (i === activeSlot ? " active" : "");
+                const assigned = slotAssignments[i];
+                btn.textContent = assigned === null ? `Celda ${i + 1}` : `Celda ${i + 1}: Foto ${assigned + 1}`;
+                btn.onclick = () => {
+                    activeSlot = i;
+                    renderSlotPicker();
+                    renderStrip();
+                };
+                row.appendChild(btn);
+            }
+        }
+
+        function assignPhotoToActiveSlot(photoIndex) {
+            if (activeSlot >= activeLayout.slots) activeSlot = 0;
+            slotAssignments[activeSlot] = photoIndex;
+            const nextEmpty = slotAssignments.findIndex(v => v === null);
+            if (nextEmpty !== -1) activeSlot = nextEmpty;
+            renderSlotPicker();
+            renderStrip();
+            drawCollage();
+        }
+
+        function autoAssignLastPhoto() {
+            const newIndex = collagePhotos.length - 1;
+            if (newIndex < 0) return;
+            const empty = slotAssignments.findIndex(v => v === null);
+            if (empty !== -1) slotAssignments[empty] = newIndex;
+        }
+
+        function adaptAssignmentsToLayout() {
+            const prev = slotAssignments.slice();
+            slotAssignments = Array(activeLayout.slots).fill(null);
+            for (let i = 0; i < Math.min(prev.length, slotAssignments.length); i++) {
+                slotAssignments[i] = prev[i];
+            }
+            if (activeSlot >= slotAssignments.length) activeSlot = 0;
+        }
+
+        canvas.addEventListener("click", e => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (CW / rect.width);
+            const y = (e.clientY - rect.top) * (CH / rect.height);
+            const idx = activeLayout.rects(CW, CH).findIndex(c => x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h);
+            if (idx !== -1) {
+                activeSlot = idx;
+                renderSlotPicker();
+                renderStrip();
+            }
+        });
 
         function drawCollage() {
             const hint = document.getElementById("collageHint");
@@ -1266,8 +1392,17 @@
             ctx.fillRect(0, 0, CW, CH);
 
             activeLayout.rects(CW, CH).forEach((r, i) => {
-                const p = collagePhotos[i % collagePhotos.length];
-                if (!p) return;
+                const assigned = slotAssignments[i];
+                const fallback = i < collagePhotos.length ? i : i % collagePhotos.length;
+                const p = collagePhotos[assigned ?? fallback];
+                if (!p) {
+                    ctx.fillStyle = "#f2f2f2";
+                    ctx.fillRect(r.x, r.y, r.w, r.h);
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 6;
+                    ctx.strokeRect(r.x, r.y, r.w, r.h);
+                    return;
+                }
                 const { x, y, w, h } = r;
                 const scale = Math.max(w / p.img.naturalWidth, h / p.img.naturalHeight);
                 const sw = p.img.naturalWidth * scale, sh = p.img.naturalHeight * scale;
@@ -1295,7 +1430,14 @@
             }, "image/jpeg", 0.93);
         }
 
-        function clearCollage() { collagePhotos = []; renderStrip(); drawCollage(); }
+        function clearCollage() {
+            collagePhotos = [];
+            slotAssignments = Array(activeLayout.slots).fill(null);
+            activeSlot = 0;
+            renderStrip();
+            renderSlotPicker();
+            drawCollage();
+        }
 
         /* ═══════════════════════
            STATUS & TOAST

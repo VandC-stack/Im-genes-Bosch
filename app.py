@@ -2632,7 +2632,8 @@ def admin_users():
         users_list.append({
             "username": username,
             "role": data.get("role", "Cliente"),
-            "folder": data.get("folder", "")
+            "folder": data.get("folder", ""),
+            "normas": data.get("normas", "")
         })
     
     return render_template("admin.html", users=users_list)
@@ -2647,6 +2648,10 @@ def create_user():
     password = data.get("password", "")
     role = data.get("role", "Cliente")
     folder = data.get("folder", "").strip()
+    normas = data.get("normas", "")
+    if normas is None:
+        normas = ""
+    normas = str(normas).strip()
     
     if not username or not password or not folder:
         return jsonify({"error": "Todos los campos son requeridos"}), 400
@@ -2659,7 +2664,8 @@ def create_user():
     config["clients"][username] = {
         "password": password,
         "folder": folder,
-        "role": role
+        "role": role,
+        "normas": normas
     }
     
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
