@@ -1506,9 +1506,12 @@ def edit_solicitud(folio):
     if contenido:
         solicitud["contenido"] = contenido
     
+    # Capturar ciclo antes de incrementar para registrarlo en historial.
+    ciclo_anterior = get_max_cycle(assignments, folio)
+
     # Agregar al historial
     historial = solicitud.setdefault("historial", [])
-    historial.append({
+    historial_entry = {
         "tipo": "edicion_cliente",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "usuario": username,
@@ -1516,7 +1519,8 @@ def edit_solicitud(folio):
         "cambios": cambios,
         "imagenes_reemplazadas": imagenes_reemplazadas,
         "imagenes_agregadas": imagenes_agregadas
-    })
+    }
+    historial.append(historial_entry)
     
     # Incrementar ciclo en los assignments vinculados
     for assignment in assignments:
@@ -1525,6 +1529,10 @@ def edit_solicitud(folio):
             assignment["ciclo_actual"] = ciclo_actual + 1
             assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
             assignment["last_edited_by"] = username
+
+    ciclo_nuevo = get_max_cycle(assignments, folio)
+    historial_entry["ciclo_anterior"] = ciclo_anterior
+    historial_entry["ciclo_nuevo"] = ciclo_nuevo
     
     if req_index is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
@@ -1539,7 +1547,7 @@ def edit_solicitud(folio):
     return jsonify({
         "status": "ok",
         "message": "Solicitud actualizada correctamente",
-        "ciclo_nuevo": get_max_cycle(assignments, folio)
+        "ciclo_nuevo": ciclo_nuevo
     })
 
 
@@ -1693,12 +1701,34 @@ def get_solicitud_historial(folio):
     
     # Agregar entradas del historial
     historial_raw = solicitud.get("historial", [])
+    ciclo_tracker = 1
     for idx, entry in enumerate(historial_raw, start=1):
         if entry.get("tipo") == "edicion_cliente":
+            ciclo_anterior = normalize_cycle_value(entry.get("ciclo_anterior", ciclo_tracker))
+            ciclo_nuevo = normalize_cycle_value(entry.get("ciclo_nuevo", ciclo_anterior + 1))
+            if ciclo_nuevo <= ciclo_anterior:
+                ciclo_nuevo = ciclo_anterior + 1
+            ciclo_tracker = ciclo_nuevo
+
+            timestamp = entry.get("timestamp", "")
+            fecha_valor = timestamp.replace("T", " ")[:16] if "T" in timestamp else timestamp
+
+            historial_formateado.append({
+                "id": len(historial_formateado),
+                "tipo": "evento",
+                "fecha": fecha_valor,
+                "autor": "Sistema",
+                "rol": "system",
+                "icono": "🔁",
+                "texto": f"Actualización del cliente: ciclo {ciclo_anterior} → ciclo {ciclo_nuevo}",
+                "estatus_anterior": None,
+                "estatus_nuevo": None
+            })
+
             historial_formateado.append({
                 "id": len(historial_formateado),
                 "tipo": "comentario",
-                "fecha": entry.get("timestamp", "").split("T")[0].replace("-", "-") if "T" in entry.get("timestamp", "") else entry.get("timestamp", ""),
+                "fecha": fecha_valor,
                 "autor": entry.get("usuario", "Cliente"),
                 "rol": "cliente",
                 "texto": entry.get("comentario", ""),

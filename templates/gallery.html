@@ -108,6 +108,24 @@
             color: #ECD925;
         }
 
+        .goBack-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .goBack-btn:hover {
+            background: rgba(236, 217, 37, 0.15);
+            border-color: rgba(236, 217, 37, 0.3);
+            color: #ECD925;
+        }
+
         .container {
             max-width: 1800px;
             margin: 0 auto;
@@ -899,6 +917,20 @@
             const ITEMS_PER_PAGE = 30; // 5x6
             let currentPage = 1;
             let imageStatuses = {};
+
+            // Fallback para navegación inteligente (desde backend)
+            const FALLBACK_BACK_URL = '{{ back_url or "/index" }}';
+
+            // Función de navegación inteligente con referrer como fallback
+            function goBack() {
+                // Intentar usar document.referrer si está disponible
+                if (document.referrer && document.referrer.length > 0) {
+                    window.location.href = document.referrer;
+                } else {
+                    // Fallback: usar la URL del backend (que ya considera el rol)
+                    window.location.href = FALLBACK_BACK_URL;
+                }
+            }
 
             // Inicializar
             function init() {

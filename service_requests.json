@@ -112,7 +112,13 @@
     "marca": "fdgdsfdvsdcvxcc",
     "pais_origen": "dgszcz",
     "contenido": "sdvj<hsuhs",
-    "files": [],
+    "files": [
+      {
+        "filename": "G8FKqRdW0AcVh1q.jpg",
+        "original_name": "G8FKqRdW0AcVh1q.jpg",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\G8FKqRdW0AcVh1q.jpg"
+      }
+    ],
     "historial": [
       {
         "id": 0,
@@ -162,6 +168,21 @@
         },
         "imagenes_reemplazadas": [],
         "imagenes_agregadas": []
+      },
+      {
+        "tipo": "edicion_cliente",
+        "timestamp": "2026-03-17T19:51:15.581621+00:00",
+        "usuario": "cliente1",
+        "comentario": "Feli",
+        "cambios": {},
+        "imagenes_reemplazadas": [],
+        "imagenes_agregadas": [
+          {
+            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\G8FKqRdW0AcVh1q.jpg",
+            "filename": "G8FKqRdW0AcVh1q.jpg",
+            "original_name": "G8FKqRdW0AcVh1q.jpg"
+          }
+        ]
       }
     ]
   }

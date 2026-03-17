@@ -966,6 +966,35 @@
             margin-top: 10px;
         }
 
+        .images-empty-state {
+            margin-top: 10px;
+            min-height: 88px;
+            border: 1.5px dashed var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 14px;
+        }
+
+        .upload-inline-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .upload-inline-help {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
         .image-thumbnail {
             position: relative;
             aspect-ratio: 1;
@@ -1322,10 +1351,19 @@
                     </div>
                     <div class="images-section">
                         <label style="font-weight: 600;">Imágenes adjuntas</label>
+                        <div class="images-empty-state" id="previasImagesEmpty">
+                            Esta solicitud no tiene imágenes cargadas. Puedes agregar nuevas en este ciclo.
+                        </div>
                         <div class="images-grid" id="previasImages"></div>
                         <label style="font-weight: 600; margin-top: 12px; display: block;">Agregar imágenes</label>
+                        <div class="upload-inline-actions">
+                            <button type="button" class="action-btn primary"
+                                onclick="triggerEditImageFiles()">Seleccionar archivos</button>
+                            <span class="upload-inline-help">JPG, PNG, GIF, WEBP y PDF.</span>
+                        </div>
                         <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf"
-                            style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); margin-top: 6px;">
+                            style="display: none;">
+                        <div class="images-empty-state" id="newImagesEmpty">No has seleccionado archivos nuevos.</div>
                         <div class="images-grid" id="newImages" style="margin-top: 8px;"></div>
                     </div>
                     <div class="form-group">
@@ -1825,10 +1863,14 @@
 
                 // Cargar imágenes previas
                 const previasContainer = document.getElementById("previasImages");
+                const previasEmpty = document.getElementById("previasImagesEmpty");
                 previasContainer.innerHTML = "";
                 const files = Array.isArray(data.files) ? data.files : [];
+                const imageFiles = files.filter(file => file && file.is_image);
 
-                files.forEach((file, index) => {
+                previasEmpty.style.display = imageFiles.length ? "none" : "flex";
+
+                imageFiles.forEach((file, index) => {
                     const thumb = document.createElement("div");
                     thumb.className = "image-thumbnail";
 
@@ -1885,6 +1927,7 @@
                 // Limpiar input de nuevas imágenes
                 document.getElementById("editImageFiles").value = "";
                 document.getElementById("newImages").innerHTML = "";
+                document.getElementById("newImagesEmpty").style.display = "flex";
 
                 document.getElementById("editModalOverlay").classList.add("open");
                 document.body.style.overflow = "hidden";
@@ -1905,6 +1948,47 @@
             // Limpiar
             document.getElementById("editImageFiles").value = "";
             document.getElementById("newImages").innerHTML = "";
+            document.getElementById("newImagesEmpty").style.display = "flex";
+        }
+
+        function triggerEditImageFiles() {
+            document.getElementById("editImageFiles").click();
+        }
+
+        function renderNewEditFiles(fileList) {
+            const newImagesContainer = document.getElementById("newImages");
+            const emptyState = document.getElementById("newImagesEmpty");
+            const selectedFiles = Array.from(fileList || []);
+
+            newImagesContainer.innerHTML = "";
+            emptyState.style.display = selectedFiles.length ? "none" : "flex";
+
+            selectedFiles.forEach((file, index) => {
+                const div = document.createElement("div");
+                div.className = "image-thumbnail";
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "image-remove-btn";
+                removeBtn.textContent = "×";
+                removeBtn.setAttribute("onclick", `removeNewImage(this, ${index})`);
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        div.style.backgroundImage = `url('${event.target.result}')`;
+                        div.style.backgroundSize = "cover";
+                        div.style.backgroundPosition = "center";
+                        div.appendChild(removeBtn);
+                        newImagesContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                div.textContent = "PDF";
+                div.appendChild(removeBtn);
+                newImagesContainer.appendChild(div);
+            });
         }
 
         // Manejador de imágenes nuevas
@@ -1912,22 +1996,7 @@
             const fileInput = document.getElementById("editImageFiles");
             if (fileInput) {
                 fileInput.addEventListener("change", function (e) {
-                    const newImagesContainer = document.getElementById("newImages");
-                    newImagesContainer.innerHTML = "";
-
-                    Array.from(this.files).forEach((file, index) => {
-                        const reader = new FileReader();
-                        reader.onload = function (event) {
-                            const div = document.createElement("div");
-                            div.className = "image-thumbnail";
-                            div.style.backgroundImage = `url('${event.target.result}')`;
-                            div.style.backgroundSize = 'cover';
-                            div.style.backgroundPosition = 'center';
-                            div.innerHTML = `<button type="button" class="image-remove-btn" onclick="removeNewImage(this, ${index})">×</button>`;
-                            newImagesContainer.appendChild(div);
-                        };
-                        reader.readAsDataURL(file);
-                    });
+                    renderNewEditFiles(this.files);
                 });
             }
         });
@@ -1945,8 +2014,7 @@
             fileInput.files = dt.files;
 
             // Re-mostrar
-            const event = new Event("change", { bubbles: true });
-            fileInput.dispatchEvent(event);
+            renderNewEditFiles(fileInput.files);
         }
 
         /* =====================
