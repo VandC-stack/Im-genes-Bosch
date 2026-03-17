@@ -1557,7 +1557,7 @@
                 <td>
                     <div class="action-btns">
                         <button class="action-btn primary" id="btn-${s.folio}" onclick="window.location.href='/gallery?folio=${encodeURIComponent(s.folio)}'">Ver detalle</button>
-                        <button class="action-btn" onclick="descargar('${s.folio}')">⬇ Cert.</button>
+                        <button class="action-btn" onclick="descargar('${s.folio}')" ${s.estatus !== 'FINALIZADO' ? 'disabled title="Disponible al finalizar"' : ''}>⬇ Cert.</button>
                     </div>
                 </td>
             </tr>
@@ -1731,9 +1731,49 @@
         /* =====================
            DESCARGA CERT
            ===================== */
-        function descargar(folio) {
-            // Redirige a tu endpoint real: window.location.href = `/descargar-certificado/${folio}`;
-            showToast("success", "Descargando certificado", `Folio ${folio} — preparando documento.`);
+        async function descargar(folio) {
+            const solicitud = solicitudes.find(s => s.folio === folio);
+            if (!solicitud) {
+                showToast("error", "Error", "No se encontró la solicitud.");
+                return;
+            }
+
+            if ((solicitud.estatus || "").toUpperCase() !== "FINALIZADO") {
+                showToast("error", "No disponible", "Solo puedes descargar el entregable cuando la solicitud está FINALIZADA.");
+                return;
+            }
+
+            const endpoint = `/api/solicitud/${encodeURIComponent(folio)}/entregable-final/download`;
+
+            try {
+                const res = await fetch(endpoint, { method: "GET" });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    showToast("error", "Sin entregable", data.error || "No hay entregable final disponible.");
+                    return;
+                }
+
+                const blob = await res.blob();
+                const disposition = res.headers.get("content-disposition") || "";
+                let fileName = `entregable_${folio}.zip`;
+                const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^\";]+)"?/i);
+                if (match) {
+                    fileName = decodeURIComponent(match[1] || match[2] || fileName);
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                showToast("success", "Descarga iniciada", `Entregable de ${folio} listo.`);
+            } catch (e) {
+                showToast("error", "Error", "No se pudo descargar el entregable final.");
+            }
         }
 
         /* =====================

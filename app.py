@@ -418,6 +418,14 @@ def get_attachment_folder_for_solicitud(solicitud: dict, folio: str) -> str:
     return folder
 
 
+def get_deliverable_folder_for_solicitud(solicitud: dict, folio: str) -> str:
+    client_username = solicitud.get("client")
+    base_folder = get_upload_folder(client_username)
+    folder = os.path.join(base_folder, "_entregables", folio)
+    os.makedirs(folder, exist_ok=True)
+    return folder
+
+
 def normalize_comment_attachments(attachments: list, folio: str) -> list:
     normalized = []
     for attachment in attachments:
@@ -1303,7 +1311,8 @@ def get_solicitud(folio):
         "fecha_envio": solicitud.get("completed_at"),
         "historial": solicitud.get("historial", []),
         "created_at": solicitud.get("created_at"),
-        "files": files
+        "files": files,
+        "entregable_final": solicitud.get("entregable_final")
     })
 
 
@@ -1938,6 +1947,119 @@ def update_solicitud_estatus(folio):
     return jsonify({"status": "ok", "message": "Estatus actualizado", "nuevo_estatus": nuevo_estatus})
 
 
+@app.route("/api/solicitud/<folio>/entregable-final", methods=["POST"])
+@login_required
+@role_required(ROLE_EJECUTIVO, ROLE_SUPERVISOR)
+def upload_final_deliverable(folio):
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+
+    requests_data = load_service_requests()
+    req_index = None
+    solicitud = None
+    for i, r in enumerate(requests_data):
+        if r.get("folio") == folio:
+            solicitud = r
+            req_index = i
+            break
+
+    if solicitud is None or req_index is None:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if role == ROLE_EJECUTIVO:
+        assignments = load_assignments()
+        assigned = any(
+            a.get("folio") == folio and a.get("assigned_to") == username
+            for a in assignments
+        )
+        if not assigned:
+            return jsonify({"error": "No autorizado para esta solicitud"}), 403
+
+    uploaded_file = request.files.get("file")
+    if uploaded_file is None or not uploaded_file.filename:
+        return jsonify({"error": "Archivo ZIP requerido"}), 400
+
+    original_name = os.path.basename(uploaded_file.filename)
+    if "." not in original_name or original_name.rsplit(".", 1)[1].lower() != "zip":
+        return jsonify({"error": "Solo se permite formato ZIP"}), 400
+
+    deliverable_folder = get_deliverable_folder_for_solicitud(solicitud, folio)
+    stored_name = f"{folio}_entregable_final.zip"
+    file_path = os.path.join(deliverable_folder, stored_name)
+
+    try:
+        uploaded_file.save(file_path)
+    except OSError:
+        return jsonify({"error": "No se pudo guardar el entregable"}), 500
+
+    try:
+        size_bytes = os.path.getsize(file_path)
+    except OSError:
+        size_bytes = 0
+
+    solicitud["entregable_final"] = {
+        "filename": original_name,
+        "stored_name": stored_name,
+        "file_path": file_path,
+        "size_bytes": size_bytes,
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        "uploaded_by": username,
+    }
+
+    historial = solicitud.setdefault("historial", [])
+    historial.append({
+        "tipo": "entregable_final_subido",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "usuario": username,
+        "rol": role,
+        "texto": "Entregable final ZIP cargado",
+        "archivo": original_name,
+    })
+
+    requests_data[req_index] = solicitud
+    save_service_requests(requests_data)
+
+    return jsonify({
+        "status": "ok",
+        "message": "Entregable final cargado",
+        "entregable_final": solicitud.get("entregable_final"),
+    })
+
+
+@app.route("/api/solicitud/<folio>/entregable-final/download", methods=["GET"])
+@login_required
+def download_final_deliverable(folio):
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+
+    requests_data = load_service_requests()
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if not can_access_solicitud(solicitud, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    explicit_status_final = str(solicitud.get("estatus", "")).strip().upper() == "FINALIZADO"
+    assignments = load_assignments()
+    linked = [a for a in assignments if a.get("folio") == folio]
+    linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+    derived_status_final = bool(linked_statuses) and all(
+        s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in linked_statuses
+    )
+
+    if not (explicit_status_final or derived_status_final):
+        return jsonify({"error": "El entregable solo se puede descargar cuando la solicitud está FINALIZADA"}), 400
+
+    entregable = solicitud.get("entregable_final") or {}
+    file_path = str(entregable.get("file_path") or "").strip()
+    if not file_path or not os.path.exists(file_path):
+        return jsonify({"error": "No hay entregable final disponible"}), 404
+
+    download_name = str(entregable.get("filename") or f"{folio}_entregable_final.zip")
+    return send_file(file_path, as_attachment=True, download_name=download_name, max_age=0)
+
+
 @app.route("/api/assignment/<file_path>/action", methods=["POST"])
 @login_required
 def add_assignment_action(file_path):
@@ -2203,11 +2325,13 @@ def gallery():
             items=bosch_items
         )
 
-    back_url = url_for("index")
+    back_url = url_for("dashboard")
     if role == ROLE_SUPERVISOR:
         back_url = url_for("solicitudes")
     elif role == ROLE_EJECUTIVO:
         back_url = url_for("ejecutivo_panel")
+    elif role == ROLE_BOSCH:
+        back_url = url_for("index")
     
     # Supervisor: ve todas las imágenes de todos los clientes
     all_clients = (role == ROLE_SUPERVISOR)

@@ -1100,6 +1100,8 @@
         </div>
     </div>
 
+    <input type="file" id="finalDeliverableInput" accept=".zip,application/zip" style="display:none;">
+
     <script>
         // Datos de las imágenes
         const allImages = {{ images | tojson | safe }};
@@ -1108,6 +1110,7 @@
         let currentReplaceFile = null;
         let currentReplacePath = null;
         let currentReplaceFilename = null;
+        let currentDeliverableFolio = null;
 
         const statusMap = {
             'subido': 'Subido',
@@ -1312,6 +1315,7 @@
             content += `<button type="button" class="modal-btn btn-accept" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'aceptado')">✓ Aceptar</button>`;
             content += `<button type="button" class="modal-btn btn-reject" onclick="updateStatus('${encodeURIComponent(image.file_path)}', 'rechazado')">✗ Rechazar</button>`;
             if (image.folio && image.folio !== 'N/A' && image.folio !== 'S/F') {
+                content += `<button type="button" class="modal-btn btn-accept" onclick="triggerFinalDeliverableUpload('${encodeURIComponent(image.folio)}')">Subir entregable final (ZIP)</button>`;
                 content += `<a href="/historial/${encodeURIComponent(image.folio)}" class="modal-btn btn-download">Comentarios e historial</a>`;
             }
 
@@ -1418,6 +1422,46 @@
             }
         }
 
+        function triggerFinalDeliverableUpload(encodedFolio) {
+            currentDeliverableFolio = decodeURIComponent(encodedFolio || '');
+            const input = document.getElementById('finalDeliverableInput');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        async function uploadFinalDeliverableFile(file) {
+            if (!currentDeliverableFolio) {
+                alert('No se encontró el folio para el entregable.');
+                return;
+            }
+
+            if (!file || !file.name || !file.name.toLowerCase().endsWith('.zip')) {
+                alert('Selecciona un archivo ZIP válido.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(currentDeliverableFolio)}/entregable-final`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    alert('✗ ' + (data.error || 'No se pudo subir el entregable final.'));
+                    return;
+                }
+
+                alert('✓ Entregable final cargado correctamente.');
+            } catch (e) {
+                alert('✗ Error: ' + e.message);
+            }
+        }
+
         // Tecla ESC para cerrar modales
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1425,6 +1469,16 @@
                 closeReplaceModal();
             }
         });
+
+        const finalDeliverableInput = document.getElementById('finalDeliverableInput');
+        if (finalDeliverableInput) {
+            finalDeliverableInput.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (file) {
+                    uploadFinalDeliverableFile(file);
+                }
+            });
+        }
 
         // Inicializar
         if (allImages && allImages.length > 0) {
