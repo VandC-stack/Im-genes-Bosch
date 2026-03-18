@@ -59,7 +59,6 @@ GEPI es una plataforma completa desarrollada en Flask que permite gestionar el c
   - `solicitudes.html`: Panel principal del supervisor
   - `ejecutivo.html`: Panel de trabajo del ejecutivo
   - `gallery.html`: Galería de archivos
-  - `image_editor.html`: Editor de imágenes
   - `view_image.html`: Visualizador de imágenes
 - `static/`: Recursos estáticos (CSS, JavaScript, imágenes)
 - `uploads/`: Carpeta por defecto para archivos subidos

@@ -430,6 +430,10 @@
             flex-shrink: 0;
         }
 
+        .required-dot.is-hidden {
+            display: none;
+        }
+
         .field-input,
         .field-select,
         .field-textarea {
@@ -467,6 +471,17 @@
         .field-hint {
             font-size: 11px;
             color: var(--text-dim);
+        }
+
+        .field-disabled {
+            opacity: 0.45;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .field-disabled .field-input {
+            cursor: not-allowed;
         }
 
         .field-textarea {
@@ -1266,12 +1281,6 @@
                         </label>
                         <div class="norma-list" id="normaList">
                             <label class="norma-item">
-                                <input type="checkbox" name="norma" value="NMX-COE-001-SCFI-2018"
-                                    data-desc="Etiquetado para productos comerciales." onchange="clearNormaError()">
-                                <span class="norma-code">NMX-COE-001-SCFI-2018</span>
-                                <span class="norma-desc">Etiquetado para productos comerciales.</span>
-                            </label>
-                            <label class="norma-item">
                                 <input type="checkbox" name="norma" value="NOM-004-SE-2021"
                                     data-desc="Informacion Comercial - Etiquetado de productos textiles, prendas de vestir, sus accesorios y ropa de casa."
                                     onchange="clearNormaError()">
@@ -1378,22 +1387,23 @@
                     <!-- SKUs -->
                     <div class="field">
                         <label class="field-label">
-                            Número de SKU's
+                            Número de SKU's / Ítems / Modelos
                         </label>
                         <input class="field-input" id="numSkus" type="number" min="1" placeholder="Ej. 3"
                             oninput="clearError(this)">
-                        <span class="field-error" id="err-numSkus">Campo obligatorio</span>
                     </div>
 
                     <!-- Medidas superficie principal -->
-                    <div class="field">
-                        <label class="field-label">
+                    <div class="field field-disabled" id="medidasField">
+                        <label class="field-label" id="medidasLabel">
+                            <span class="required-dot" id="medidasRequiredDot"></span>
                             Medidas superficie principal
                         </label>
                         <input class="field-input" id="medidas" type="text" placeholder="Ej. 12 cm × 8 cm"
                             oninput="clearError(this)">
-                        <span class="field-hint">Ancho × Alto de la cara principal</span>
-                        <span class="field-error" id="err-medidas">Campo obligatorio</span>
+                        <span class="field-hint" id="medidasHint">Ancho × Alto de la cara principal</span>
+                        <span class="field-error" id="err-medidas">Campo obligatorio para NOM-051, NOM-189, NOM-141 y
+                            NOM-142</span>
                     </div>
 
                     <!-- Prioridad — Feature 3.2 -->
@@ -1444,6 +1454,7 @@
                     <div class="form-grid cols-3">
                         <div class="field">
                             <label class="field-label">
+                                <span class="required-dot is-hidden" id="dot-importador"></span>
                                 Importador
                             </label>
                             <input class="field-input" id="importador" type="text" placeholder="Nombre del importador"
@@ -1453,6 +1464,7 @@
 
                         <div class="field">
                             <label class="field-label">
+                                <span class="required-dot is-hidden" id="dot-marca"></span>
                                 Marca
                             </label>
                             <input class="field-input" id="marca" type="text" placeholder="Nombre de la marca"
@@ -1462,6 +1474,7 @@
 
                         <div class="field">
                             <label class="field-label">
+                                <span class="required-dot is-hidden" id="dot-paisOrigen"></span>
                                 País de origen
                             </label>
                             <input class="field-input" id="paisOrigen" type="text" placeholder="Ej. México"
@@ -1471,6 +1484,7 @@
 
                         <div class="field span-3">
                             <label class="field-label">
+                                <span class="required-dot is-hidden" id="dot-contenido"></span>
                                 Contenido / Descripción del producto
                             </label>
                             <textarea class="field-textarea" id="contenido"
@@ -1615,6 +1629,8 @@
             const uname = document.getElementById("usernameDisplay").textContent.trim();
             // Avatar now uses SVG icon instead of initial
             setupDropZone();
+            onServiceChange();
+            updateMedidasFieldState();
         })();
 
         /* ═══════════════════════════════════════
@@ -1680,6 +1696,32 @@
                     ok = false;
                 }
 
+                const needsMedidas = requiresMedidasByNormas(getSelectedNormas());
+                const medidasEl = document.getElementById("medidas");
+                if (needsMedidas && !medidasEl.value.trim()) {
+                    medidasEl.classList.add("error");
+                    document.getElementById("err-medidas").style.display = "block";
+                    ok = false;
+                }
+
+                if (isDesignSelected()) {
+                    const designRequired = [
+                        { id: "importador", err: "err-importador" },
+                        { id: "marca", err: "err-marca" },
+                        { id: "paisOrigen", err: "err-paisOrigen" },
+                        { id: "contenido", err: "err-contenido" },
+                    ];
+
+                    designRequired.forEach(f => {
+                        const el = document.getElementById(f.id);
+                        if (!el.value.trim()) {
+                            el.classList.add("error");
+                            document.getElementById(f.err).style.display = "block";
+                            ok = false;
+                        }
+                    });
+                }
+
                 // Todos los demás campos son opcionales
 
                 return ok;
@@ -1702,12 +1744,33 @@
             const checked = Array.from(document.querySelectorAll('input[name="tipoServicio"]:checked'));
             const values = checked.map(cb => cb.value);
             const ds = document.getElementById("designSection");
+            const isDiseno = values.includes("diseno");
+            ["dot-importador", "dot-marca", "dot-paisOrigen", "dot-contenido"].forEach(id => {
+                const dot = document.getElementById(id);
+                if (dot) {
+                    dot.classList.toggle("is-hidden", !isDiseno);
+                }
+            });
             // Mostrar sección de diseño si al menos uno de los servicios seleccionados es "diseno"
-            if (values.includes("diseno")) {
+            if (isDiseno) {
                 ds.classList.add("visible");
             } else {
                 ds.classList.remove("visible");
+                ["importador", "marca", "paisOrigen", "contenido"].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.remove("error");
+                    }
+                    const err = document.getElementById("err-" + id);
+                    if (err) {
+                        err.style.display = "none";
+                    }
+                });
             }
+        }
+
+        function isDesignSelected() {
+            return !!document.querySelector('input[name="tipoServicio"][value="diseno"]:checked');
         }
 
         /* ═══════════════════════════════════════
@@ -1943,10 +2006,13 @@
                 ["Tipo(s) de servicio", tiposLabel],
                 ["Nombre del proyecto", val("nombreProyecto")],
                 ["Norma(s) aplicable(s)", formatNormas()],
-                ["Número de SKU's", val("numSkus")],
-                ["Medidas superficie", val("medidas")],
+                ["Número de SKU's / Ítems / Modelos", val("numSkus")],
                 ["Prioridad", prioLabel],
             ];
+
+            if (requiresMedidasByNormas(getSelectedNormas())) {
+                rows.push(["Medidas superficie", val("medidas")]);
+            }
 
             if (tipos.includes("diseno")) {
                 rows.push(
@@ -1991,6 +2057,40 @@
         function clearNormaError() {
             document.getElementById("err-norma").style.display = "none";
             document.getElementById("normaList").classList.remove("error");
+            updateMedidasFieldState();
+        }
+
+        function normalizeNormaCode(code) {
+            return String(code || "").toUpperCase().trim();
+        }
+
+        function requiresMedidasByNormas(normas) {
+            const requiredPrefixes = ["NOM-051", "NOM-189", "NOM-141", "NOM-142"];
+            return (normas || []).some(norma => {
+                const code = normalizeNormaCode((norma && norma.code) || norma);
+                return requiredPrefixes.some(prefix => code.startsWith(prefix));
+            });
+        }
+
+        function updateMedidasFieldState() {
+            const medidasField = document.getElementById("medidasField");
+            const medidasInput = document.getElementById("medidas");
+            const medidasRequiredDot = document.getElementById("medidasRequiredDot");
+            const medidasHint = document.getElementById("medidasHint");
+            const needsMedidas = requiresMedidasByNormas(getSelectedNormas());
+
+            medidasField.classList.toggle("field-disabled", !needsMedidas);
+            medidasInput.disabled = !needsMedidas;
+            medidasInput.tabIndex = needsMedidas ? 0 : -1;
+            medidasRequiredDot.style.display = needsMedidas ? "inline-block" : "none";
+            medidasHint.textContent = needsMedidas
+                ? "Obligatorio para NOM-051, NOM-189, NOM-141 y NOM-142."
+                : "No requerido para las normas seleccionadas.";
+
+            if (!needsMedidas) {
+                medidasInput.classList.remove("error");
+                document.getElementById("err-medidas").style.display = "none";
+            }
         }
 
         function val(id) {

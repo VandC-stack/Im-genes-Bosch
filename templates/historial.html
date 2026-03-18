@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Solicitud — GEPI</title>
+    <title>Historial de Proyecto — GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -1102,7 +1102,7 @@
                     <div class="card-icon"><img src="/static/document.svg" alt=""></div>
                     <div>
                         <div class="card-head-title" id="headFolio">—</div>
-                        <div class="card-head-sub">Resumen de solicitud</div>
+                        <div class="card-head-sub">Resumen de proyecto</div>
                     </div>
                 </div>
                 <div class="summary-body" id="summaryBody"></div>
@@ -1113,7 +1113,7 @@
                 <div class="card-head">
                     <div class="card-icon card-icon-dark"><img src="/static/Graficas.svg" alt="Progreso"></div>
                     <div>
-                        <div class="card-head-title">Etapas de la solicitud</div>
+                        <div class="card-head-title">Etapas del proyecto</div>
                     </div>
                 </div>
                 <div class="progress-track">
@@ -1169,16 +1169,15 @@
                     <!-- Supervisor: cambio de estatus -->
                     <div class="supervisor-bar" id="supervisorBar">
                         <img src="/static/foco.svg" style="width:14px; height:14px;"> Modo supervisor — puedes cambiar
-                        el estatus de la solicitud
+                        el estatus del proyecto
                     </div>
 
                     <div class="status-select-row" id="statusChangeRow" style="display:none;">
                         <span class="status-select-label">Cambiar estatus</span>
                         <select class="status-select" id="statusSelect">
                             <option value="">— Sin cambio —</option>
-                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="PENDIENTE">Información incompleta</option>
                             <option value="EN PROCESO">En proceso</option>
-                            <option value="EN REVISIÓN">En revisión</option>
                             <option value="FINALIZADO">Finalizado</option>
                             <option value="CANCELADO">Cancelado</option>
                         </select>
@@ -1245,7 +1244,6 @@
         const ETAPAS = [
             { key: "PENDIENTE", label: "Recibida", icon: "<img src='/static/download.svg' style='width:14px; height:14px; filter: invert(1);'>" },
             { key: "EN PROCESO", label: "En proceso", icon: "<img src='/static/organizacion.svg' style='width:14px; height:14px;'>" },
-            { key: "EN REVISIÓN", label: "En revisión", icon: "<img src='/static/lupa.svg' style='width:14px; height:14px;'>" },
             { key: "FINALIZADO", label: "Finalizada", icon: "<img src='/static/check.svg' style='width:14px; height:14px; filter: invert(1);'>" },
         ];
 
@@ -1282,7 +1280,7 @@
                 })
                 .catch(err => {
                     console.error("Error cargando datos:", err);
-                    showToast("error", "Error al cargar", "No se pudieron obtener los datos de la solicitud.");
+                    showToast("error", "Error al cargar", "No se pudieron obtener los datos del proyecto.");
                 });
         })();
 
@@ -1306,8 +1304,7 @@
             const statusMap = {
                 "FINALIZADO": ["badge-finalizado", "Finalizado"],
                 "EN PROCESO": ["badge-proceso", "En proceso"],
-                "PENDIENTE": ["badge-pendiente", "Pendiente"],
-                "EN REVISIÓN": ["badge-revision", "En revisión"],
+                "PENDIENTE": ["badge-pendiente", "Información incompleta"],
                 "CANCELADO": ["badge-pendiente", "Cancelado"],
             };
 
@@ -1324,7 +1321,7 @@
                 ["Tipo de servicio", SOLICITUD.tipo_servicio || "—"],
                 ["Proyecto", SOLICITUD.nombre_proyecto || "—"],
                 ["Norma", SOLICITUD.norma || "—"],
-                ["SKU's", SOLICITUD.num_skus || "—"],
+                ["SKU's / Ítems / Modelos", SOLICITUD.num_skus || "—"],
                 ["Medidas", SOLICITUD.medidas || "—"],
                 ["Importador", SOLICITUD.importador || "—"],
                 ["Marca", SOLICITUD.marca || "—"],
@@ -1510,7 +1507,6 @@
                 "FINALIZADO": "badge-finalizado",
                 "EN PROCESO": "badge-proceso",
                 "PENDIENTE": "badge-pendiente",
-                "EN REVISIÓN": "badge-revision",
                 "CANCELADO": "badge-pendiente",
             }[estatus] || "badge-pendiente";
         }

@@ -5,8 +5,6 @@ from datetime import datetime, timezone
 import re
 import secrets
 import hmac
-import base64
-import binascii
 from functools import wraps
 from werkzeug.security import check_password_hash
 from typing import Optional
@@ -161,6 +159,38 @@ def parse_normas(normas_string: Optional[str]) -> set:
         return set()
     normas = re.split(r'[;,]', str(normas_string))
     return {n.strip().upper() for n in normas if n.strip()}
+
+
+def normalize_service_token(value: Optional[str]) -> str:
+    token = str(value or "").strip().lower()
+    token = token.replace("á", "a").replace("é", "e").replace("í", "i")
+    token = token.replace("ó", "o").replace("ú", "u").replace("ü", "u")
+    token = token.replace("ñ", "n")
+    return re.sub(r"\s+", "", token)
+
+
+def requires_design_details(tipo_servicio_string: Optional[str]) -> bool:
+    if not tipo_servicio_string:
+        return False
+    tokens = re.split(r'[;,]', str(tipo_servicio_string))
+    return any(normalize_service_token(token) == "diseno" for token in tokens)
+
+
+MEDIDAS_REQUIRED_NORMA_PREFIXES = (
+    "NOM-051",
+    "NOM-189",
+    "NOM-141",
+    "NOM-142",
+)
+
+
+def requires_medidas_surface(normas_string: Optional[str]) -> bool:
+    """Returns True when selected normas require surface measurements."""
+    normas = parse_normas(normas_string)
+    for norma in normas:
+        if any(norma.startswith(prefix) for prefix in MEDIDAS_REQUIRED_NORMA_PREFIXES):
+            return True
+    return False
 
 
 def get_compatible_ejecutivos(folio_normas: Optional[str]) -> list:
@@ -1049,6 +1079,17 @@ def api_solicitudes():
         if not tipo_servicio or not nombre_proyecto or not prioridad:
             return jsonify({"error": "Datos incompletos"}), 400
 
+        if requires_design_details(tipo_servicio):
+            if not all([importador, marca, pais_origen, contenido]):
+                return jsonify({
+                    "error": "Importador, marca, pais de origen y contenido son obligatorios para el servicio de diseno"
+                }), 400
+
+        if requires_medidas_surface(norma) and not medidas:
+            return jsonify({
+                "error": "Medidas de superficie principal es obligatorio para NOM-051, NOM-189, NOM-141 y NOM-142"
+            }), 400
+
         assignments = load_assignments()
         existing_folios = {a.get("folio") for a in assignments if a.get("folio")}
         requests_data = load_service_requests()
@@ -1143,7 +1184,7 @@ def api_solicitudes():
         if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
             return "FINALIZADO"
         if any(s == STATUS_IN_REVIEW for s in statuses):
-            return "EN REVISIÓN"
+            return "EN PROCESO"
         if any(s == STATUS_ASSIGNED for s in statuses):
             return "EN PROCESO"
         return "PENDIENTE"
@@ -1340,6 +1381,16 @@ def edit_solicitud(folio):
     
     if solicitud is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    assignments = load_assignments()
+    linked_assignments = [a for a in assignments if a.get("folio") == folio]
+    statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked_assignments]
+    explicit_estatus = str(solicitud.get("estatus", "")).strip().upper()
+    esta_finalizada = explicit_estatus == "FINALIZADO" or (
+        statuses and all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses)
+    )
+    if esta_finalizada:
+        return jsonify({"error": "No se puede editar una solicitud con estatus FINALIZADO"}), 403
     
     # Obtener datos de la edición
     tipo_servicio = request.form.get("tipo_servicio", "").strip()
@@ -1353,11 +1404,29 @@ def edit_solicitud(folio):
     pais_origen = request.form.get("pais_origen", "").strip()
     contenido = request.form.get("contenido", "").strip()
     comentario_edicion = request.form.get("comentario_edicion", "").strip()
+
+    norma_efectiva = norma if norma else str(solicitud.get("norma", "")).strip()
+    medidas_efectivas = medidas if medidas else str(solicitud.get("medidas", "")).strip()
+    tipo_servicio_efectivo = tipo_servicio if tipo_servicio else str(solicitud.get("tipo_servicio", "")).strip()
+    importador_efectivo = importador if importador else str(solicitud.get("importador", "")).strip()
+    marca_efectiva = marca if marca else str(solicitud.get("marca", "")).strip()
+    pais_origen_efectivo = pais_origen if pais_origen else str(solicitud.get("pais_origen", "")).strip()
+    contenido_efectivo = contenido if contenido else str(solicitud.get("contenido", "")).strip()
+
+    if requires_design_details(tipo_servicio_efectivo):
+        if not all([importador_efectivo, marca_efectiva, pais_origen_efectivo, contenido_efectivo]):
+            return jsonify({
+                "error": "Importador, marca, pais de origen y contenido son obligatorios para el servicio de diseno"
+            }), 400
+
+    if requires_medidas_surface(norma_efectiva) and not medidas_efectivas:
+        return jsonify({
+            "error": "Medidas de superficie principal es obligatorio para NOM-051, NOM-189, NOM-141 y NOM-142"
+        }), 400
     
     if not comentario_edicion:
         return jsonify({"error": "Debe proporcionar un comentario de la edición"}), 400
 
-    assignments = load_assignments()
     files_list = solicitud.setdefault("files", [])
     upload_folder = get_upload_folder(username)
 
@@ -1588,7 +1657,7 @@ def get_solicitud_historial(folio):
         if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
             return "FINALIZADO"
         if any(s == STATUS_IN_REVIEW for s in statuses):
-            return "EN REVISIÓN"
+            return "EN PROCESO"
         if any(s == STATUS_ASSIGNED for s in statuses):
             return "EN PROCESO"
         return "PENDIENTE"
@@ -1617,7 +1686,7 @@ def get_solicitud_historial(folio):
         "autor": "Sistema",
         "rol": "system",
         "icono": "<img src='/static/document.svg' style='width:16px; height:16px;'>",
-        "texto": f"Solicitud {folio} recibida",
+        "texto": f"Proyecto {folio} recibido",
         "estatus_anterior": None,
         "estatus_nuevo": "PENDIENTE"
     })
@@ -1668,7 +1737,7 @@ def get_solicitud_historial(folio):
                         "icono": "🔄",
                         "texto": "Cambio de estatus",
                         "estatus_anterior": "EN PROCESO",
-                        "estatus_nuevo": "EN REVISIÓN"
+                        "estatus_nuevo": "EN PROCESO"
                     })
                 except:
                     pass
@@ -1688,7 +1757,7 @@ def get_solicitud_historial(folio):
                     # Determinar estatus anterior
                     estatus_anterior = "EN PROCESO"
                     if in_review:
-                        estatus_anterior = "EN REVISIÓN"
+                        estatus_anterior = "EN PROCESO"
                     
                     historial_formateado.append({
                         "id": len(historial_formateado),
@@ -1961,7 +2030,7 @@ def update_solicitud_estatus(folio):
     nuevo_estatus = data.get("estatus", "").strip().upper()
     comentario = data.get("comentario", "").strip()
     
-    estatus_validos = ["PENDIENTE", "EN PROCESO", "EN REVISIÓN", "FINALIZADO", "CANCELADO"]
+    estatus_validos = ["PENDIENTE", "EN PROCESO", "FINALIZADO", "CANCELADO"]
     if nuevo_estatus not in estatus_validos:
         return jsonify({"error": "Estatus inválido"}), 400
     
@@ -2304,111 +2373,6 @@ def serve_file_by_path():
             return send_from_directory(directory, filename, max_age=0)
     
     abort(403)
-
-
-def can_access_file_path(file_path: str, role: str, username: Optional[str]) -> bool:
-    if not file_path:
-        return False
-
-    if role in {ROLE_SUPERVISOR, ROLE_BOSCH}:
-        return True
-
-    assignments = load_assignments()
-
-    if role == ROLE_EJECUTIVO:
-        return any(
-            a.get("file_path") == file_path and a.get("assigned_to") == username
-            for a in assignments
-        )
-
-    if role == ROLE_CLIENTE:
-        return any(
-            a.get("file_path") == file_path and a.get("client") == username
-            for a in assignments
-        )
-
-    return False
-
-
-@app.route("/api/get-image")
-@login_required
-def get_image_by_path():
-    file_path = request.args.get("file_path")
-    if not file_path or not os.path.exists(file_path):
-        return jsonify({"error": "Archivo no encontrado"}), 404
-
-    if not is_allowed_extension(file_path):
-        return jsonify({"error": "Extensión no permitida"}), 400
-
-    username = session.get("username")
-    role = normalize_role(session.get("role"))
-
-    if not can_access_file_path(file_path, role, username):
-        return jsonify({"error": "No autorizado"}), 403
-
-    directory = os.path.dirname(file_path)
-    filename = os.path.basename(file_path)
-    return send_from_directory(directory, filename, max_age=0)
-
-
-@app.route("/api/save-edited-image", methods=["POST"])
-@login_required
-@role_required(ROLE_EJECUTIVO, ROLE_SUPERVISOR)
-def save_edited_image():
-    data = request.get_json() or {}
-    filename = data.get("filename")
-    file_path = data.get("file_path")
-    image_data = data.get("image_data")
-
-    if not filename or not file_path or not image_data:
-        return jsonify({"error": "Datos inválidos"}), 400
-
-    username = session.get("username")
-    role = normalize_role(session.get("role"))
-
-    if not can_access_file_path(file_path, role, username):
-        return jsonify({"error": "No autorizado"}), 403
-
-    if not is_image_extension(filename):
-        return jsonify({"error": "Solo se permiten imágenes"}), 400
-
-    # Verificar que el archivo no esté en estatus aceptado (bloqueado)
-    assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
-    if assignment:
-        current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
-        if current_status == STATUS_ACCEPTED:
-            return jsonify({"error": "No se puede editar: archivo ya aceptado"}), 403
-
-    try:
-        match = re.match(r"^data:image/\w+;base64,", image_data)
-        if match:
-            image_data = image_data[match.end():]
-
-        image_bytes = base64.b64decode(image_data)
-
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "wb") as f:
-            f.write(image_bytes)
-
-        # Actualizar assignment con nuevo ciclo
-        if assignment:
-            # Incrementar ciclo en cada edición
-            ciclo_actual = assignment.get("ciclo_actual", 1)
-            assignment["ciclo_actual"] = ciclo_actual + 1
-            
-            assignment["last_edited_at"] = datetime.now(timezone.utc).isoformat()
-            assignment["last_edited_by"] = username
-            current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
-            if current_status in {STATUS_ASSIGNED, STATUS_UPLOADED}:
-                assignment["status"] = STATUS_IN_REVIEW
-                assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
-                assignment["status_updated_by"] = username
-            save_assignments(assignments)
-
-        return jsonify({"status": "ok"})
-    except (OSError, binascii.Error) as e:
-        return jsonify({"error": f"Error al guardar imagen: {str(e)}"}), 500
 
 
 @app.route("/gallery")
@@ -2941,186 +2905,6 @@ def delete_user():
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
     
-    return jsonify({"status": "ok"})
-
-
-# =========================
-# EDITOR DE IMÁGENES
-# =========================
-@app.route("/editor")
-@login_required
-@role_required(ROLE_EJECUTIVO)
-def image_editor():
-    """Página del editor de imágenes para ejecutivos"""
-    filename = request.args.get("filename")
-    file_path = request.args.get("file_path")
-    client = request.args.get("client")
-    
-    if not filename or not file_path or not client:
-        return "Parámetros inválidos", 400
-    
-    # Verificar que el archivo está asignado al ejecutivo actual
-    username = session.get("username")
-    assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("file_path") == file_path and a.get("assigned_to") == username), None)
-    
-    if not assignment:
-        return "Archivo no asignado a este ejecutivo", 403
-    
-    return render_template("image_editor.html", 
-                         filename=filename, 
-                         file_path=file_path, 
-                         client=client,
-                         user_role=normalize_role(session.get("role")))
-
-
-@app.route("/api/image-status", methods=["GET", "POST"])
-@login_required
-def image_status():
-    """Obtener o actualizar el estado de una imagen"""
-    filename = request.args.get("filename") if request.method == "GET" else request.get_json().get("filename")
-    file_path = request.args.get("file_path") if request.method == "GET" else request.get_json().get("file_path")
-    
-    if not filename and not file_path:
-        return jsonify({"error": "Filename o file_path requerido"}), 400
-    
-    assignments = load_assignments()
-    assignment = None
-    if file_path:
-        assignment = next((a for a in assignments if a.get("file_path") == file_path), None)
-    if not assignment and filename:
-        assignment = next((a for a in assignments if a.get("filename") == filename), None)
-    
-    if request.method == "GET":
-        status = normalize_status(
-            assignment.get("status") if assignment else None,
-            assignment.get("assigned_to") if assignment else None
-        )
-        return jsonify({"status": status})
-    
-    # POST: actualizar estado
-    role = normalize_role(session.get("role"))
-    if role != ROLE_SUPERVISOR and role != ROLE_EJECUTIVO:
-        return jsonify({"error": "No autorizado"}), 403
-    
-    data = request.get_json()
-    status = data.get("status")
-    file_path = data.get("file_path")
-    
-    if not status or status not in [STATUS_ACCEPTED, STATUS_REJECTED]:
-        return jsonify({"error": "Estado inválido"}), 400
-    
-    if assignment:
-        assignment["status"] = status
-        assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
-        assignment["status_updated_by"] = session.get("username")
-        save_assignments(assignments)
-        return jsonify({"status": "ok"})
-    
-    return jsonify({"error": "Archivo no encontrado"}), 404
-
-
-@app.route("/api/image-file-path", methods=["GET"])
-@login_required
-def get_image_file_path():
-    """Obtener el file_path completo de un archivo"""
-    filename = request.args.get("filename")
-    
-    if not filename:
-        return jsonify({"error": "Filename requerido"}), 400
-    
-    username = session.get("username")
-    role = normalize_role(session.get("role"))
-    
-    # Buscar en asignaciones primero
-    assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("filename") == filename), None)
-    
-    if assignment:
-        return jsonify({"file_path": assignment.get("file_path")})
-    
-    # Si no está en asignaciones, buscar en la carpeta del usuario
-    folder = get_upload_folder(username)
-    full_path = os.path.join(folder, filename)
-    
-    if os.path.exists(full_path):
-        return jsonify({"file_path": full_path})
-    
-    return jsonify({"error": "Archivo no encontrado"}), 404
-
-
-@app.route("/api/image-comments", methods=["GET"])
-@login_required
-def get_image_comments():
-    """Obtener comentarios de una imagen"""
-    filename = request.args.get("filename")
-    
-    if not filename:
-        return jsonify({"error": "Filename requerido"}), 400
-    
-    assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("filename") == filename), None)
-
-    commits = load_commits()
-    entry = find_commit_entry(
-        commits,
-        filename=filename,
-        file_path=assignment.get("file_path") if assignment else None
-    )
-    comments = entry.get("comments", []) if entry else []
-    return jsonify({"comments": comments})
-
-
-@app.route("/api/add-image-comment", methods=["POST"])
-@login_required
-def add_image_comment():
-    """Agregar comentario a una imagen"""
-    data = request.get_json()
-    filename = data.get("filename")
-    text = data.get("text", "").strip()
-    
-    if not filename or not text:
-        return jsonify({"error": "Datos inválidos"}), 400
-    
-    username = session.get("username")
-    role = normalize_role(session.get("role"))
-    
-    assignments = load_assignments()
-    assignment = next((a for a in assignments if a.get("filename") == filename), None)
-    
-    if not assignment:
-        return jsonify({"error": "Archivo no encontrado"}), 404
-    
-    # Verificar permisos: ejecutivo o supervisor
-    if role not in [ROLE_EJECUTIVO, ROLE_SUPERVISOR]:
-        return jsonify({"error": "No autorizado"}), 403
-    
-    # Si es ejecutivo, debe ser el asignado
-    if role == ROLE_EJECUTIVO and assignment.get("assigned_to") != username:
-        return jsonify({"error": "No autorizado"}), 403
-    
-    commits = load_commits()
-    entry = find_commit_entry(
-        commits,
-        filename=assignment.get("filename"),
-        file_path=assignment.get("file_path")
-    )
-    if not entry:
-        entry = {
-            "filename": assignment.get("filename"),
-            "file_path": assignment.get("file_path"),
-            "comments": []
-        }
-        commits.append(entry)
-
-    entry.setdefault("comments", []).append({
-        "author": username,
-        "text": text,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "role": role
-    })
-    
-    save_commits(commits)
     return jsonify({"status": "ok"})
 
 

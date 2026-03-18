@@ -916,7 +916,6 @@
             let allImages = rawImages || [];
             const ITEMS_PER_PAGE = 30; // 5x6
             let currentPage = 1;
-            let imageStatuses = {};
 
             // Fallback para navegación inteligente (desde backend)
             const FALLBACK_BACK_URL = '{{ back_url or "/index" }}';
@@ -935,7 +934,27 @@
             // Inicializar
             function init() {
                 renderGallery();
-                loadAllStatuses();
+            }
+
+            function getStatusBadgeHtml(status) {
+                let statusClass = 'status-pending';
+                let statusIcon = '●';
+
+                if (status === 'asignado') {
+                    statusClass = 'status-pending';
+                    statusIcon = '✎';
+                } else if (status === 'en_revision') {
+                    statusClass = 'status-pending';
+                    statusIcon = '◓';
+                } else if (status === 'aceptado') {
+                    statusClass = 'status-accepted';
+                    statusIcon = '✓';
+                } else if (status === 'rechazado') {
+                    statusClass = 'status-rejected';
+                    statusIcon = '✗';
+                }
+
+                return `<div><span class="status-badge ${statusClass}">${statusIcon}</span></div>`;
             }
 
             // Renderizar galería
@@ -962,7 +981,7 @@
                                 <div class="overlay-meta">Folio: ${image.folio || 'N/A'}</div>
                                 <div class="overlay-meta">${(image.size / 1024).toFixed(1)} KB</div>
                             </div>
-                            <div id="status-badge-${globalIdx}" style="display: none;"></div>
+                            ${getStatusBadgeHtml(image.status)}
                         </div>
                     </article>
                 `;
@@ -1040,9 +1059,6 @@
                 currentPage = page;
                 renderGallery();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // Cargar estados de la nueva página
-                loadPageStatuses();
             }
 
             // Actualizar info de página
@@ -1051,83 +1067,6 @@
                 document.getElementById('currentPageDisplay').textContent = currentPage;
                 document.getElementById('totalPagesDisplay').textContent = totalPages;
                 document.getElementById('totalImages').textContent = allImages.length;
-            }
-
-            // Cargar estados de imágenes de la página actual
-            async function loadPageStatuses() {
-                const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-                const endIdx = startIdx + ITEMS_PER_PAGE;
-                const pageImages = allImages.slice(startIdx, endIdx);
-
-                for (let i = 0; i < pageImages.length; i++) {
-                    const globalIdx = startIdx + i;
-                    const image = pageImages[i];
-
-                    try {
-                        const statusKey = image.file_path || image.name;
-                        const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            imageStatuses[statusKey] = data.status;
-                            updateStatusBadge(globalIdx, data.status);
-                        }
-                    } catch (e) {
-                        console.error('Error loading status:', e);
-                    }
-                }
-            }
-
-            // Cargar todos los estados (en background)
-            async function loadAllStatuses() {
-                loadPageStatuses(); // Cargar primero la página actual
-
-                // Luego cargar el resto en background
-                for (let i = 0; i < allImages.length; i++) {
-                    const image = allImages[i];
-                    const statusKey = image.file_path || image.name;
-                    if (imageStatuses[statusKey]) continue; // Ya cargado
-
-                    try {
-                        const res = await fetch(`/api/image-status?filename=${encodeURIComponent(image.name)}&file_path=${encodeURIComponent(image.file_path || '')}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            imageStatuses[statusKey] = data.status;
-                        }
-                    } catch (e) {
-                        console.error('Error loading status:', e);
-                    }
-                }
-            }
-
-            // Actualizar badge de estado
-            function updateStatusBadge(idx, status) {
-                const badge = document.getElementById(`status-badge-${idx}`);
-                if (!badge) return;
-
-                let statusClass = 'status-pending';
-                let statusIcon = '●';
-                let statusText = 'Subido';
-
-                if (status === 'asignado') {
-                    statusClass = 'status-pending';
-                    statusIcon = '✎';
-                    statusText = 'Asignado';
-                } else if (status === 'en_revision') {
-                    statusClass = 'status-pending';
-                    statusIcon = '◓';
-                    statusText = 'En revisión';
-                } else if (status === 'aceptado') {
-                    statusClass = 'status-accepted';
-                    statusIcon = '✓';
-                    statusText = 'Aceptado';
-                } else if (status === 'rechazado') {
-                    statusClass = 'status-rejected';
-                    statusIcon = '✗';
-                    statusText = 'Rechazado';
-                }
-
-                badge.innerHTML = `<span class="status-badge ${statusClass}">${statusIcon}</span>`;
-                badge.style.display = 'block';
             }
 
             // Modal de vista previa

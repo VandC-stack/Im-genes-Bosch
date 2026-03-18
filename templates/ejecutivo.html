@@ -1056,7 +1056,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-header">
-                        <div class="stat-label">Pendientes</div>
+                        <div class="stat-label">Información incompleta</div>
                         <div class="stat-icon">⧖</div>
                     </div>
                     <div class="stat-value">{{ stats.pending }}</div>
@@ -1103,7 +1103,7 @@
             </div>
             <div class="modal-body">
                 <p style="color: #666666; margin-bottom: 24px; font-size: 13px;">
-                    Selecciona un archivo nuevo para reemplazar el actual. El estado se actualizará a "En revisión".
+                    Selecciona un archivo nuevo para reemplazar el actual. El estado se actualizará a "En proceso".
                 </p>
                 <div class="file-input-wrapper">
                     <input type="file" id="replaceFileInput" onchange="updateFileName()" style="display: none;">
@@ -1137,7 +1137,7 @@
         const statusMap = {
             'subido': 'Subido',
             'asignado': 'Asignado',
-            'en_revision': 'En revisión',
+            'en_revision': 'En proceso',
             'aceptado': 'Aceptado',
             'rechazado': 'Rechazado'
         };
@@ -1273,7 +1273,7 @@
             const statusMap = {
                 'subido': 'Subido',
                 'asignado': 'Asignado',
-                'en_revision': 'En revisión',
+                'en_revision': 'En proceso',
                 'aceptado': 'Aceptado',
                 'rechazado': 'Rechazado'
             };
@@ -1330,7 +1330,6 @@
 
             if (image.is_image) {
                 content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">Ver</a>`;
-                content += `<a href="/editor?filename=${encodeURIComponent(image.filename)}&file_path=${encodeURIComponent(image.file_path)}&client=${encodeURIComponent(image.client)}" class="modal-btn btn-edit">Editar</a>`;
             } else {
                 content += `<a href="${image.url}" target="_blank" class="modal-btn btn-view">Abrir</a>`;
             }
