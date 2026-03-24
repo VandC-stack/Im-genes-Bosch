@@ -38,6 +38,7 @@
             align-items: center;
             justify-content: center;
             background: #ffffff;
+            position: relative;
             padding-bottom: 132px;
         }
 
@@ -120,9 +121,12 @@
         }
 
         .card {
-            width: 100%;
-            max-width: 420px;
+            width: min(100%, 420px);
             background: transparent;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .brand-logo {
@@ -334,6 +338,10 @@
             }
 
             .card {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 420px;
                 margin: 0 auto;
             }
 
