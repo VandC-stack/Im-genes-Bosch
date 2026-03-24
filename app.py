@@ -9,6 +9,8 @@ from functools import wraps
 from werkzeug.security import check_password_hash
 from typing import Optional
 
+#cambiar secret key antes de salir a producción
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("APP_SECRET_KEY", "change-me")
 

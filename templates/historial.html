@@ -1366,7 +1366,7 @@
 
                 // Find date from historial
                 const entry = HISTORIAL.find(h => h.estatus_nuevo === etapa.key);
-                const dateStr = entry ? `<div class="step-date">${entry.fecha}</div>` : "";
+                const dateStr = entry ? `<div class="step-date">${formatTimelineDate(entry.fecha)}</div>` : "";
 
                 return `
             <div class="progress-step ${cls}">
@@ -1397,11 +1397,26 @@
             const container = document.getElementById("timeline");
             const empty = document.getElementById("tlEmpty");
 
-            let data = [...HISTORIAL].reverse(); // newest first
+            let data = [...HISTORIAL];
 
             if (currentFilter === "eventos") data = data.filter(h => h.tipo === "evento");
             if (currentFilter === "comentarios") data = data.filter(h => h.tipo === "comentario");
             if (currentFilter === "archivos") data = data.filter(h => h.archivos && h.archivos.length);
+
+            data = data
+                .map((entry, idx) => ({
+                    ...entry,
+                    __order: idx,
+                    __date: parseTimelineDate(entry.fecha)
+                }))
+                .sort((a, b) => {
+                    if (a.__date && b.__date) {
+                        return b.__date.getTime() - a.__date.getTime(); // newest first
+                    }
+                    if (a.__date && !b.__date) return -1;
+                    if (!a.__date && b.__date) return 1;
+                    return b.__order - a.__order;
+                });
 
             if (data.length === 0) {
                 container.innerHTML = "";
@@ -1461,12 +1476,48 @@
                     <div class="tl-meta">
                         <span class="tl-author">${entry.autor}</span>
                         <span class="tl-role ${roleCls}">${roleLabel(entry.rol)}</span>
-                        <span class="tl-time">${entry.fecha}</span>
+                        <span class="tl-time">${formatTimelineDate(entry.fecha)}</span>
                     </div>
                     ${contentHtml}
                 </div>
             </div>`;
             }).join("");
+        }
+
+        function parseTimelineDate(value) {
+            if (!value) return null;
+            const text = String(value).trim();
+            if (!text) return null;
+
+            // ISO 8601 (ej. 2026-03-18T22:44:39.579361+00:00)
+            let normalized = text;
+            if (text.includes("T")) {
+                normalized = text.replace(/\.(\d{3})\d+/, ".$1");
+            } else {
+                // Fecha simple "YYYY-MM-DD HH:mm" -> ISO local
+                normalized = text.replace(" ", "T");
+            }
+
+            const date = new Date(normalized);
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
+            return date;
+        }
+
+        function formatTimelineDate(value) {
+            const date = parseTimelineDate(value);
+            if (!date) {
+                return value || "—";
+            }
+            return date.toLocaleString("es-MX", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            });
         }
 
         function avatarClass(rol) {

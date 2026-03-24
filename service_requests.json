@@ -1,214 +1,158 @@
 [
   {
-    "folio": "FOL-20260302-3394",
+    "folio": "FOL-20260318-6999",
     "client": "cliente1",
-    "created_at": "2026-03-02T16:41:07.425978+00:00",
+    "created_at": "2026-03-18T22:41:23.916688+00:00",
     "tipo_servicio": "consultoria, constancia, diseno",
-    "nombre_proyecto": "Prueba",
-    "norma": "NOM-004-SE-2021",
-    "num_skus": "18",
-    "medidas": "12x12",
+    "nombre_proyecto": "Gel energizante capilar",
+    "norma": "NOM-050-SCFI-2004",
+    "num_skus": "73",
+    "medidas": "",
     "prioridad": "regular",
-    "importador": "Tersjknskj",
-    "marca": "Infinitum",
-    "pais_origen": "Irlanda",
-    "contenido": "1234567ujudfubvhzasdfghjkjhgfxzooiujhygfdv",
+    "importador": "No aplica",
+    "marca": "V&C LABS",
+    "pais_origen": "México",
+    "contenido": "Denominación del producto:\r\nGel energizante capilar de uso cosmético\r\n\r\nContenido neto:\r\n250 g\r\n\r\nIngredientes:\r\nAgua purificada, Carbomer, Triethanolamine, Cafeína, Extracto de menta, Fragancia, Conservadores\r\n\r\nInstrucciones de uso:\r\nAplicar una pequeña cantidad sobre el cabello seco o húmedo y moldear al gusto.\r\n\r\nAdvertencias:\r\nNo ingerir. Evite el contacto con los ojos. Manténgase fuera del alcance de los niños.",
     "files": [
       {
-        "filename": "770062b66e43ee84e71e34b6f0954641.jpg",
-        "original_name": "770062b66e43ee84e71e34b6f0954641.jpg",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\770062b66e43ee84e71e34b6f0954641.jpg"
+        "filename": "0b839cc8-de9e-4c77-b01a-d41322e644ec.png",
+        "original_name": "0b839cc8-de9e-4c77-b01a-d41322e644ec.png",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\0b839cc8-de9e-4c77-b01a-d41322e644ec.png"
       },
       {
-        "filename": "e3kgne3b07kg1.jpeg",
-        "original_name": "e3kgne3b07kg1.jpeg",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\e3kgne3b07kg1.jpeg"
+        "filename": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
+        "original_name": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\08621cb5-d676-451e-8f45-d8c8a23f7b82.png"
       },
       {
-        "filename": "HCHBWwSXgAAMY1o.jpeg",
-        "original_name": "HCHBWwSXgAAMY1o.jpeg",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\HCHBWwSXgAAMY1o.jpeg"
-      },
-      {
-        "filename": "spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp",
-        "original_name": "spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp"
+        "filename": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
+        "original_name": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\92c04bda-9a38-4deb-b5d7-877ad0c21d64.png"
       }
     ],
     "historial": [
       {
         "id": 0,
         "tipo": "comentario",
-        "timestamp": "2026-03-02T17:28:17.856939+00:00",
+        "timestamp": "2026-03-18T22:44:39.579361+00:00",
         "usuario": "cliente1",
         "autor": "cliente1",
         "rol": "cliente",
-        "texto": "Prueba jwisfhfbvzlk",
+        "texto": "Codigos nuevos",
         "archivos": [
           {
-            "nombre": "ChatGPT Image 19 feb 2026, 04_48_53 p.m..png",
+            "nombre": "Captura de pantalla 2025-08-21 112056.png",
             "ext": "png",
-            "size": "459 KB"
+            "size": "4 KB",
+            "id": "be1c99209f20d2f05f7d",
+            "stored_name": "20260318224439_23a2cd7cdbba_Captura_de_pantalla_2025-08-21_112056.png",
+            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_comentarios\\FOL-20260318-6999\\20260318224439_23a2cd7cdbba_Captura_de_pantalla_2025-08-21_112056.png",
+            "size_bytes": 3892,
+            "url": "/api/solicitud/FOL-20260318-6999/adjuntos/be1c99209f20d2f05f7d"
           }
         ]
       },
       {
+        "tipo": "edicion_cliente",
+        "timestamp": "2026-03-18T22:45:53.138019+00:00",
+        "usuario": "cliente1",
+        "comentario": "Versión preliminar de la etiqueta",
+        "cambios": {},
+        "imagenes_reemplazadas": [],
+        "imagenes_agregadas": [
+          {
+            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
+            "filename": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
+            "original_name": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png"
+          }
+        ],
+        "ciclo_anterior": 1,
+        "ciclo_nuevo": 2
+      },
+      {
+        "id": 2,
+        "tipo": "comentario",
+        "timestamp": "2026-03-18T22:49:58.533411+00:00",
+        "usuario": "ins1",
+        "autor": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Gracias, lo considero",
+        "archivos": []
+      },
+      {
         "tipo": "entregable_final_subido",
-        "timestamp": "2026-03-17T23:00:31.940371+00:00",
+        "timestamp": "2026-03-18T23:30:05.833812+00:00",
         "usuario": "ins1",
         "rol": "ejecutivo",
-        "texto": "Entregable final ZIP cargado",
-        "archivo": "geek.zip"
+        "texto": "Archivos finales entregados (1 archivo(s))",
+        "cantidad_archivos": 1
       },
       {
         "tipo": "cambio_estatus",
-        "timestamp": "2026-03-17T23:00:31.940378+00:00",
+        "timestamp": "2026-03-18T23:30:05.833850+00:00",
         "usuario": "ins1",
         "rol": "ejecutivo",
-        "texto": "Solicitud finalizada al cargar el entregable final",
+        "texto": "Solicitud finalizada al entregar archivos finales",
         "estatus_anterior": "PENDIENTE",
+        "estatus_nuevo": "FINALIZADO"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-19T19:12:19.281751+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Solicitud marcada de forma general como rechazado",
+        "estatus_anterior": "FINALIZADO",
         "estatus_nuevo": "FINALIZADO"
       }
     ],
     "entregable_final": {
-      "filename": "geek.zip",
-      "stored_name": "FOL-20260302-3394_entregable_final.zip",
-      "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_entregables\\FOL-20260302-3394\\FOL-20260302-3394_entregable_final.zip",
-      "size_bytes": 2961151,
-      "uploaded_at": "2026-03-17T23:00:31.940343+00:00",
+      "files": [
+        {
+          "original_name": "4b6a5e38-80c0-4caf-bff6-0e8122409565.png",
+          "stored_name": "4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
+          "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_entregables\\FOL-20260318-6999\\4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
+          "relative_path": "_entregables\\FOL-20260318-6999\\4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
+          "size_bytes": 4096578,
+          "uploaded_at": "2026-03-18T23:30:05.831681+00:00"
+        }
+      ],
+      "uploaded_at": "2026-03-18T23:30:05.831712+00:00",
       "uploaded_by": "ins1"
     },
     "estatus": "FINALIZADO"
   },
   {
-    "folio": "FOL-20260302-6392",
+    "folio": "FOL-20260319-5014",
     "client": "cliente1",
-    "created_at": "2026-03-02T16:55:29.250307+00:00",
-    "tipo_servicio": "consultoria",
-    "nombre_proyecto": "Prueba 2",
-    "norma": "NOM-020-SCFI-1997",
-    "num_skus": "124",
-    "medidas": "12x12",
+    "created_at": "2026-03-19T18:21:31.321918+00:00",
+    "tipo_servicio": "consultoria, constancia",
+    "nombre_proyecto": "Prueba",
+    "norma": "NOM-020-SCFI-1997, NOM-024-SCFI-2013, NOM-141-SSA1/SCFI-2012, NOM-142-SSA1/SCFI-2014, NOM-189-SSA1/SCFI-2018, NOM-199-SCFI-2017",
+    "num_skus": "12354",
+    "medidas": "12x12., 14x33",
     "prioridad": "urgente",
     "importador": "",
     "marca": "",
     "pais_origen": "",
     "contenido": "",
-    "files": [
-      {
-        "filename": "ChatGPT_Image_19_feb_2026_04_52_07_p_m_.png",
-        "original_name": "ChatGPT Image 19 feb 2026, 04_52_07 p.m..png",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\ChatGPT_Image_19_feb_2026_04_52_07_p_m_.png"
-      }
-    ]
-  },
-  {
-    "folio": "FOL-20260302-4143",
-    "client": "cliente1",
-    "created_at": "2026-03-02T18:25:36.705685+00:00",
-    "tipo_servicio": "constancia",
-    "nombre_proyecto": "Prueba 3",
-    "norma": "NOM-142-SSA1/SCFI-2014",
-    "num_skus": "546",
-    "medidas": "12x12",
-    "prioridad": "urgente",
-    "importador": "",
-    "marca": "",
-    "pais_origen": "",
-    "contenido": "",
-    "files": [
-      {
-        "filename": "ChatGPT_Image_19_feb_2026_04_48_53_p_m_.png",
-        "original_name": "ChatGPT Image 19 feb 2026, 04_48_53 p.m..png",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\ChatGPT_Image_19_feb_2026_04_48_53_p_m_.png"
-      }
-    ]
-  },
-  {
-    "folio": "FOL-20260302-1688",
-    "client": "cliente1",
-    "created_at": "2026-03-02T23:40:20.824423+00:00",
-    "tipo_servicio": "consultoria, constancia, diseno",
-    "nombre_proyecto": "Prueba 4",
-    "norma": "NOM-020-SCFI-1997; NOM-142-SSA1/SCFI-2014",
-    "num_skus": "123234",
-    "medidas": "",
-    "prioridad": "regular",
-    "importador": "sdfgdasdfgdsd",
-    "marca": "fdgdsfdvsdcvxcc",
-    "pais_origen": "dgszcz",
-    "contenido": "sdvj<hsuhs",
-    "files": [
-      {
-        "filename": "G8FKqRdW0AcVh1q.jpg",
-        "original_name": "G8FKqRdW0AcVh1q.jpg",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\G8FKqRdW0AcVh1q.jpg"
-      }
-    ],
+    "files": [],
     "historial": [
       {
-        "id": 0,
-        "tipo": "comentario",
-        "timestamp": "2026-03-06T21:50:03.880501+00:00",
-        "usuario": "cliente1",
-        "autor": "cliente1",
-        "rol": "cliente",
-        "texto": "Sonic",
-        "archivos": [
-          {
-            "nombre": "spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp",
-            "ext": "webp",
-            "size": "14 KB",
-            "id": "235e22d0bf28fe076a3d",
-            "stored_name": "20260306215003_f27eccb49546_spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp",
-            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_comentarios\\FOL-20260302-1688\\20260306215003_f27eccb49546_spiderman-ah-no-espera-v0-862xfhi9b9kg1.webp",
-            "size_bytes": 14190,
-            "url": "/api/solicitud/FOL-20260302-1688/adjuntos/235e22d0bf28fe076a3d"
-          }
-        ]
-      },
-      {
         "tipo": "edicion_cliente",
-        "timestamp": "2026-03-06T22:04:28.558802+00:00",
+        "timestamp": "2026-03-19T19:05:08.123773+00:00",
         "usuario": "cliente1",
-        "comentario": "no",
+        "comentario": "Cambio de servició",
         "cambios": {
-          "num_skus": {
-            "viejo": "123",
-            "nuevo": "1232345"
+          "prioridad": {
+            "viejo": "regular",
+            "nuevo": "urgente"
           }
         },
         "imagenes_reemplazadas": [],
-        "imagenes_agregadas": []
-      },
-      {
-        "tipo": "edicion_cliente",
-        "timestamp": "2026-03-06T22:41:14.128813+00:00",
-        "usuario": "cliente1",
-        "comentario": "e",
-        "cambios": {
-          "num_skus": {
-            "viejo": "1232345",
-            "nuevo": "123234"
-          }
-        },
-        "imagenes_reemplazadas": [],
-        "imagenes_agregadas": []
-      },
-      {
-        "tipo": "edicion_cliente",
-        "timestamp": "2026-03-17T19:51:15.581621+00:00",
-        "usuario": "cliente1",
-        "comentario": "Feli",
-        "cambios": {},
-        "imagenes_reemplazadas": [],
-        "imagenes_agregadas": [
-          {
-            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\G8FKqRdW0AcVh1q.jpg",
-            "filename": "G8FKqRdW0AcVh1q.jpg",
-            "original_name": "G8FKqRdW0AcVh1q.jpg"
-          }
-        ]
+        "imagenes_agregadas": [],
+        "ciclo_anterior": 1,
+        "ciclo_nuevo": 1
       }
     ]
   }

@@ -601,6 +601,35 @@
             background: var(--yellow-dark);
         }
 
+        .action-btn.icon-only {
+            display: inline-flex;
+            width: 44px;
+            height: 28px;
+            padding: 0;
+            gap: 0;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+        }
+
+        .action-btn.icon-only img {
+            width: 14px;
+            height: 14px;
+            display: block;
+        }
+
+        .action-btn.cert-ready {
+            background: #16a34a;
+            border-color: #15803d;
+            color: #fff;
+        }
+
+        .action-btn.cert-ready:hover {
+            background: #15803d;
+            border-color: #166534;
+            color: #fff;
+        }
+
         /* ── EDIT MODE ── */
         .edit-mode {
             --highlight-bg: #f3e8ff;
@@ -798,6 +827,131 @@
             font-size: 13px;
             font-weight: 500;
             text-align: right;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+        }
+
+        .modal-tab {
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-tab.active {
+            background: var(--dark);
+            border-color: var(--dark);
+            color: #fff;
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .project-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 2px 2px 8px;
+        }
+
+        .project-stage {
+            display: flex;
+            gap: 12px;
+            position: relative;
+            padding-bottom: 14px;
+        }
+
+        .project-stage:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            width: 2px;
+            bottom: 2px;
+            background: var(--border);
+        }
+
+        .project-stage.done::after {
+            background: var(--dark);
+        }
+
+        .project-stage.active::after {
+            background: linear-gradient(to bottom, var(--dark), var(--border));
+        }
+
+        .project-stage-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--surface2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-stage.done .project-stage-dot {
+            border-color: var(--dark);
+            background: var(--dark);
+            color: #fff;
+        }
+
+        .project-stage.active .project-stage-dot {
+            border-color: var(--yellow-dark);
+            background: var(--yellow);
+            color: #000;
+        }
+
+        .project-stage-body {
+            flex: 1;
+            min-width: 0;
+            padding-top: 1px;
+        }
+
+        .project-stage-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .project-stage-date {
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .project-stage-date.empty {
+            color: var(--text-dim);
+        }
+
+        .progress-summary {
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
         /* ── TOAST ── */
@@ -1604,7 +1758,7 @@
             const pageData = data.slice(startIdx, endIdx);
 
             tbody.innerHTML = pageData.map((s, i) => `
-            <tr class="solicitud-row" data-folio="${s.folio}" data-estatus="${s.estatus}" onclick="handleRowClick('${s.folio}', event)">
+            <tr class="solicitud-row" data-folio="${s.folio}" data-estatus="${s.estatus}" onclick="handleRowClick('${s.folio}', event)" onpointerdown="startRowHold('${s.folio}', event)" onpointerup="cancelRowHold()" onpointerleave="cancelRowHold()" onpointercancel="cancelRowHold()">
                 <td class="td-date">${formatDate(s.fecha)}</td>
                 <td class="td-folio"><a href="javascript:void(0)" onclick="openModal(${solicitudes.indexOf(s)}, event)" class="folio-link">${highlightText(s.folio, query)}</a></td>
                 <td style="font-size:12px;">${highlightText(s.tipo, query)}</td>
@@ -1614,8 +1768,10 @@
                 <td>${cicloHtml(s)}</td>
                 <td>
                     <div class="action-btns">
-                        <button class="action-btn primary" id="btn-${s.folio}" onclick="window.location.href='/gallery?folio=${encodeURIComponent(s.folio)}'">Ver detalle</button>
-                        <button class="action-btn" onclick="descargar('${s.folio}')" ${s.estatus !== 'FINALIZADO' ? 'disabled title="Disponible al finalizar"' : ''}>⬇ Cert.</button>
+                        <button class="action-btn primary icon-only" id="btn-${s.folio}" onclick="openModal(${solicitudes.indexOf(s)}, event, 'progreso')" title="Ver progreso" aria-label="Ver progreso">
+                            <img src="/static/reloj.svg" alt="">
+                        </button>
+                        <button class="action-btn ${s.estatus === 'FINALIZADO' ? 'cert-ready' : ''}" onclick="descargar('${s.folio}')" ${s.estatus !== 'FINALIZADO' ? 'disabled title="Disponible al finalizar"' : 'title="Descargar entregable final"'}>⬇ Cert.</button>
                     </div>
                 </td>
             </tr>
@@ -1718,10 +1874,40 @@
             return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
         }
 
+        function parseDateTime(str) {
+            if (!str) return null;
+            const raw = String(str).trim();
+            if (!raw) return null;
+            const normalized = raw.includes("T")
+                ? raw.replace(/\.(\d{3})\d+/, ".$1")
+                : raw.replace(" ", "T");
+            const dt = new Date(normalized);
+            return Number.isNaN(dt.getTime()) ? null : dt;
+        }
+
+        function formatDateTime(str) {
+            const d = parseDateTime(str);
+            if (!d) return "—";
+            return d.toLocaleString('es-MX', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
         /* =====================
            MODAL
            ===================== */
-        function openModal(idx, event) {
+        let currentModalSolicitud = null;
+        let currentModalHistory = [];
+        let rowHoldTimer = null;
+        let rowHoldTriggered = false;
+        const ROW_HOLD_MS = 650;
+
+        async function openModal(idx, event, initialTab = "detalle") {
             // Si estamos en modo edición, no abrir modal de detalles
             if (editModeActive && event) {
                 event.preventDefault();
@@ -1729,8 +1915,36 @@
                 return;
             }
 
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
             const s = solicitudes[idx];
+            if (!s) {
+                showToast("error", "Error", "No se encontró la solicitud.");
+                return;
+            }
+
+            currentModalSolicitud = s;
+            currentModalHistory = [];
             document.getElementById("modalTitle").textContent = s.folio;
+
+            document.getElementById("modalBody").innerHTML = `
+            <div class="modal-tabs">
+                <button type="button" class="modal-tab" id="modalTabDetalle" onclick="switchModalTab('detalle')">Detalle</button>
+                <button type="button" class="modal-tab" id="modalTabProgreso" onclick="switchModalTab('progreso')">Progreso</button>
+            </div>
+            <div id="modalContent" class="modal-content"></div>
+        `;
+
+            document.getElementById("modalOverlay").classList.add("open");
+            document.body.style.overflow = "hidden";
+
+            await switchModalTab(initialTab);
+        }
+
+        function buildDetailHtml(s) {
             const extraFields = [
                 ["Norma(s)", s.norma],
                 ["No. SKU's / Ítems / Modelos", s.num_skus],
@@ -1745,7 +1959,8 @@
             const extraHtml = extraFields.map(([label, value]) => `
             <div class="modal-field"><span class="modal-field-label">${label}</span><span class="modal-field-value">${value}</span></div>
         `).join("");
-            document.getElementById("modalBody").innerHTML = `
+
+            return `
             <div class="modal-field"><span class="modal-field-label">Proyecto</span><span class="modal-field-value">${s.proyecto}</span></div>
             <div class="modal-field"><span class="modal-field-label">Tipo de servicio</span><span class="modal-field-value">${s.tipo}</span></div>
             <div class="modal-field"><span class="modal-field-label">Modalidad</span><span class="modal-field-value">${s.modalidad}</span></div>
@@ -1755,8 +1970,108 @@
             <div class="modal-field"><span class="modal-field-label">Ciclo</span><span class="modal-field-value">${cicloHtml(s)}</span></div>
             ${extraHtml}
         `;
-            document.getElementById("modalOverlay").classList.add("open");
-            document.body.style.overflow = "hidden";
+        }
+
+        async function loadHistoryForModal(folio) {
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(folio)}/historial`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return Array.isArray(data.historial) ? data.historial : [];
+            } catch (_e) {
+                return [];
+            }
+        }
+
+        function buildProgressHtml(s, history) {
+            const sorted = [...history].sort((a, b) => {
+                const da = parseDateTime(a.fecha);
+                const db = parseDateTime(b.fecha);
+                return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+            });
+
+            const findDate = (predicate) => {
+                const found = sorted.find(predicate);
+                return found ? found.fecha : null;
+            };
+
+            const estatusActual = (s.estatus || "").toUpperCase();
+            const fechaRecibida = s.fecha || findDate(e => e.estatus_nuevo === "PENDIENTE");
+            const fechaAsignada = findDate(e => e.estatus_nuevo === "EN PROCESO");
+            const fechaRevision = findDate(e => e.rol === "ejecutivo" && e.estatus_nuevo === "EN PROCESO");
+            const fechaAjustes = findDate(e => String(e.texto || "").toLowerCase().includes("actualización del cliente"))
+                || findDate(e => e.rol === "cliente" && e.tipo === "comentario");
+            const fechaFinal = findDate(e => e.estatus_nuevo === "FINALIZADO");
+
+            const stages = [
+                { label: "Recibida", done: true, date: fechaRecibida },
+                { label: "Asignada", done: Boolean(fechaAsignada) || estatusActual !== "PENDIENTE", date: fechaAsignada },
+                { label: "En revisión", done: Boolean(fechaRevision) || estatusActual === "FINALIZADO", date: fechaRevision },
+                { label: "Ajustes cliente", done: Boolean(fechaAjustes) || estatusActual === "FINALIZADO", date: fechaAjustes },
+                { label: "Finalizada", done: estatusActual === "FINALIZADO", date: fechaFinal },
+            ];
+
+            let activeIndex = stages.findIndex(stage => !stage.done);
+            if (activeIndex === -1) activeIndex = stages.length - 1;
+
+            const stageHtml = stages.map((stage, idx) => {
+                const cls = stage.done ? "done" : (idx === activeIndex ? "active" : "");
+                const marker = stage.done ? "✓" : (idx + 1);
+                const dateLabel = stage.date ? formatDateTime(stage.date) : "Sin fecha registrada";
+                return `
+                <div class="project-stage ${cls}">
+                    <div class="project-stage-dot">${marker}</div>
+                    <div class="project-stage-body">
+                        <div class="project-stage-name">${stage.label}</div>
+                        <div class="project-stage-date ${stage.date ? "" : "empty"}">${dateLabel}</div>
+                    </div>
+                </div>`;
+            }).join("");
+
+            return `
+            <div class="project-progress">
+                ${stageHtml}
+                <div class="progress-summary">Estatus actual: <strong>${s.estatus || "PENDIENTE"}</strong> · Ciclo ${s.ciclo || 1}</div>
+            </div>`;
+        }
+
+        async function switchModalTab(tab) {
+            const detalleTab = document.getElementById("modalTabDetalle");
+            const progresoTab = document.getElementById("modalTabProgreso");
+            const content = document.getElementById("modalContent");
+            if (!content || !currentModalSolicitud) return;
+
+            detalleTab.classList.toggle("active", tab === "detalle");
+            progresoTab.classList.toggle("active", tab === "progreso");
+
+            if (tab === "detalle") {
+                content.innerHTML = buildDetailHtml(currentModalSolicitud);
+                return;
+            }
+
+            content.innerHTML = `<div class="progress-summary">Cargando progreso...</div>`;
+            if (!currentModalHistory.length) {
+                currentModalHistory = await loadHistoryForModal(currentModalSolicitud.folio);
+            }
+            content.innerHTML = buildProgressHtml(currentModalSolicitud, currentModalHistory);
+        }
+
+        function startRowHold(folio, event) {
+            if (editModeActive) return;
+            if (event.target.closest(".action-btn") || event.target.closest(".folio-link") || event.target.closest(".ciclo-link")) {
+                return;
+            }
+
+            rowHoldTriggered = false;
+            clearTimeout(rowHoldTimer);
+            rowHoldTimer = setTimeout(() => {
+                rowHoldTriggered = true;
+                window.location.href = `/gallery?folio=${encodeURIComponent(folio)}`;
+            }, ROW_HOLD_MS);
+        }
+
+        function cancelRowHold() {
+            clearTimeout(rowHoldTimer);
         }
 
         function closeModal(e) {
@@ -1766,6 +2081,8 @@
         function closeModalBtn() {
             document.getElementById("modalOverlay").classList.remove("open");
             document.body.style.overflow = "";
+            currentModalSolicitud = null;
+            currentModalHistory = [];
         }
 
         /* =====================
@@ -2085,7 +2402,13 @@
 
         function handleRowClick(folio, event) {
             // Solo activar si estamos en modo edición y no es un click en un botón
-            if (!editModeActive) return;
+            if (!editModeActive) {
+                if (rowHoldTriggered) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                return;
+            }
 
             // Si el click fue en un botón o link, no hacer nada
             if (event.target.closest(".action-btn") || event.target.closest(".folio-link")) {
