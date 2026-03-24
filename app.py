@@ -13,12 +13,12 @@ from werkzeug.security import check_password_hash
 from typing import Optional
 
 # =========================
-# PROTECCIÓN ANTI-HACKING
+# PROTECCIÓN
 # =========================
 _login_attempts: dict = {}   # {ip: {"count": int, "locked_until": float, "last_attempt": float}}
 _login_lock = Lock()
 
-LOGIN_MAX_ATTEMPTS = 5        # intentos antes de bloquear
+LOGIN_MAX_ATTEMPTS = 4        # intentos antes de bloquear
 LOGIN_LOCKOUT_SECONDS = 300   # 5 minutos de bloqueo
 LOGIN_WINDOW_SECONDS = 600    # ventana de 10 min para contar intentos
 
@@ -92,16 +92,61 @@ def _validate_csrf(token: str) -> bool:
         return False
     return hmac.compare_digest(expected, token)
 
-#cambiar secret key antes de salir a producción
+def _is_production_env() -> bool:
+    env = str(os.environ.get("APP_ENV") or os.environ.get("FLASK_ENV") or "").strip().lower()
+    return env in {"prod", "production"}
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        value = int(str(raw).strip())
+        return value if value > 0 else default
+    except ValueError:
+        return default
+
+
+def _load_secret_key() -> str:
+    secret_key = str(os.environ.get("APP_SECRET_KEY", "")).strip()
+    if secret_key and secret_key.lower() != "change-me" and len(secret_key) >= 32:
+        return secret_key
+
+    if _is_production_env():
+        raise RuntimeError(
+            "APP_SECRET_KEY no es segura o no esta definida. "
+            "Configura una clave aleatoria de al menos 32 caracteres en produccion."
+        )
+
+    # En desarrollo permitimos una clave temporal para no bloquear el arranque.
+    _security_log.warning(
+        "APP_SECRET_KEY no configurada/segura. Se usa una clave temporal y las sesiones "
+        "se invalidaran al reiniciar."
+    )
+    return secrets.token_hex(32)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("APP_SECRET_KEY", "change-me")
+app.secret_key = _load_secret_key()
+app.config.update(
+    MAX_CONTENT_LENGTH=500 * 1024 * 1024,  # 500 MB
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE=os.environ.get("SESSION_COOKIE_SAMESITE", "Lax"),
+    SESSION_COOKIE_SECURE=_env_bool("SESSION_COOKIE_SECURE", _is_production_env()),
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=_env_int("SESSION_TTL_MINUTES", 60)),
+)
 
 CONFIG_FILE = "config.json"
 USERS_FILE = "Users.json"
 HISTORY_FILE = "upload_history.json"
 ASSIGNMENTS_FILE = "assignments.json"
-COMMITS_FILE = "commits.json"
 SERVICE_REQUESTS_FILE = "service_requests.json"
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS | {
@@ -239,7 +284,12 @@ def sanitize_path(path: str) -> str:
 
 
 def is_allowed_extension(filename: str) -> bool:
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    if not filename:
+        return False
+    safe_name = os.path.basename(str(filename)).strip()
+    if not safe_name:
+        return False
+    return "." in safe_name and bool(safe_name.rsplit(".", 1)[1].strip())
 
 
 def is_image_extension(filename: str) -> bool:
@@ -481,74 +531,6 @@ def save_assignments(data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def find_commit_entry(commits: list, filename: Optional[str] = None, file_path: Optional[str] = None):
-    if file_path:
-        for entry in commits:
-            if entry.get("file_path") == file_path:
-                return entry
-    if filename:
-        for entry in commits:
-            if entry.get("filename") == filename:
-                return entry
-    return None
-
-
-def migrate_assignment_comments(commits: list) -> bool:
-    assignments = load_assignments()
-    assignments_changed = False
-    commits_changed = False
-
-    for assignment in assignments:
-        comments = assignment.pop("comments", None)
-        if comments is not None:
-            assignments_changed = True
-        if not isinstance(comments, list) or not comments:
-            continue
-
-        entry = find_commit_entry(
-            commits,
-            filename=assignment.get("filename"),
-            file_path=assignment.get("file_path")
-        )
-        if not entry:
-            entry = {
-                "filename": assignment.get("filename"),
-                "file_path": assignment.get("file_path"),
-                "comments": []
-            }
-            commits.append(entry)
-
-        entry_comments = entry.setdefault("comments", [])
-        if isinstance(entry_comments, list):
-            entry_comments.extend([c for c in comments if isinstance(c, dict)])
-            commits_changed = True
-
-    if assignments_changed:
-        save_assignments(assignments)
-
-    return commits_changed
-
-
-def load_commits():
-    if not os.path.exists(COMMITS_FILE):
-        commits = []
-        if migrate_assignment_comments(commits):
-            save_commits(commits)
-        return commits
-
-    try:
-        with open(COMMITS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
-
-
-def save_commits(data):
-    with open(COMMITS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-
 def load_service_requests():
     if not os.path.exists(SERVICE_REQUESTS_FILE):
         return []
@@ -564,6 +546,35 @@ def load_service_requests():
 def save_service_requests(data):
     with open(SERVICE_REQUESTS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def get_comments_for_assignment(assignment: dict) -> list[dict]:
+    """Obtiene comentarios de una asignacion a partir del historial de la solicitud."""
+    if not isinstance(assignment, dict):
+        return []
+
+    folio = assignment.get("folio")
+    if not folio:
+        return []
+
+    requests_data = load_service_requests()
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud:
+        return []
+
+    comments = []
+    for entry in solicitud.get("historial", []):
+        if not isinstance(entry, dict) or entry.get("tipo") != "comentario":
+            continue
+
+        comments.append({
+            "author": entry.get("autor") or entry.get("usuario") or "Usuario",
+            "role": normalize_role(entry.get("rol")) if entry.get("rol") else "",
+            "text": entry.get("texto", ""),
+            "timestamp": entry.get("timestamp")
+        })
+
+    return comments
 
 
 def format_file_size(size_bytes: int) -> str:
@@ -2773,7 +2784,7 @@ def replace_gallery_file():
     old_ext = os.path.splitext(target_path)[1].lower()
     new_ext = os.path.splitext(new_file.filename)[1].lower()
     if old_ext and new_ext and old_ext != new_ext:
-        return jsonify({"error": f"La imagen debe conservar la extensión original ({old_ext})"}), 400
+        return jsonify({"error": f"El archivo debe conservar la extensión original ({old_ext})"}), 400
 
     if not os.path.exists(target_path):
         return jsonify({"error": "Archivo no encontrado en disco"}), 404
@@ -3750,13 +3761,7 @@ def view_image():
                          image_url=image_url,
                          status=normalize_status(assignment.get("status"), assignment.get("assigned_to")),
                          folio=assignment.get("folio"),
-                         comments=(
-                             find_commit_entry(
-                                 load_commits(),
-                                 filename=assignment.get("filename"),
-                                 file_path=file_path_value
-                             ) or {}
-                         ).get("comments", []),
+                         comments=get_comments_for_assignment(assignment),
                          assigned_to=assignment.get("assigned_to"),
                          assigned_at=assignment.get("assigned_at"),
                          assigned_by=assignment.get("assigned_by"),

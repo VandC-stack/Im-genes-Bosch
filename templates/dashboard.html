@@ -1749,6 +1749,186 @@
                 margin-left: 48px;
             }
         }
+
+        /* ── DRAG & DROP UPLOAD MODAL ── */
+        .dropzone-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .dropzone-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .dropzone-modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 28px 28px 24px;
+            width: min(480px, 94vw);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            animation: modalIn .18s ease;
+        }
+
+        .dropzone-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dropzone-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .dropzone-folio {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .dropzone-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            background: var(--surface2);
+        }
+
+        .dropzone-area:hover,
+        .dropzone-area.dragover {
+            border-color: var(--yellow);
+            background: var(--yellow-light);
+        }
+
+        .dropzone-icon {
+            font-size: 34px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .dropzone-hint {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .dropzone-hint strong {
+            color: var(--text);
+        }
+
+        .dropzone-formats {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .dropzone-file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .dropzone-file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 13px;
+            gap: 10px;
+        }
+
+        .dropzone-file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropzone-file-size {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .dropzone-file-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 16px;
+            line-height: 1;
+            padding: 0 2px;
+            transition: color .1s;
+        }
+
+        .dropzone-file-remove:hover {
+            color: var(--danger);
+        }
+
+        .dropzone-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .dropzone-submit-btn {
+            background: var(--yellow);
+            color: var(--text);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .dropzone-submit-btn:hover {
+            background: var(--yellow-dark);
+        }
+
+        .dropzone-submit-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .dropzone-cancel-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: border-color .15s;
+        }
+
+        .dropzone-cancel-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text);
+        }
     </style>
 </head>
 
@@ -1825,7 +2005,7 @@
         <div class="filters">
             {% if not is_admin and not is_ejecutivo %}
             <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()" title="Editar solicitud">
-                <img src="/static/icon-edit.svg" alt="Editar">
+                <img id="editModeBtnIcon" src="/static/icon-edit.svg" alt="Editar">
             </button>
             <span class="filter-separator">|</span>
             {% endif %}
@@ -1940,6 +2120,37 @@
         </div>
     </div>
 
+    <!-- DRAG & DROP UPLOAD MODAL -->
+    {% if is_ejecutivo %}
+    <div class="dropzone-overlay" id="dropzoneOverlay" onclick="onDropzoneOverlayClick(event)">
+        <div class="dropzone-modal" onclick="event.stopPropagation()">
+            <div class="dropzone-header">
+                <div>
+                    <div class="dropzone-title">Subir entregable final</div>
+                    <div class="dropzone-folio" id="dropzoneFolioLabel"></div>
+                </div>
+                <button class="modal-close" onclick="closeDropzoneModal()">×</button>
+            </div>
+            <div class="dropzone-area" id="dropzoneArea" onclick="document.getElementById('dropzoneFileInput').click()"
+                ondragover="onDropzoneDragOver(event)" ondragleave="onDropzoneDragLeave(event)"
+                ondrop="onDropzoneDrop(event)">
+                <div class="dropzone-icon">📂</div>
+                <div class="dropzone-hint"><strong>Arrastra y suelta archivos aquí</strong><br>o haz clic para
+                    seleccionarlos</div>
+                <div class="dropzone-formats">PDF, Word, Excel, imágenes, TXT, ZIP</div>
+            </div>
+            <div class="dropzone-file-list" id="dropzoneFileList" style="display:none;"></div>
+            <div class="dropzone-actions">
+                <button class="dropzone-cancel-btn" onclick="closeDropzoneModal()">Cancelar</button>
+                <button class="dropzone-submit-btn" id="dropzoneSubmitBtn" disabled
+                    onclick="submitDropzoneFiles()">Subir archivos</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="dropzoneFileInput" multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt,.zip" style="display:none;">
+    {% endif %}
+
     <!-- TOAST -->
     <div class="toast" id="toast">
         <div class="toast-icon" id="toastIcon"></div>
@@ -1950,10 +2161,7 @@
         <button class="toast-close" onclick="hideToast()">×</button>
     </div>
 
-    {% if is_ejecutivo %}
-    <input type="file" id="finalDeliverableInput" multiple
-        accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt,.zip" style="display:none;">
-    {% endif %}
+
 
     <script>
         /* =====================
@@ -2641,6 +2849,9 @@
             }
         }
 
+        /* ── DRAG & DROP MODAL ── */
+        let dropzoneFiles = [];
+
         function triggerFinalDeliverableUpload(encodedFolio, event) {
             if (event) {
                 event.preventDefault();
@@ -2654,10 +2865,156 @@
             }
 
             currentDeliverableFolio = folio;
-            const input = document.getElementById("finalDeliverableInput");
-            if (!input) return;
-            input.value = "";
-            input.click();
+            dropzoneFiles = [];
+            renderDropzoneFileList();
+
+            const label = document.getElementById("dropzoneFolioLabel");
+            if (label) label.textContent = folio;
+
+            const overlay = document.getElementById("dropzoneOverlay");
+            if (overlay) {
+                overlay.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        function closeDropzoneModal() {
+            const overlay = document.getElementById("dropzoneOverlay");
+            if (overlay) overlay.classList.remove("open");
+            document.body.style.overflow = "";
+            dropzoneFiles = [];
+            renderDropzoneFileList();
+        }
+
+        function onDropzoneOverlayClick(event) {
+            if (event.target === document.getElementById("dropzoneOverlay")) {
+                closeDropzoneModal();
+            }
+        }
+
+        function onDropzoneDragOver(event) {
+            event.preventDefault();
+            document.getElementById("dropzoneArea").classList.add("dragover");
+        }
+
+        function onDropzoneDragLeave(event) {
+            document.getElementById("dropzoneArea").classList.remove("dragover");
+        }
+
+        function collectFilesFromEntry(entry, collected) {
+            return new Promise((resolve) => {
+                if (!entry) { resolve(); return; }
+                if (entry.isFile) {
+                    entry.file((file) => { if (file) collected.push(file); resolve(); }, () => resolve());
+                    return;
+                }
+                if (entry.isDirectory) {
+                    const reader = entry.createReader();
+                    // readEntries can return at most 100 entries at a time; loop until exhausted
+                    const readBatch = (pendingChildren) => {
+                        reader.readEntries((batch) => {
+                            if (batch.length) {
+                                readBatch(pendingChildren.concat(Array.from(batch)));
+                            } else {
+                                // All entries read — process them sequentially with Promises
+                                let chain = Promise.resolve();
+                                for (const child of pendingChildren) {
+                                    chain = chain.then(() => collectFilesFromEntry(child, collected));
+                                }
+                                chain.then(resolve);
+                            }
+                        }, () => resolve());
+                    };
+                    readBatch([]);
+                    return;
+                }
+                resolve();
+            });
+        }
+
+        async function onDropzoneDrop(event) {
+            event.preventDefault();
+            document.getElementById("dropzoneArea").classList.remove("dragover");
+
+            // Capture DataTransfer data SYNCHRONOUSLY before any await
+            const entries = [];
+            const fallbackFiles = Array.from(event.dataTransfer.files || []);
+            if (event.dataTransfer?.items) {
+                for (const item of event.dataTransfer.items) {
+                    if (item.kind !== "file") continue;
+                    const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+                    if (entry) entries.push(entry);
+                }
+            }
+
+            // Process entries (may include directories) asynchronously
+            if (entries.length) {
+                const collected = [];
+                for (const entry of entries) {
+                    await collectFilesFromEntry(entry, collected);
+                }
+                if (collected.length) {
+                    addDropzoneFiles(collected);
+                    return;
+                }
+            }
+
+            // Fallback: plain files from dataTransfer.files (no folder support)
+            // Filter out folder entries (size 0 and no MIME type)
+            const realFiles = fallbackFiles.filter(f => f.size > 0 || f.type !== "");
+            if (realFiles.length) {
+                addDropzoneFiles(realFiles);
+            } else if (fallbackFiles.length) {
+                showToast("error", "Entregable", "No se puede leer el contenido de la carpeta en este navegador. Por favor selecciona los archivos directamente.");
+            }
+        }
+
+        function addDropzoneFiles(newFiles) {
+            for (const f of newFiles) {
+                if (!dropzoneFiles.some(x => x.name === f.name && x.size === f.size)) {
+                    dropzoneFiles.push(f);
+                }
+            }
+            renderDropzoneFileList();
+        }
+
+        function removeDropzoneFile(index) {
+            dropzoneFiles.splice(index, 1);
+            renderDropzoneFileList();
+        }
+
+        function renderDropzoneFileList() {
+            const list = document.getElementById("dropzoneFileList");
+            const btn = document.getElementById("dropzoneSubmitBtn");
+            if (!list) return;
+            if (dropzoneFiles.length === 0) {
+                list.style.display = "none";
+                list.innerHTML = "";
+                if (btn) btn.disabled = true;
+                return;
+            }
+            list.style.display = "flex";
+            list.innerHTML = dropzoneFiles.map((f, i) => {
+                const sizeKb = (f.size / 1024).toFixed(1);
+                const sizeStr = f.size > 1024 * 1024
+                    ? (f.size / (1024 * 1024)).toFixed(1) + " MB"
+                    : sizeKb + " KB";
+                return `<div class="dropzone-file-item">
+                    <span class="dropzone-file-name" title="${f.name}">${f.name}</span>
+                    <span class="dropzone-file-size">${sizeStr}</span>
+                    <button class="dropzone-file-remove" onclick="removeDropzoneFile(${i})" title="Quitar">×</button>
+                </div>`;
+            }).join("");
+            if (btn) btn.disabled = false;
+        }
+
+        async function submitDropzoneFiles() {
+            if (!currentDeliverableFolio || dropzoneFiles.length === 0) return;
+            const btn = document.getElementById("dropzoneSubmitBtn");
+            if (btn) { btn.disabled = true; btn.textContent = "Subiendo..."; }
+            await uploadFinalDeliverableFiles(dropzoneFiles);
+            closeDropzoneModal();
+            if (btn) { btn.textContent = "Subir archivos"; }
         }
 
         async function uploadFinalDeliverableFiles(files) {
@@ -2684,7 +3041,11 @@
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    showToast("error", "Entregable", data.error || "No se pudo subir el entregable final.");
+                    if (res.status === 413) {
+                        showToast("error", "Entregable", "Los archivos son demasiado grandes. El límite es 500 MB por envío.");
+                    } else {
+                        showToast("error", "Entregable", data.error || "No se pudo subir el entregable final.");
+                    }
                     return;
                 }
                 showToast("success", "Entregable", `Archivos finales cargados para ${currentDeliverableFolio}.`);
@@ -3141,12 +3502,22 @@
            ===================== */
         let editModeActive = false;
 
+        function syncEditModeButtonIcon() {
+            const editModeBtnIcon = document.getElementById("editModeBtnIcon");
+            if (!editModeBtnIcon) return;
+
+            editModeBtnIcon.src = editModeActive
+                ? "/static/icon-edit-darkgray.svg"
+                : "/static/icon-edit.svg";
+        }
+
         function activateEditMode() {
             if (!isClient) return;
             editModeActive = true;
             document.getElementById("mainTable").parentElement.classList.add("edit-mode");
             document.getElementById("editSection").style.display = "block";
             document.getElementById("editModeBtn").classList.add("active");
+            syncEditModeButtonIcon();
         }
 
         function cancelEditMode() {
@@ -3155,6 +3526,7 @@
             document.getElementById("mainTable").parentElement.classList.remove("edit-mode");
             document.getElementById("editSection").style.display = "none";
             document.getElementById("editModeBtn").classList.remove("active");
+            syncEditModeButtonIcon();
             document.querySelectorAll(".solicitud-row.selected").forEach(row => {
                 row.classList.remove("selected");
             });
@@ -3221,11 +3593,12 @@
         /* =====================
            BOOT
            ===================== */
-        const finalDeliverableInput = document.getElementById("finalDeliverableInput");
-        if (finalDeliverableInput) {
-            finalDeliverableInput.addEventListener("change", function () {
+        const dropzoneFileInput = document.getElementById("dropzoneFileInput");
+        if (dropzoneFileInput) {
+            dropzoneFileInput.addEventListener("change", function () {
                 if (this.files && this.files.length > 0) {
-                    uploadFinalDeliverableFiles(this.files);
+                    addDropzoneFiles(Array.from(this.files));
+                    this.value = "";
                 }
             });
         }

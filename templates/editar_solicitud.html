@@ -11,30 +11,38 @@
     <title>Editar solicitud — GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
-            --yellow:       #ECD925;
-            --yellow-dark:  #c9b800;
+            --yellow: #ECD925;
+            --yellow-dark: #c9b800;
             --yellow-light: #fffef5;
-            --bg:           #f0f0f0;
-            --surface:      #ffffff;
-            --surface2:     #f6f6f6;
-            --border:       #e0e0e0;
-            --border2:      #d0d0d0;
-            --text:         #111111;
-            --text-muted:   #666;
-            --text-dim:     #aaa;
-            --dark:         #1a1a1a;
-            --danger:       #cc3333;
-            --success:      #2a9d5c;
-            --warning:      #d97706;
-            --radius:       14px;
-            --radius-sm:    8px;
+            --bg: #f0f0f0;
+            --surface: #ffffff;
+            --surface2: #f6f6f6;
+            --border: #e0e0e0;
+            --border2: #d0d0d0;
+            --text: #111111;
+            --text-muted: #666;
+            --text-dim: #aaa;
+            --dark: #1a1a1a;
+            --danger: #cc3333;
+            --success: #2a9d5c;
+            --warning: #d97706;
+            --radius: 14px;
+            --radius-sm: 8px;
         }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -56,7 +64,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
         }
 
         .topbar-brand {
@@ -75,7 +83,10 @@
             justify-content: center;
         }
 
-        .brand-dot img { width: 16px; height: 16px; }
+        .brand-dot img {
+            width: 16px;
+            height: 16px;
+        }
 
         .brand-name {
             font-family: 'Space Mono', monospace;
@@ -111,7 +122,10 @@
             justify-content: center;
         }
 
-        .user-avatar img { width: 16px; height: 16px; }
+        .user-avatar img {
+            width: 16px;
+            height: 16px;
+        }
 
         .logout-link {
             font-size: 13px;
@@ -120,7 +134,9 @@
             transition: color 0.2s;
         }
 
-        .logout-link:hover { color: var(--dark); }
+        .logout-link:hover {
+            color: var(--dark);
+        }
 
         /* ── PAGE LAYOUT ── */
         .page {
@@ -141,8 +157,14 @@
             transition: color 0.2s;
         }
 
-        .back-link:hover { color: var(--dark); }
-        .back-link svg { width: 16px; height: 16px; }
+        .back-link:hover {
+            color: var(--dark);
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
 
         /* ── PAGE HEADER ── */
         .page-header {
@@ -161,7 +183,9 @@
             line-height: 1.1;
         }
 
-        .page-title span { color: var(--yellow-dark); }
+        .page-title span {
+            color: var(--yellow-dark);
+        }
 
         .page-sub {
             font-size: 14px;
@@ -297,6 +321,10 @@
             gap: 14px;
         }
 
+        .service-norma-stack {
+            grid-template-columns: 1fr;
+        }
+
         .form-row-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -309,7 +337,9 @@
             gap: 5px;
         }
 
-        .form-group.full { grid-column: 1 / -1; }
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
 
         .form-group label {
             font-size: 12px;
@@ -337,10 +367,12 @@
         .form-group select:focus {
             outline: none;
             border-color: var(--yellow-dark);
-            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.18);
         }
 
-        .form-group textarea { resize: vertical; }
+        .form-group textarea {
+            resize: vertical;
+        }
 
         .form-hint {
             font-size: 11px;
@@ -358,6 +390,7 @@
         .service-option {
             position: relative;
             cursor: pointer;
+            height: 100%;
         }
 
         .service-option input[type="checkbox"] {
@@ -375,6 +408,11 @@
             background: var(--surface);
             transition: all 0.18s;
             user-select: none;
+            min-height: 128px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .service-card:hover {
@@ -382,10 +420,10 @@
             background: var(--surface2);
         }
 
-        .service-option input:checked + .service-card {
+        .service-option input:checked+.service-card {
             border-color: var(--yellow-dark);
             background: var(--yellow-light);
-            box-shadow: 0 0 0 3px rgba(236,217,37,0.2);
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.2);
         }
 
         .service-emoji {
@@ -400,12 +438,14 @@
             font-weight: 700;
             display: block;
             margin-bottom: 2px;
+            min-height: 34px;
         }
 
         .service-desc {
             font-size: 11px;
             color: var(--text-muted);
             line-height: 1.4;
+            min-height: 34px;
         }
 
         .service-check {
@@ -423,7 +463,9 @@
             font-weight: 700;
         }
 
-        .service-option input:checked ~ .service-check { display: flex; }
+        .service-option input:checked~.service-check {
+            display: flex;
+        }
 
         /* ── NORMA LIST ── */
         .norma-list {
@@ -448,10 +490,19 @@
             transition: background 0.12s;
         }
 
-        .norma-item:last-child { border-bottom: none; }
-        .norma-item:hover { background: var(--surface2); }
+        .norma-item:last-child {
+            border-bottom: none;
+        }
 
-        .norma-item input { margin-top: 3px; cursor: pointer; accent-color: var(--yellow-dark); }
+        .norma-item:hover {
+            background: var(--surface2);
+        }
+
+        .norma-item input {
+            margin-top: 3px;
+            cursor: pointer;
+            accent-color: var(--yellow-dark);
+        }
 
         .norma-code {
             font-weight: 700;
@@ -460,7 +511,10 @@
             color: var(--dark);
         }
 
-        .norma-desc { color: var(--text-muted); font-size: 12px; }
+        .norma-desc {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
 
         /* ── IMAGES SECTION ── */
         .images-label {
@@ -507,6 +561,63 @@
             color: var(--text-muted);
         }
 
+        .upload-dropzone {
+            margin-top: 12px;
+            min-height: 120px;
+            border: 1.5px dashed var(--border2);
+            border-radius: var(--radius-sm);
+            background: linear-gradient(180deg, var(--surface2) 0%, #fbfbfb 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            padding: 18px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+        }
+
+        .upload-dropzone:hover {
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.12);
+        }
+
+        .upload-dropzone.dragover {
+            border-color: var(--yellow-dark);
+            background: var(--yellow-light);
+            box-shadow: 0 0 0 4px rgba(236, 217, 37, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .upload-dropzone-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--yellow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #000;
+        }
+
+        .upload-dropzone-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .upload-dropzone-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            max-width: 320px;
+        }
+
+        .visually-hidden {
+            display: none;
+        }
+
         .image-thumbnail {
             position: relative;
             aspect-ratio: 1;
@@ -524,13 +635,28 @@
 
         .image-thumbnail:hover {
             border-color: var(--yellow-dark);
-            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.18);
         }
 
         .image-thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .pdf-preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+            background: #fff;
+        }
+
+        .file-icon-thumb {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
+            opacity: 0.95;
         }
 
         .image-remove-btn {
@@ -550,7 +676,9 @@
             justify-content: center;
         }
 
-        .image-thumbnail:hover .image-remove-btn { display: flex; }
+        .image-thumbnail:hover .image-remove-btn {
+            display: flex;
+        }
 
         .image-replace-btn {
             position: absolute;
@@ -570,12 +698,18 @@
             transition: all 0.2s;
         }
 
-        .image-replace-btn:hover { background: var(--yellow); color: var(--dark); }
-        .image-replace-input { display: none; }
+        .image-replace-btn:hover {
+            background: var(--yellow);
+            color: var(--dark);
+        }
+
+        .image-replace-input {
+            display: none;
+        }
 
         .image-replace-pending {
             border-color: var(--yellow-dark);
-            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
+            box-shadow: 0 0 0 3px rgba(236, 217, 37, 0.18);
         }
 
         /* ── COMENTARIO ── */
@@ -604,7 +738,7 @@
             border-radius: var(--radius);
             position: sticky;
             bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-top: 4px;
         }
 
@@ -613,7 +747,10 @@
             color: var(--text-muted);
         }
 
-        .action-bar-right { display: flex; gap: 10px; }
+        .action-bar-right {
+            display: flex;
+            gap: 10px;
+        }
 
         /* ── BUTTONS ── */
         .btn {
@@ -681,7 +818,9 @@
             color: #000;
         }
 
-        .action-btn.primary:hover { background: var(--yellow-dark); }
+        .action-btn.primary:hover {
+            background: var(--yellow-dark);
+        }
 
         /* ── TOAST ── */
         .toast {
@@ -698,7 +837,7 @@
             font-weight: 600;
             min-width: 280px;
             max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -711,8 +850,17 @@
             pointer-events: auto;
         }
 
-        .toast.success { background: #1a1a1a; color: #fff; border-left: 4px solid var(--yellow); }
-        .toast.error   { background: #1a1a1a; color: #fff; border-left: 4px solid #e05555; }
+        .toast.success {
+            background: #1a1a1a;
+            color: #fff;
+            border-left: 4px solid var(--yellow);
+        }
+
+        .toast.error {
+            background: #1a1a1a;
+            color: #fff;
+            border-left: 4px solid #e05555;
+        }
 
         .toast-icon {
             width: 34px;
@@ -725,12 +873,29 @@
             flex-shrink: 0;
         }
 
-        .toast.success .toast-icon { background: rgba(236,217,37,0.15); }
-        .toast.error   .toast-icon { background: rgba(224,85,85,0.15); }
+        .toast.success .toast-icon {
+            background: rgba(236, 217, 37, 0.15);
+        }
 
-        .toast-body { flex: 1; }
-        .toast-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-        .toast-desc  { font-size: 12px; font-weight: 400; opacity: 0.65; }
+        .toast.error .toast-icon {
+            background: rgba(224, 85, 85, 0.15);
+        }
+
+        .toast-body {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .toast-desc {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.65;
+        }
 
         .toast-close {
             background: none;
@@ -744,13 +909,15 @@
             line-height: 1;
         }
 
-        .toast-close:hover { opacity: 1; }
+        .toast-close:hover {
+            opacity: 1;
+        }
 
         /* ── LOADING ── */
         .loading-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(2px);
             z-index: 500;
             display: none;
@@ -760,7 +927,9 @@
             gap: 14px;
         }
 
-        .loading-overlay.show { display: flex; }
+        .loading-overlay.show {
+            display: flex;
+        }
 
         .spinner {
             width: 36px;
@@ -771,7 +940,11 @@
             animation: spin 0.75s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .loading-text {
             font-size: 13px;
@@ -781,17 +954,33 @@
 
         /* ── RESPONSIVE ── */
         @media (max-width: 600px) {
-            .topbar { padding: 0 16px; }
-            .page { padding: 24px 14px 100px; }
-            .form-row, .form-row-3 { grid-template-columns: 1fr; }
-            .service-grid { grid-template-columns: 1fr; }
+            .topbar {
+                padding: 0 16px;
+            }
+
+            .page {
+                padding: 24px 14px 100px;
+            }
+
+            .form-row,
+            .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+
             .action-bar {
                 flex-direction: column;
                 gap: 12px;
                 align-items: stretch;
                 bottom: 16px;
             }
-            .action-bar-right { justify-content: flex-end; }
+
+            .action-bar-right {
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -819,7 +1008,8 @@
         <!-- Back link -->
         <a href="/dashboard" class="back-link" id="backLink">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
             </svg>
             Volver al dashboard
         </a>
@@ -840,12 +1030,14 @@
         <div class="edit-banner">
             <div class="edit-banner-icon">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                 </svg>
             </div>
             <div>
                 <div class="edit-banner-title">Modo edición activo</div>
-                <div class="edit-banner-sub">Los cambios quedarán registrados en el historial de ciclos de la solicitud</div>
+                <div class="edit-banner-sub">Los cambios quedarán registrados en el historial de ciclos de la solicitud
+                </div>
             </div>
         </div>
 
@@ -859,7 +1051,7 @@
                     <input type="hidden" id="editTipoServicioHidden" name="tipo_servicio">
                     <input type="hidden" id="editNormaHidden" name="norma">
 
-                    <div class="form-row">
+                    <div class="form-row service-norma-stack">
                         <!-- Tipo de servicio -->
                         <div class="form-group">
                             <label>Tipo de servicio</label>
@@ -867,7 +1059,8 @@
                                 <label class="service-option">
                                     <input type="checkbox" id="svc_consultoria" onchange="onEditServiceChange()">
                                     <div class="service-card">
-                                        <span class="service-emoji"><img src="/static/foco.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-emoji"><img src="/static/foco.svg" alt=""
+                                                style="width:30px;height:30px;"></span>
                                         <span class="service-name">Consultoría</span>
                                         <span class="service-desc">Asesoría técnica y normativa</span>
                                     </div>
@@ -876,7 +1069,8 @@
                                 <label class="service-option">
                                     <input type="checkbox" id="svc_constancia" onchange="onEditServiceChange()">
                                     <div class="service-card">
-                                        <span class="service-emoji"><img src="/static/document.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-emoji"><img src="/static/document.svg" alt=""
+                                                style="width:30px;height:30px;"></span>
                                         <span class="service-name">Constancia</span>
                                         <span class="service-desc">Emisión de constancias y certificados</span>
                                     </div>
@@ -885,7 +1079,8 @@
                                 <label class="service-option">
                                     <input type="checkbox" id="svc_diseno" onchange="onEditServiceChange()">
                                     <div class="service-card">
-                                        <span class="service-emoji"><img src="/static/imagen.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-emoji"><img src="/static/imagen.svg" alt=""
+                                                style="width:30px;height:30px;"></span>
                                         <span class="service-name">Diseño</span>
                                         <span class="service-desc">Revisión y validación de etiquetado</span>
                                     </div>
@@ -901,7 +1096,8 @@
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-004-SE-2021">
                                     <span class="norma-code">NOM-004-SE-2021</span>
-                                    <span class="norma-desc">Información comercial — Etiquetado de productos textiles, prendas de vestir, sus accesorios y ropa de casa.</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado de productos textiles,
+                                        prendas de vestir, sus accesorios y ropa de casa.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-015-SCFI-2007">
@@ -911,22 +1107,26 @@
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-020-SCFI-1997">
                                     <span class="norma-code">NOM-020-SCFI-1997</span>
-                                    <span class="norma-desc">Información comercial — Etiquetado de cueros, pieles y calzado.</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado de cueros, pieles y
+                                        calzado.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-024-SCFI-2013">
                                     <span class="norma-code">NOM-024-SCFI-2013</span>
-                                    <span class="norma-desc">Información comercial para empaques de productos electrónicos, eléctricos y electrodomésticos.</span>
+                                    <span class="norma-desc">Información comercial para empaques de productos
+                                        electrónicos, eléctricos y electrodomésticos.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-050-SCFI-2004">
                                     <span class="norma-code">NOM-050-SCFI-2004</span>
-                                    <span class="norma-desc">Información comercial — Etiquetado general de productos.</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado general de
+                                        productos.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-051-SCFI/SSA1-2010">
                                     <span class="norma-code">NOM-051-SCFI/SSA1-2010</span>
-                                    <span class="norma-desc">Especificaciones generales de etiquetado para alimentos y bebidas no alcohólicas preenvasados.</span>
+                                    <span class="norma-desc">Especificaciones generales de etiquetado para alimentos y
+                                        bebidas no alcohólicas preenvasados.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-116-SCFI-2018">
@@ -936,27 +1136,32 @@
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-141-SSA1/SCFI-2012">
                                     <span class="norma-code">NOM-141-SSA1/SCFI-2012</span>
-                                    <span class="norma-desc">Etiquetado para productos cosméticos preenvasados. Etiquetado sanitario y comercial.</span>
+                                    <span class="norma-desc">Etiquetado para productos cosméticos preenvasados.
+                                        Etiquetado sanitario y comercial.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-142-SSA1/SCFI-2014">
                                     <span class="norma-code">NOM-142-SSA1/SCFI-2014</span>
-                                    <span class="norma-desc">Bebidas alcohólicas. Especificaciones sanitarias. Etiquetado sanitario y comercial.</span>
+                                    <span class="norma-desc">Bebidas alcohólicas. Especificaciones sanitarias.
+                                        Etiquetado sanitario y comercial.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-186-SSA1/SCFI-2013">
                                     <span class="norma-code">NOM-186-SSA1/SCFI-2013</span>
-                                    <span class="norma-desc">Cacao, chocolate y productos similares. Especificaciones sanitarias y denominación comercial.</span>
+                                    <span class="norma-desc">Cacao, chocolate y productos similares. Especificaciones
+                                        sanitarias y denominación comercial.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-189-SSA1/SCFI-2018">
                                     <span class="norma-code">NOM-189-SSA1/SCFI-2018</span>
-                                    <span class="norma-desc">Etiquetado y envasado para productos de aseo de uso doméstico.</span>
+                                    <span class="norma-desc">Etiquetado y envasado para productos de aseo de uso
+                                        doméstico.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-199-SCFI-2017">
                                     <span class="norma-code">NOM-199-SCFI-2017</span>
-                                    <span class="norma-desc">Bebidas alcohólicas — Denominación, especificaciones fisicoquímicas e información comercial.</span>
+                                    <span class="norma-desc">Bebidas alcohólicas — Denominación, especificaciones
+                                        fisicoquímicas e información comercial.</span>
                                 </label>
                                 <label class="norma-item">
                                     <input type="checkbox" value="NOM-235-SE-2020">
@@ -991,7 +1196,8 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label for="editImportador">Importador</label>
-                            <input type="text" id="editImportador" name="importador" placeholder="Nombre del importador">
+                            <input type="text" id="editImportador" name="importador"
+                                placeholder="Nombre del importador">
                         </div>
                         <div class="form-group">
                             <label for="editMarca">Marca</label>
@@ -1006,32 +1212,44 @@
                     <!-- Contenido -->
                     <div class="form-group">
                         <label for="editContenido">Contenido</label>
-                        <textarea id="editContenido" name="contenido" rows="3" placeholder="Descripción del contenido..."></textarea>
+                        <textarea id="editContenido" name="contenido" rows="3"
+                            placeholder="Descripción del contenido..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- ── IMÁGENES ADJUNTAS ── -->
-            <span class="section-label" style="margin-top: 8px;">Imágenes adjuntas</span>
+            <!-- ── ARCHIVOS ADJUNTOS ── -->
+            <span class="section-label" style="margin-top: 8px;">Archivos adjuntos</span>
 
             <div class="card">
                 <div class="card-body">
                     <div>
-                        <span class="images-label">Imágenes actuales</span>
+                        <span class="images-label">Archivos actuales</span>
                         <div class="images-empty-state" id="previasImagesEmpty">
-                            Esta solicitud no tiene imágenes cargadas. Puedes agregar nuevas en este ciclo.
+                            Esta solicitud no tiene archivos cargados. Puedes agregar nuevos en este ciclo.
                         </div>
                         <div class="images-grid" id="previasImages"></div>
                     </div>
                     <div>
-                        <span class="images-label">Agregar imágenes nuevas</span>
+                        <span class="images-label">Agregar archivos nuevos</span>
                         <div class="upload-inline-actions">
                             <button type="button" class="action-btn primary" onclick="triggerEditImageFiles()">
                                 + Seleccionar archivos
                             </button>
-                            <span class="upload-inline-help">JPG, PNG, GIF, WEBP y PDF.</span>
+                            <button type="button" class="action-btn" onclick="triggerEditFolderFiles()">
+                                Seleccionar carpeta
+                            </button>
+                            <span class="upload-inline-help">Se permiten todos los formatos de archivo.</span>
                         </div>
-                        <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf" style="display:none;">
+                        <div class="upload-dropzone" id="editUploadDropzone" tabindex="0" role="button"
+                            aria-label="Arrastra y suelta archivos o haz clic para seleccionarlos">
+                            <div class="upload-dropzone-icon">+</div>
+                            <div class="upload-dropzone-title">Arrastra y suelta archivos o carpetas aquí</div>
+                            <div class="upload-dropzone-subtitle">También puedes hacer clic para abrir el selector y
+                                combinar varios archivos antes de guardar.</div>
+                        </div>
+                        <input type="file" id="editImageFiles" name="file" multiple class="visually-hidden">
+                        <input type="file" id="editFolderFiles" multiple webkitdirectory class="visually-hidden">
                         <div class="images-empty-state" id="newImagesEmpty" style="margin-top:10px;">
                             No has seleccionado archivos nuevos.
                         </div>
@@ -1050,8 +1268,7 @@
                         <label for="editComentario" style="color:var(--danger);">Comentario de edición</label>
                         <span class="form-hint">Describe qué cambios realizaste y el motivo.</span>
                         <textarea id="editComentario" name="comentario_edicion"
-                            placeholder="Describe qué cambios hiciste y por qué..."
-                            rows="4" required
+                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" required
                             style="border-color: var(--danger); margin-top:6px;"></textarea>
                     </div>
                 </div>
@@ -1086,11 +1303,17 @@
         <span class="loading-text">Guardando cambios...</span>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         /* =====================
            UTILS
            ===================== */
         let toastTimer = null;
+
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
 
         function showToast(type, title, desc) {
             const toast = document.getElementById("toast");
@@ -1136,7 +1359,7 @@
             }
         }
 
-        function populateForm(data) {
+        async function populateForm(data) {
             const s = data.solicitud || data;
 
             const folioBadge = document.getElementById("folioBadge");
@@ -1172,18 +1395,12 @@
             if (files.length > 0) {
                 previasEmpty.style.display = "none";
                 previasContainer.innerHTML = "";
-                files.forEach((file, index) => {
+                for (const [index, file] of files.entries()) {
                     const thumb = document.createElement("div");
                     thumb.className = "image-thumbnail";
 
-                    if (file.is_image && file.url) {
-                        const img = document.createElement("img");
-                        img.src = file.url;
-                        img.alt = file.name || "Imagen";
-                        thumb.appendChild(img);
-                    } else {
-                        thumb.textContent = "📄";
-                    }
+                    const storedPreview = await createStoredFilePreviewNode(file);
+                    thumb.appendChild(storedPreview);
 
                     if (file.is_image && file.file_path) {
                         const replaceBtn = document.createElement("button");
@@ -1227,7 +1444,7 @@
                     }
 
                     previasContainer.appendChild(thumb);
-                });
+                }
             }
         }
 
@@ -1244,7 +1461,212 @@
             document.getElementById("editImageFiles").click();
         }
 
-        function renderNewEditFiles(fileList) {
+        function triggerEditFolderFiles() {
+            document.getElementById("editFolderFiles").click();
+        }
+
+        function getFileExtension(fileName) {
+            const name = String(fileName || "").toLowerCase();
+            const parts = name.split(".");
+            return parts.length > 1 ? parts.pop() : "";
+        }
+
+        function getFallbackIconByExt(ext) {
+            const extension = (ext || "").toLowerCase();
+            if (["zip", "7z", "tar", "gz"].includes(extension)) return "/static/zip-box.svg";
+            if (extension === "rar") return "/static/folder-rar.svg";
+            if (extension === "csv") return "/static/file-delimited-outline.svg";
+            if (["xls", "xlsx", "xlsm"].includes(extension)) return "/static/microsoft-excel.svg";
+            if (["doc", "docx", "odt", "rtf"].includes(extension)) return "/static/file-word-box.svg";
+            if (extension === "pdf") return "/static/file-pdf-box.svg";
+            if (["mp4", "mov", "avi", "mkv", "webm", "wmv"].includes(extension)) return "/static/video.svg";
+            if (["mp3", "wav", "aac", "ogg", "flac", "m4a"].includes(extension)) return "/static/music-box-multiple.svg";
+            return "/static/file.svg";
+        }
+
+        function createFileIconPreviewNode(fileName) {
+            const icon = document.createElement("img");
+            icon.src = getFallbackIconByExt(getFileExtension(fileName));
+            icon.alt = "Archivo";
+            icon.className = "file-icon-thumb";
+            return icon;
+        }
+
+        async function renderPdfThumbnailDataUrl(pdfUrl, targetWidth = 220) {
+            if (!window.pdfjsLib || !pdfUrl) return null;
+            try {
+                const task = window.pdfjsLib.getDocument(pdfUrl);
+                const pdf = await task.promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = targetWidth / viewport.width;
+                const scaled = page.getViewport({ scale });
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d", { alpha: false });
+                canvas.width = Math.max(1, Math.floor(scaled.width));
+                canvas.height = Math.max(1, Math.floor(scaled.height));
+
+                await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+                return canvas.toDataURL("image/png");
+            } catch (error) {
+                console.error("No se pudo generar miniatura PDF:", error);
+                return null;
+            }
+        }
+
+        async function createPdfPreviewNode(url, title) {
+            const thumbDataUrl = await renderPdfThumbnailDataUrl(url, 220);
+            if (thumbDataUrl) {
+                const img = document.createElement("img");
+                img.src = thumbDataUrl;
+                img.alt = title || "Vista previa PDF";
+                return img;
+            }
+            return createFileIconPreviewNode(title || "archivo.pdf");
+        }
+
+        async function createStoredFilePreviewNode(file) {
+            const fileName = file.name || file.original_name || file.filename || "archivo";
+            const ext = (file.ext || getFileExtension(fileName)).toLowerCase();
+            if (file.is_image && file.url) {
+                const img = document.createElement("img");
+                img.src = file.url;
+                img.alt = fileName;
+                return img;
+            }
+            if (ext === "pdf" && file.url) {
+                return await createPdfPreviewNode(file.url, fileName);
+            }
+            return createFileIconPreviewNode(fileName);
+        }
+
+        async function createLocalFilePreviewNode(file) {
+            const ext = getFileExtension(file.name);
+            if ((file.type || "").startsWith("image/")) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const img = document.createElement("img");
+                        img.src = event.target.result;
+                        img.alt = file.name || "Imagen";
+                        resolve(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            if (ext === "pdf") {
+                const pdfUrl = URL.createObjectURL(file);
+                const node = await createPdfPreviewNode(pdfUrl, file.name || "PDF");
+                URL.revokeObjectURL(pdfUrl);
+                return node;
+            }
+            return createFileIconPreviewNode(file.name);
+        }
+
+        function setEditInputFiles(files) {
+            const fileInput = document.getElementById("editImageFiles");
+            const dt = new DataTransfer();
+            Array.from(files || []).forEach(file => dt.items.add(file));
+            fileInput.files = dt.files;
+            renderNewEditFiles(fileInput.files);
+        }
+
+        function mergeFilesIntoEditInput(incomingFiles) {
+            const fileInput = document.getElementById("editImageFiles");
+            const currentFiles = Array.from(fileInput.files || []);
+            const filesToAdd = Array.from(incomingFiles || []).filter(file => file && file.name);
+            if (!filesToAdd.length) return;
+            setEditInputFiles([...currentFiles, ...filesToAdd]);
+        }
+
+        function collectFilesFromDroppedEntry(entry, collected) {
+            return new Promise((resolve) => {
+                if (!entry) {
+                    resolve();
+                    return;
+                }
+                if (entry.isFile) {
+                    entry.file((file) => {
+                        if (file) {
+                            collected.push(file);
+                        }
+                        resolve();
+                    }, () => resolve());
+                    return;
+                }
+                if (entry.isDirectory) {
+                    const reader = entry.createReader();
+                    reader.readEntries(async (entries) => {
+                        for (const child of entries) {
+                            await collectFilesFromDroppedEntry(child, collected);
+                        }
+                        resolve();
+                    }, () => resolve());
+                    return;
+                }
+                resolve();
+            });
+        }
+
+        async function getDroppedFiles(dataTransfer) {
+            const collected = [];
+            if (dataTransfer?.items?.length) {
+                for (const item of dataTransfer.items) {
+                    if (item.kind !== "file") continue;
+                    const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+                    if (entry) {
+                        await collectFilesFromDroppedEntry(entry, collected);
+                    }
+                }
+            }
+            if (dataTransfer?.files?.length) {
+                for (const file of Array.from(dataTransfer.files)) {
+                    if (!collected.some(existing => existing.name === file.name && existing.size === file.size && existing.lastModified === file.lastModified)) {
+                        collected.push(file);
+                    }
+                }
+            }
+            return collected;
+        }
+
+        function setupEditDropzone() {
+            const fileInput = document.getElementById("editImageFiles");
+            const dropzone = document.getElementById("editUploadDropzone");
+            if (!fileInput || !dropzone) return;
+
+            ["dragenter", "dragover"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    dropzone.classList.add("dragover");
+                });
+            });
+
+            ["dragleave", "dragend", "drop"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    dropzone.classList.remove("dragover");
+                });
+            });
+
+            dropzone.addEventListener("drop", async (event) => {
+                const droppedFiles = await getDroppedFiles(event.dataTransfer);
+                if (!droppedFiles.length) return;
+                mergeFilesIntoEditInput(droppedFiles);
+            });
+
+            dropzone.addEventListener("click", () => triggerEditImageFiles());
+            dropzone.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    triggerEditImageFiles();
+                }
+            });
+        }
+
+        async function renderNewEditFiles(fileList) {
             const newImagesContainer = document.getElementById("newImages");
             const emptyState = document.getElementById("newImagesEmpty");
             const selectedFiles = Array.from(fileList || []);
@@ -1252,7 +1674,7 @@
             newImagesContainer.innerHTML = "";
             emptyState.style.display = selectedFiles.length ? "none" : "flex";
 
-            selectedFiles.forEach((file, index) => {
+            for (const [index, file] of selectedFiles.entries()) {
                 const div = document.createElement("div");
                 div.className = "image-thumbnail";
                 const removeBtn = document.createElement("button");
@@ -1261,23 +1683,11 @@
                 removeBtn.textContent = "×";
                 removeBtn.setAttribute("onclick", `removeNewImage(this, ${index})`);
 
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        div.style.backgroundImage = `url('${event.target.result}')`;
-                        div.style.backgroundSize = "cover";
-                        div.style.backgroundPosition = "center";
-                        div.appendChild(removeBtn);
-                        newImagesContainer.appendChild(div);
-                    };
-                    reader.readAsDataURL(file);
-                    return;
-                }
-
-                div.textContent = "📄";
+                const previewNode = await createLocalFilePreviewNode(file);
+                div.appendChild(previewNode);
                 div.appendChild(removeBtn);
                 newImagesContainer.appendChild(div);
-            });
+            }
         }
 
         function removeNewImage(btn, index) {
@@ -1292,11 +1702,20 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const fileInput = document.getElementById("editImageFiles");
+            const folderInput = document.getElementById("editFolderFiles");
             if (fileInput) {
                 fileInput.addEventListener("change", function () {
-                    renderNewEditFiles(this.files);
+                    mergeFilesIntoEditInput(this.files);
+                    this.value = "";
                 });
             }
+            if (folderInput) {
+                folderInput.addEventListener("change", function () {
+                    mergeFilesIntoEditInput(this.files);
+                    this.value = "";
+                });
+            }
+            setupEditDropzone();
         });
 
         /* =====================
@@ -1376,9 +1795,10 @@
                 return;
             }
 
-            populateForm(data);
+            await populateForm(data);
         });
     </script>
 
 </body>
+
 </html>

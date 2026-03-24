@@ -69,5 +69,129 @@
         "estatus_nuevo": "FALTA INFORMACION"
       }
     ]
+  },
+  {
+    "folio": "FOL-20260324-8084",
+    "client": "cliente1",
+    "created_at": "2026-03-24T17:11:21.108889+00:00",
+    "tipo_servicio": "consultoria, constancia",
+    "nombre_proyecto": "Prueba",
+    "norma": "NOM-004-SE-2021",
+    "num_skus": "1",
+    "medidas": "",
+    "prioridad": "regular",
+    "importador": "",
+    "marca": "",
+    "pais_origen": "",
+    "contenido": "",
+    "files": [
+      {
+        "filename": "Guia_de_Estilo.pdf",
+        "original_name": "Guia de Estilo.pdf",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\Guia_de_Estilo.pdf"
+      },
+      {
+        "filename": "BASE_DECATHLON_GENERAL_ADVANCE_II.xlsx",
+        "original_name": "BASE DECATHLON GENERAL ADVANCE II.xlsx",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\BASE_DECATHLON_GENERAL_ADVANCE_II.xlsx"
+      },
+      {
+        "filename": "items_para_pgadmin.csv",
+        "original_name": "items_para_pgadmin.csv",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\items_para_pgadmin.csv"
+      },
+      {
+        "filename": "CATALOGO_DE_ETIQUETAS.zip",
+        "original_name": "CATALOGO  DE  ETIQUETAS.zip",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\CATALOGO_DE_ETIQUETAS.zip"
+      }
+    ],
+    "historial": [
+      {
+        "tipo": "edicion_cliente",
+        "timestamp": "2026-03-24T17:54:23.531993+00:00",
+        "usuario": "cliente1",
+        "comentario": "ni idÇea",
+        "cambios": {},
+        "imagenes_reemplazadas": [],
+        "imagenes_agregadas": [
+          {
+            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\CATALOGO_DE_ETIQUETAS.zip",
+            "filename": "CATALOGO_DE_ETIQUETAS.zip",
+            "original_name": "CATALOGO  DE  ETIQUETAS.zip"
+          }
+        ],
+        "ciclo_anterior": 1,
+        "ciclo_nuevo": 2
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-24T17:56:17.020501+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "PENDIENTE",
+        "estatus_nuevo": "EN PROCESO"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-24T17:56:17.977930+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "EN PROCESO",
+        "estatus_nuevo": "FALTA INFORMACION"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-24T17:56:31.667333+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "FALTA INFORMACION",
+        "estatus_nuevo": "RECHAZADO"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-24T17:56:55.018231+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus marcado por ejecutivo: requiere información o ajustes del cliente.",
+        "estatus_anterior": "RECHAZADO",
+        "estatus_nuevo": "FALTA INFORMACION"
+      },
+      {
+        "tipo": "entregable_final_subido",
+        "timestamp": "2026-03-24T17:57:40.225859+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Archivos finales entregados (1 archivo(s))",
+        "cantidad_archivos": 1
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-24T17:57:40.225923+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Solicitud finalizada al entregar archivos finales",
+        "estatus_anterior": "FALTA INFORMACION",
+        "estatus_nuevo": "FINALIZADO"
+      }
+    ],
+    "estatus": "FINALIZADO",
+    "entregable_final": {
+      "files": [
+        {
+          "original_name": "ChatGPT Image 19 feb 2026, 04_52_07 p.m..png",
+          "stored_name": "ChatGPT_Image_19_feb_2026_04_52_07_p_m_png",
+          "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_entregables\\FOL-20260324-8084\\ChatGPT_Image_19_feb_2026_04_52_07_p_m_png",
+          "relative_path": "_entregables\\FOL-20260324-8084\\ChatGPT_Image_19_feb_2026_04_52_07_p_m_png",
+          "size_bytes": 353807,
+          "uploaded_at": "2026-03-24T17:57:40.223983+00:00"
+        }
+      ],
+      "uploaded_at": "2026-03-24T17:57:40.224005+00:00",
+      "uploaded_by": "ins1"
+    }
   }
 ]

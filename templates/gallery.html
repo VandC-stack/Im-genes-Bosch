@@ -278,8 +278,11 @@
             gap: 10px;
         }
 
-        .file-preview-icon {
-            font-size: 40px;
+        .file-preview-icon-img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            opacity: 0.94;
         }
 
         .file-preview-ext {
@@ -292,6 +295,14 @@
             padding: 3px 10px;
             border: 1.5px solid var(--yellow-dark);
             border-radius: 4px;
+        }
+
+        .pdf-preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+            background: #fff;
         }
 
         /* Info overlay — bottom, on hover */
@@ -624,6 +635,12 @@
             opacity: 0.3;
         }
 
+        .empty-icon-img {
+            width: 44px;
+            height: 44px;
+            opacity: 0.35;
+        }
+
         .empty-title {
             font-family: 'Space Mono', monospace;
             font-size: 14px;
@@ -686,10 +703,16 @@
     <!-- TOASTS -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         const rawImages = {{ images | tojson | safe }};
         let allImages = rawImages || [];
         const USER_ROLE = {{ role | tojson | safe }};
+
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
 
         const ITEMS_PER_PAGE = 30;
         let currentPage = 1;
@@ -720,7 +743,7 @@
 
             if (pageImages.length === 0) {
                 grid.innerHTML = `<div class="empty-state">
-                    <div class="empty-icon">🗂️</div>
+                    <div class="empty-icon"><img src="/static/file.svg" alt="Sin archivos" class="empty-icon-img"></div>
                     <div class="empty-title">Sin archivos</div>
                 </div>`;
                 renderPagination();
@@ -733,8 +756,48 @@
                 return buildCardHtml(image, globalIdx);
             }).join('');
 
+            renderPdfThumbnails(grid);
+
             renderPagination();
             updatePageInfo();
+        }
+
+        async function renderPdfThumbnailDataUrl(pdfUrl, targetWidth = 240) {
+            if (!window.pdfjsLib || !pdfUrl) return null;
+            try {
+                const task = window.pdfjsLib.getDocument(pdfUrl);
+                const pdf = await task.promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = targetWidth / viewport.width;
+                const scaled = page.getViewport({ scale });
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { alpha: false });
+                canvas.width = Math.max(1, Math.floor(scaled.width));
+                canvas.height = Math.max(1, Math.floor(scaled.height));
+
+                await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+                return canvas.toDataURL('image/png');
+            } catch (error) {
+                console.error('No se pudo generar miniatura PDF:', error);
+                return null;
+            }
+        }
+
+        async function renderPdfThumbnails(scopeElement) {
+            const scope = scopeElement || document;
+            const targets = Array.from(scope.querySelectorAll('img[data-pdf-src]:not([data-pdf-rendered="1"])'));
+            for (const img of targets) {
+                img.dataset.pdfRendered = '1';
+                const pdfUrl = img.dataset.pdfSrc;
+                const thumb = await renderPdfThumbnailDataUrl(pdfUrl);
+                if (thumb) {
+                    img.src = thumb;
+                } else {
+                    img.src = '/static/file-pdf-box.svg';
+                }
+            }
         }
 
         function handleAction(idx, action) {
@@ -842,17 +905,38 @@
             </div>`;
         }
 
+        function getPreviewIconByExt(ext) {
+            const extension = String(ext || '').toLowerCase();
+            if (['zip', '7z', 'tar', 'gz'].includes(extension)) return '/static/zip-box.svg';
+            if (extension === 'rar') return '/static/folder-rar.svg';
+            if (extension === 'csv') return '/static/file-delimited-outline.svg';
+            if (['xls', 'xlsx', 'xlsm'].includes(extension)) return '/static/microsoft-excel.svg';
+            if (['doc', 'docx', 'odt', 'rtf'].includes(extension)) return '/static/file-word-box.svg';
+            if (extension === 'pdf') return '/static/file-pdf-box.svg';
+            if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv'].includes(extension)) return '/static/video.svg';
+            if (['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a'].includes(extension)) return '/static/music-box-multiple.svg';
+            return '/static/file.svg';
+        }
+
+        function getCardPreviewHtml(image) {
+            const ext = String(image.ext || '').toLowerCase();
+            if (image.is_image && image.url) {
+                return `<img src="${image.url}" alt="${image.name}" class="image-preview" loading="lazy">`;
+            }
+            if (ext === 'pdf' && image.url) {
+                return `<img class="image-preview" src="/static/file-pdf-box.svg" data-pdf-src="${image.url}" alt="Vista previa PDF" loading="lazy">`;
+            }
+            return `<div class="file-preview">
+                        <img src="${getPreviewIconByExt(ext)}" alt="Archivo" class="file-preview-icon-img">
+                        <div class="file-preview-ext">${ext || 'archivo'}</div>
+                    </div>`;
+        }
+
         function buildCardHtml(image, globalIdx) {
             return `
             <article class="image-card" data-idx="${globalIdx}">
                 <div class="image-preview-container">
-                    ${image.is_image
-                    ? `<img src="${image.url}" alt="${image.name}" class="image-preview" loading="lazy">`
-                    : `<div class="file-preview">
-                               <div class="file-preview-icon">📄</div>
-                               <div class="file-preview-ext">${image.ext || 'file'}</div>
-                           </div>`
-                }
+                    ${getCardPreviewHtml(image)}
                     ${getStatusBadgeHtml(image.status)}
                     <div class="image-overlay">
                         <div class="overlay-name">${image.name}</div>

@@ -801,6 +801,27 @@
             flex-shrink: 0;
         }
 
+        .file-thumb-pdf {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+
+        .file-icon-svg {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            object-fit: contain;
+            background: #fff;
+            padding: 6px;
+            flex-shrink: 0;
+        }
+
         .file-ext {
             width: 40px;
             height: 40px;
@@ -1542,13 +1563,10 @@
                 </div>
 
                 <!-- Hidden inputs -->
-                <input type="file" id="inputFiles" multiple
-                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" style="display:none"
-                    onchange="addFilesFromInput(this)">
+                <input type="file" id="inputFiles" multiple style="display:none" onchange="addFilesFromInput(this)">
                 <input type="file" id="inputFolder" multiple webkitdirectory style="display:none"
                     onchange="addFolderFromInput(this)">
-                <input type="file" id="inputZip" accept=".zip,.rar,.7z" style="display:none"
-                    onchange="addFilesFromInput(this)">
+                <input type="file" id="inputZip" style="display:none" onchange="addFilesFromInput(this)">
 
                 <!-- File queue -->
                 <div class="file-queue" id="fileQueue"></div>
@@ -1615,12 +1633,18 @@
         <button class="toast-close" onclick="hideToast()">×</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         /* ═══════════════════════════════════════
            STATE
         ═══════════════════════════════════════ */
         let currentStep = 1;
         let fileQueue = [];      // { file, name, size, ext, isImage, preview, fromFolder, folderName }
+
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
 
         /* ═══════════════════════════════════════
            INIT
@@ -1857,18 +1881,23 @@
         async function processFile(file, folderName = null) {
             const ext = getExt(file.name);
             const isImg = file.type.startsWith("image/");
-            const isZip = ["zip", "rar", "7z"].includes(ext);
+            const isPdf = ext === "pdf";
             let preview = null;
+            let pdfPreview = null;
 
             if (isImg) {
                 preview = await compressImage(file);
                 preview = URL.createObjectURL(preview);
+            } else if (isPdf) {
+                const pdfUrl = URL.createObjectURL(file);
+                pdfPreview = await renderPdfThumbnailDataUrl(pdfUrl, 120);
+                URL.revokeObjectURL(pdfUrl);
             }
 
             fileQueue.push({
                 file, name: file.name,
                 size: file.size,
-                ext, isImg, isZip, preview,
+                ext, isImg, isPdf, preview, pdfPreview,
                 fromFolder: folderName,
                 folderName: folderName
             });
@@ -1893,9 +1922,45 @@
             });
         }
 
+        async function renderPdfThumbnailDataUrl(pdfUrl, targetWidth = 120) {
+            if (!window.pdfjsLib || !pdfUrl) return null;
+            try {
+                const task = window.pdfjsLib.getDocument(pdfUrl);
+                const pdf = await task.promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = targetWidth / viewport.width;
+                const scaled = page.getViewport({ scale });
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d", { alpha: false });
+                canvas.width = Math.max(1, Math.floor(scaled.width));
+                canvas.height = Math.max(1, Math.floor(scaled.height));
+
+                await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+                return canvas.toDataURL("image/png");
+            } catch (error) {
+                console.error("No se pudo generar miniatura PDF:", error);
+                return null;
+            }
+        }
+
         function getExt(name) {
             const p = name.split(".");
             return p.length > 1 ? p.pop().toLowerCase() : "";
+        }
+
+        function getFileIconByExt(ext) {
+            const extension = (ext || "").toLowerCase();
+            if (["zip", "7z", "tar", "gz"].includes(extension)) return "/static/zip-box.svg";
+            if (extension === "rar") return "/static/folder-rar.svg";
+            if (extension === "csv") return "/static/file-delimited-outline.svg";
+            if (["xls", "xlsx", "xlsm"].includes(extension)) return "/static/microsoft-excel.svg";
+            if (["doc", "docx", "odt", "rtf"].includes(extension)) return "/static/file-word-box.svg";
+            if (extension === "pdf") return "/static/file-pdf-box.svg";
+            if (["mp4", "mov", "avi", "mkv", "webm", "wmv"].includes(extension)) return "/static/video.svg";
+            if (["mp3", "wav", "aac", "ogg", "flac", "m4a"].includes(extension)) return "/static/music-box-multiple.svg";
+            return "/static/file.svg";
         }
 
         function formatSize(bytes) {
@@ -1961,12 +2026,10 @@
             let thumbHtml;
             if (item.isImg && item.preview) {
                 thumbHtml = `<img class="file-thumb" src="${item.preview}">`;
-            } else if (item.isZip) {
-                thumbHtml = `<div class="file-ext ext-zip">${item.ext}</div>`;
-            } else if (item.fromFolder && !item.name) {
-                thumbHtml = `<div class="file-ext ext-folder">DIR</div>`;
+            } else if (item.isPdf && item.pdfPreview) {
+                thumbHtml = `<img class="file-thumb" src="${item.pdfPreview}" alt="Vista previa PDF">`;
             } else {
-                thumbHtml = `<div class="file-ext">${item.ext || "file"}</div>`;
+                thumbHtml = `<img class="file-icon-svg" src="${getFileIconByExt(item.ext)}" alt="Archivo">`;
             }
 
             div.innerHTML = `
