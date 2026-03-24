@@ -18,24 +18,17 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #111;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            overflow: hidden;
         }
 
         .login-shell {
             width: 100%;
-            max-width: 1100px;
-            min-height: 560px;
+            min-height: 100vh;
             display: flex;
-            background: #ffffff;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
 
         .left {
@@ -44,6 +37,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #ffffff;
+            padding-bottom: 132px;
         }
 
         .right {
@@ -251,17 +246,127 @@
             border: 1px solid #ffc2c2;
         }
 
+        .left-footer {
+            position: absolute;
+            left: 48px;
+            width: calc(50% - 96px);
+            bottom: 26px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 22px;
+        }
+
+        .footer-main {
+            min-width: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            margin-bottom: 4px;
+        }
+
+        .footer-links a {
+            color: #6b6f78;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #111;
+        }
+
+        .footer-copy {
+            color: #6b6f78;
+            font-size: 14px;
+            line-height: 1.35;
+        }
+
+        .footer-contact {
+            border-left: 1px solid #d6d6d6;
+            padding-left: 20px;
+            color: #4a4f57;
+            font-size: 14px;
+            min-width: 136px;
+        }
+
+        .footer-icons {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .footer-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .footer-icons img {
+            width: 20px;
+            height: 20px;
+            opacity: 0.92;
+        }
+
+        .footer-icons img:hover {
+            opacity: 1;
+        }
+
         @media (max-width: 900px) {
+            body {
+                overflow: auto;
+            }
+
             .login-shell {
                 flex-direction: column;
-                min-height: 0;
+                min-height: 100vh;
             }
 
             .left {
-                padding: 32px;
+                padding: 40px 32px;
+                min-height: 0;
+                padding-bottom: 40px;
+                justify-content: flex-start;
+            }
+
+            .card {
+                margin: 0 auto;
+            }
+
+            .left-footer {
+                position: static;
+                order: 3;
+                margin: 0;
+                width: 100%;
+                flex-direction: column;
+                gap: 16px;
+                padding: 24px 32px 32px;
+                background: #ffffff;
+            }
+
+            .footer-links {
+                gap: 14px;
+                flex-wrap: wrap;
+            }
+
+            .footer-copy {
+                font-size: 13px;
+            }
+
+            .footer-contact {
+                border-left: none;
+                border-top: 1px solid #d6d6d6;
+                padding-left: 0;
+                padding-top: 12px;
+                width: 100%;
             }
 
             .right {
+                order: 2;
                 min-height: 380px;
             }
 
@@ -309,6 +414,7 @@
                 {% endif %}
 
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <input type="hidden" name="next" value="{{ next }}">
 
                     <label for="username">Nombre de cliente</label>
@@ -341,6 +447,29 @@
                         <div id="carouselCaption" class="carousel-caption">Siempre disponible</div>
                         <div id="carouselSubtext" class="carousel-subtext">Nuestro acceso 24/7</div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="left-footer">
+            <div class="footer-main">
+                <div class="footer-links">
+                    <a href="https://vyc.com.mx/politica-de-privacidad/" target="_blank"
+                        rel="noopener noreferrer">Legal</a>
+                    <a href="https://vyc.com.mx" target="_blank" rel="noopener noreferrer">vyc.com.mx</a>
+                </div>
+                <div class="footer-copy">2026 V&amp;C. Todos los derechos reservados.</div>
+            </div>
+
+            <div class="footer-contact">
+                <div>Contáctanos</div>
+                <div class="footer-icons">
+                    <a href="https://x.com/v_expertos" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                        <img src="/static/icon_twitter.svg" alt="Twitter">
+                    </a>
+                    <a href="#" aria-label="WhatsApp">
+                        <img src="/static/icon_whatsapp.svg" alt="WhatsApp">
+                    </a>
                 </div>
             </div>
         </div>

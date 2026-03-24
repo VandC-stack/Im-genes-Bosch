@@ -1,13 +1,96 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory, redirect, url_for, abort, session, send_file
 import os
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import re
 import secrets
 import hmac
+import time
+import logging
+from threading import Lock
 from functools import wraps
 from werkzeug.security import check_password_hash
 from typing import Optional
+
+# =========================
+# PROTECCIÓN ANTI-HACKING
+# =========================
+_login_attempts: dict = {}   # {ip: {"count": int, "locked_until": float, "last_attempt": float}}
+_login_lock = Lock()
+
+LOGIN_MAX_ATTEMPTS = 5        # intentos antes de bloquear
+LOGIN_LOCKOUT_SECONDS = 300   # 5 minutos de bloqueo
+LOGIN_WINDOW_SECONDS = 600    # ventana de 10 min para contar intentos
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+_security_log = logging.getLogger("security")
+
+
+def _get_client_ip() -> str:
+    """Obtiene la IP real del cliente respetando proxies confiables."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def _is_ip_locked(ip: str) -> tuple[bool, int]:
+    """Devuelve (bloqueado, segundos_restantes)."""
+    with _login_lock:
+        data = _login_attempts.get(ip)
+        if not data:
+            return False, 0
+        locked_until = data.get("locked_until", 0)
+        if locked_until and time.time() < locked_until:
+            remaining = int(locked_until - time.time())
+            return True, remaining
+        return False, 0
+
+
+def _record_failed_attempt(ip: str, username: str) -> int:
+    """Registra un intento fallido. Devuelve intentos restantes antes de bloqueo."""
+    now = time.time()
+    with _login_lock:
+        data = _login_attempts.setdefault(ip, {"count": 0, "locked_until": 0, "last_attempt": 0})
+        # Resetear contador si la ventana de tiempo expiró
+        if now - data["last_attempt"] > LOGIN_WINDOW_SECONDS:
+            data["count"] = 0
+        data["count"] += 1
+        data["last_attempt"] = now
+        remaining = max(0, LOGIN_MAX_ATTEMPTS - data["count"])
+        if data["count"] >= LOGIN_MAX_ATTEMPTS:
+            data["locked_until"] = now + LOGIN_LOCKOUT_SECONDS
+            _security_log.warning(
+                "IP BLOQUEADA tras %d intentos fallidos | ip=%s usuario='%s'",
+                data["count"], ip, username
+            )
+        else:
+            _security_log.warning(
+                "Intento fallido de login | ip=%s usuario='%s' intentos=%d",
+                ip, username, data["count"]
+            )
+        return remaining
+
+
+def _clear_attempts(ip: str):
+    with _login_lock:
+        _login_attempts.pop(ip, None)
+
+
+def _generate_csrf_token() -> str:
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(32)
+    return session["csrf_token"]
+
+
+def _validate_csrf(token: str) -> bool:
+    expected = session.get("csrf_token")
+    if not expected or not token:
+        return False
+    return hmac.compare_digest(expected, token)
 
 #cambiar secret key antes de salir a producción
 
@@ -1123,21 +1206,62 @@ def historial(folio):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    csrf_token = _generate_csrf_token()
+
     if request.method == "POST":
+        ip = _get_client_ip()
+
+        # ── 1. Verificar CSRF ──────────────────────────────────────────────
+        form_csrf = request.form.get("csrf_token", "")
+        if not _validate_csrf(form_csrf):
+            _security_log.warning("Token CSRF inválido | ip=%s", ip)
+            return render_template(
+                "login.html",
+                error="Solicitud inválida. Recarga la página e inténtalo de nuevo.",
+                next=request.form.get("next") or request.args.get("next"),
+                csrf_token=csrf_token,
+            )
+
+        # ── 2. Verificar bloqueo por IP ────────────────────────────────────
+        locked, wait_seconds = _is_ip_locked(ip)
+        if locked:
+            minutes = (wait_seconds + 59) // 60
+            return render_template(
+                "login.html",
+                error=f"Demasiados intentos fallidos. Espera {minutes} minuto{'s' if minutes != 1 else ''} antes de intentarlo de nuevo.",
+                next=request.form.get("next") or request.args.get("next"),
+                csrf_token=csrf_token,
+            )
+
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         next_url = request.form.get("next") or request.args.get("next")
 
+        # ── 3. Validar credenciales ────────────────────────────────────────
         client = get_client(username)
         if not client or not verify_password(client.get("password", ""), password):
+            remaining = _record_failed_attempt(ip, username)
+            if remaining == 0:
+                minutes = (LOGIN_LOCKOUT_SECONDS + 59) // 60
+                error_msg = f"Cuenta bloqueada por demasiados intentos. Espera {minutes} minuto{'s' if minutes != 1 else ''}."
+            elif remaining <= 2:
+                error_msg = f"Cliente o contraseña inválidos. Te quedan {remaining} intento{'s' if remaining != 1 else ''}."
+            else:
+                error_msg = "Cliente o contraseña inválidos."
             return render_template(
                 "login.html",
-                error="Cliente o contraseña inválidos",
-                next=next_url
+                error=error_msg,
+                next=next_url,
+                csrf_token=csrf_token,
             )
 
+        # ── 4. Login exitoso ───────────────────────────────────────────────
+        _clear_attempts(ip)
+        session.regenerate() if hasattr(session, "regenerate") else session.clear() or session.update({})
         session["username"] = username
         session["role"] = normalize_role(client.get("role"))
+        _generate_csrf_token()   # nuevo token tras login
+
         if is_safe_next(next_url):
             assert next_url is not None
             safe_next_url = next_url
@@ -1145,7 +1269,7 @@ def login():
             safe_next_url = url_for("welcome") if session["role"] == ROLE_CLIENTE else url_for("index")
         return redirect(safe_next_url)
 
-    return render_template("login.html", error=None, next=request.args.get("next", ""))
+    return render_template("login.html", error=None, next=request.args.get("next", ""), csrf_token=csrf_token)
 
 
 @app.route("/logout")
