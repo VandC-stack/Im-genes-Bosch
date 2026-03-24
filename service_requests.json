@@ -1,18 +1,18 @@
 [
   {
-    "folio": "FOL-20260318-6999",
+    "folio": "FOL-20260323-4359",
     "client": "cliente1",
-    "created_at": "2026-03-18T22:41:23.916688+00:00",
+    "created_at": "2026-03-23T15:59:52.531182+00:00",
     "tipo_servicio": "consultoria, constancia, diseno",
-    "nombre_proyecto": "Gel energizante capilar",
-    "norma": "NOM-050-SCFI-2004",
-    "num_skus": "73",
-    "medidas": "",
+    "nombre_proyecto": "NEUROBOOST X",
+    "norma": "NOM-051-SCFI/SSA1-2010",
+    "num_skus": "1234",
+    "medidas": "12x12",
     "prioridad": "regular",
     "importador": "No aplica",
     "marca": "V&C LABS",
     "pais_origen": "México",
-    "contenido": "Denominación del producto:\r\nGel energizante capilar de uso cosmético\r\n\r\nContenido neto:\r\n250 g\r\n\r\nIngredientes:\r\nAgua purificada, Carbomer, Triethanolamine, Cafeína, Extracto de menta, Fragancia, Conservadores\r\n\r\nInstrucciones de uso:\r\nAplicar una pequeña cantidad sobre el cabello seco o húmedo y moldear al gusto.\r\n\r\nAdvertencias:\r\nNo ingerir. Evite el contacto con los ojos. Manténgase fuera del alcance de los niños.",
+    "contenido": "Denominación del producto:\r\nGel energizante capilar de uso cosmético\r\n\r\nContenido neto:\r\n250 g\r\n\r\nIngredientes:\r\nAgua purificada, Carbomer, Triethanolamine, Cafeína, Extracto de menta, Fragancia, Conservadores\r\n\r\nInstrucciones de uso:\r\nAplicar una pequeña cantidad sobre el cabello seco o húmedo y moldear al gusto.\r\n\r\nAdvertencias:\r\nNo ingerir. Evite el contacto con los ojos. Manténgase fuera del alcance de los niños.\r\n\r\nPaís de origen:\r\nHecho en México\r\n\r\nFabricado por:\r\nV&C Labs S.A. de C.V.\r\nAv. Innovación 404, Ciudad de México, México\r\n\r\nImportador:\r\nNo aplica\r\n\r\nLote:\r\nNBX-240318\r\n\r\nFecha de caducidad:\r\n03/2028\r\n\r\nGarantía:\r\nProducto garantizado contra defectos de fabricación",
     "files": [
       {
         "filename": "0b839cc8-de9e-4c77-b01a-d41322e644ec.png",
@@ -20,139 +20,53 @@
         "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\0b839cc8-de9e-4c77-b01a-d41322e644ec.png"
       },
       {
-        "filename": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
-        "original_name": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
-        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\08621cb5-d676-451e-8f45-d8c8a23f7b82.png"
-      },
-      {
         "filename": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
         "original_name": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
         "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\92c04bda-9a38-4deb-b5d7-877ad0c21d64.png"
+      },
+      {
+        "filename": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
+        "original_name": "08621cb5-d676-451e-8f45-d8c8a23f7b82.png",
+        "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\08621cb5-d676-451e-8f45-d8c8a23f7b82.png"
       }
     ],
+    "estatus": "FALTA INFORMACION",
     "historial": [
       {
-        "id": 0,
-        "tipo": "comentario",
-        "timestamp": "2026-03-18T22:44:39.579361+00:00",
-        "usuario": "cliente1",
-        "autor": "cliente1",
-        "rol": "cliente",
-        "texto": "Codigos nuevos",
-        "archivos": [
-          {
-            "nombre": "Captura de pantalla 2025-08-21 112056.png",
-            "ext": "png",
-            "size": "4 KB",
-            "id": "be1c99209f20d2f05f7d",
-            "stored_name": "20260318224439_23a2cd7cdbba_Captura_de_pantalla_2025-08-21_112056.png",
-            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_comentarios\\FOL-20260318-6999\\20260318224439_23a2cd7cdbba_Captura_de_pantalla_2025-08-21_112056.png",
-            "size_bytes": 3892,
-            "url": "/api/solicitud/FOL-20260318-6999/adjuntos/be1c99209f20d2f05f7d"
-          }
-        ]
-      },
-      {
-        "tipo": "edicion_cliente",
-        "timestamp": "2026-03-18T22:45:53.138019+00:00",
-        "usuario": "cliente1",
-        "comentario": "Versión preliminar de la etiqueta",
-        "cambios": {},
-        "imagenes_reemplazadas": [],
-        "imagenes_agregadas": [
-          {
-            "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
-            "filename": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png",
-            "original_name": "92c04bda-9a38-4deb-b5d7-877ad0c21d64.png"
-          }
-        ],
-        "ciclo_anterior": 1,
-        "ciclo_nuevo": 2
-      },
-      {
-        "id": 2,
-        "tipo": "comentario",
-        "timestamp": "2026-03-18T22:49:58.533411+00:00",
-        "usuario": "ins1",
-        "autor": "ins1",
-        "rol": "ejecutivo",
-        "texto": "Gracias, lo considero",
-        "archivos": []
-      },
-      {
-        "tipo": "entregable_final_subido",
-        "timestamp": "2026-03-18T23:30:05.833812+00:00",
-        "usuario": "ins1",
-        "rol": "ejecutivo",
-        "texto": "Archivos finales entregados (1 archivo(s))",
-        "cantidad_archivos": 1
-      },
-      {
         "tipo": "cambio_estatus",
-        "timestamp": "2026-03-18T23:30:05.833850+00:00",
+        "timestamp": "2026-03-23T19:48:05.784191+00:00",
         "usuario": "ins1",
         "rol": "ejecutivo",
-        "texto": "Solicitud finalizada al entregar archivos finales",
+        "texto": "Estatus marcado por ejecutivo: requiere información o ajustes del cliente.",
         "estatus_anterior": "PENDIENTE",
-        "estatus_nuevo": "FINALIZADO"
+        "estatus_nuevo": "FALTA INFORMACION"
       },
       {
         "tipo": "cambio_estatus",
-        "timestamp": "2026-03-19T19:12:19.281751+00:00",
+        "timestamp": "2026-03-23T20:53:20.015142+00:00",
         "usuario": "ins1",
         "rol": "ejecutivo",
-        "texto": "Solicitud marcada de forma general como rechazado",
-        "estatus_anterior": "FINALIZADO",
-        "estatus_nuevo": "FINALIZADO"
-      }
-    ],
-    "entregable_final": {
-      "files": [
-        {
-          "original_name": "4b6a5e38-80c0-4caf-bff6-0e8122409565.png",
-          "stored_name": "4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
-          "file_path": "C:\\Users\\bost2\\V&C UVA Dropbox\\DataControl UVA\\Capturas Bossh\\Cliente1\\_entregables\\FOL-20260318-6999\\4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
-          "relative_path": "_entregables\\FOL-20260318-6999\\4b6a5e38-80c0-4caf-bff6-0e8122409565_png",
-          "size_bytes": 4096578,
-          "uploaded_at": "2026-03-18T23:30:05.831681+00:00"
-        }
-      ],
-      "uploaded_at": "2026-03-18T23:30:05.831712+00:00",
-      "uploaded_by": "ins1"
-    },
-    "estatus": "FINALIZADO"
-  },
-  {
-    "folio": "FOL-20260319-5014",
-    "client": "cliente1",
-    "created_at": "2026-03-19T18:21:31.321918+00:00",
-    "tipo_servicio": "consultoria, constancia",
-    "nombre_proyecto": "Prueba",
-    "norma": "NOM-020-SCFI-1997, NOM-024-SCFI-2013, NOM-141-SSA1/SCFI-2012, NOM-142-SSA1/SCFI-2014, NOM-189-SSA1/SCFI-2018, NOM-199-SCFI-2017",
-    "num_skus": "12354",
-    "medidas": "12x12., 14x33",
-    "prioridad": "urgente",
-    "importador": "",
-    "marca": "",
-    "pais_origen": "",
-    "contenido": "",
-    "files": [],
-    "historial": [
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "FALTA INFORMACION",
+        "estatus_nuevo": "EN PROCESO"
+      },
       {
-        "tipo": "edicion_cliente",
-        "timestamp": "2026-03-19T19:05:08.123773+00:00",
-        "usuario": "cliente1",
-        "comentario": "Cambio de servició",
-        "cambios": {
-          "prioridad": {
-            "viejo": "regular",
-            "nuevo": "urgente"
-          }
-        },
-        "imagenes_reemplazadas": [],
-        "imagenes_agregadas": [],
-        "ciclo_anterior": 1,
-        "ciclo_nuevo": 1
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-23T20:53:20.893181+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "EN PROCESO",
+        "estatus_nuevo": "PENDIENTE"
+      },
+      {
+        "tipo": "cambio_estatus",
+        "timestamp": "2026-03-23T20:53:22.169584+00:00",
+        "usuario": "ins1",
+        "rol": "ejecutivo",
+        "texto": "Estatus actualizado por revisión de archivos",
+        "estatus_anterior": "PENDIENTE",
+        "estatus_nuevo": "FALTA INFORMACION"
       }
     ]
   }

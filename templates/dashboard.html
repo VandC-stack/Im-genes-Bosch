@@ -132,6 +132,59 @@
             color: var(--dark);
         }
 
+        .role-pill {
+            font-size: 11px;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            border-radius: 999px;
+            padding: 6px 10px;
+            color: var(--text-muted);
+        }
+
+        .role-pill.admin {
+            background: var(--yellow);
+            border-color: var(--yellow-dark);
+            color: #000;
+        }
+
+        .role-pill.ejecutivo {
+            background: #e0f2fe;
+            border-color: #7dd3fc;
+            color: #075985;
+        }
+
+        .bosch-toggle-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bosch-toggle-btn img {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .bosch-toggle-btn:hover {
+            border-color: #c0c0c0;
+            background: #f3f3f3;
+        }
+
+        .bosch-toggle-btn.active {
+            border-color: var(--yellow-dark);
+            background: var(--yellow);
+        }
+
         /* ── PAGE ── */
         .page {
             max-width: 1200px;
@@ -291,6 +344,23 @@
             border-color: var(--dark);
         }
 
+        .filter-select {
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 12px;
+            color: var(--text);
+            min-width: 160px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #999;
+            box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
+        }
+
         .filter-separator {
             color: var(--border);
             font-size: 18px;
@@ -318,12 +388,12 @@
         }
 
         .edit-mode-btn.active {
-            background: #6b21a8;
-            box-shadow: 0 0 0 2px #c084fc;
+            background: var(--yellow);
+            box-shadow: 0 0 0 2px #f4e77d;
         }
 
         .edit-mode-btn.active:hover {
-            background: #7e22ce;
+            background: var(--yellow-dark);
         }
 
         .edit-mode-btn img {
@@ -354,6 +424,23 @@
         .search-wrapper {
             position: relative;
             margin-left: auto;
+        }
+
+        .admin-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: #111;
+            color: #fff;
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+        }
+
+        .admin-banner p {
+            font-size: 13px;
+            opacity: 0.9;
         }
 
         .clear-search {
@@ -395,6 +482,14 @@
 
         .table-scroll {
             overflow-x: auto;
+        }
+
+        body[data-role="ejecutivo"] .table-scroll {
+            overflow-x: hidden;
+        }
+
+        body[data-role="ejecutivo"] table {
+            min-width: 100%;
         }
 
         table {
@@ -534,6 +629,15 @@
             background: #dc2626;
         }
 
+        .badge-rechazado {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .badge-rechazado .badge-dot {
+            background: #b91c1c;
+        }
+
         .badge-revision {
             background: #e0f2fe;
             color: #075985;
@@ -544,13 +648,14 @@
         }
 
         .badge-ciclo {
-            background: #f3e8ff;
-            color: #6b21a8;
+            background: #fff1e8;
+            color: #D15300;
+            border: 1px solid #f2bf9f;
             font-weight: 600;
         }
 
         .badge-ciclo .badge-dot {
-            background: #9333ea;
+            background: #D15300;
             display: none;
         }
 
@@ -561,7 +666,7 @@
         }
 
         .ciclo-link:focus-visible {
-            outline: 2px solid #a78bfa;
+            outline: 2px solid #D15300;
             outline-offset: 2px;
         }
 
@@ -569,6 +674,30 @@
         .action-btns {
             display: flex;
             gap: 6px;
+        }
+
+        .actions-trigger-btn {
+            width: 36px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1.5px solid var(--yellow-dark);
+            background: var(--yellow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+
+        .actions-trigger-btn:hover {
+            background: #f2de3a;
+            transform: translateY(-1px);
+        }
+
+        .actions-trigger-btn img {
+            width: 17px;
+            height: 17px;
+            display: block;
         }
 
         .action-btn {
@@ -601,6 +730,30 @@
             background: var(--yellow-dark);
         }
 
+        .action-btn.warning {
+            background: #fef9c3;
+            border-color: #facc15;
+            color: #854d0e;
+        }
+
+        .action-btn.warning:hover {
+            background: #fde047;
+            border-color: #eab308;
+            color: #713f12;
+        }
+
+        .action-btn.success {
+            background: #dcfce7;
+            border-color: #4ade80;
+            color: #166534;
+        }
+
+        .action-btn.success:hover {
+            background: #bbf7d0;
+            border-color: #22c55e;
+            color: #14532d;
+        }
+
         .action-btn.icon-only {
             display: inline-flex;
             width: 44px;
@@ -618,6 +771,31 @@
             display: block;
         }
 
+        .assign-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 250px;
+        }
+
+        .assign-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .assign-row .action-btn {
+            height: 32px;
+            min-width: 110px;
+            padding: 0 10px;
+        }
+
+        .assign-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
         .action-btn.cert-ready {
             background: #16a34a;
             border-color: #15803d;
@@ -632,7 +810,7 @@
 
         /* ── EDIT MODE ── */
         .edit-mode {
-            --highlight-bg: #f3e8ff;
+            --highlight-bg: #fff9d8;
         }
 
         .edit-mode .solicitud-row {
@@ -641,11 +819,11 @@
         }
 
         .edit-mode .solicitud-row:hover {
-            background-color: #f3e8ff;
+            background-color: #fff9d8;
         }
 
         .solicitud-row.selected {
-            background-color: #e9d5ff;
+            background-color: #fff1a3;
             font-weight: 500;
         }
 
@@ -669,6 +847,71 @@
 
         .edit-mode .solicitud-row[data-estatus="FINALIZADO"]:hover {
             background-color: transparent;
+        }
+
+        .edit-section {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #c9c9c9;
+            border-left: 4px solid var(--yellow-dark);
+            background: #f2f2f2;
+        }
+
+        .edit-section-inner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .edit-section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--yellow);
+            border: 1px solid var(--yellow-dark);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #111;
+            flex-shrink: 0;
+        }
+
+        .edit-section-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .edit-section-title {
+            font-size: 21px;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            color: #1a1a1a;
+        }
+
+        .edit-section-desc {
+            font-size: 12px;
+            color: #5f5f5f;
+        }
+
+        .edit-section .action-btn {
+            margin-left: auto;
+            height: 34px;
+            align-self: center;
+            border-color: #bdbdbd;
+            background: #fff;
+        }
+
+        .edit-section .action-btn:hover {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
         }
 
         /* ── TABLE FOOTER ── */
@@ -861,6 +1104,106 @@
             gap: 0;
         }
 
+        #assignModalOverlay {
+            z-index: 220;
+        }
+
+        .modal.modal-assign {
+            max-width: 560px;
+            padding: 24px;
+        }
+
+        .modal.modal-actions {
+            max-width: 360px;
+            padding: 22px;
+        }
+
+        .actions-modal-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .actions-modal-title {
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .actions-modal-list .action-btn {
+            width: 100%;
+            min-height: 34px;
+            justify-content: center;
+        }
+
+        .assign-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .assign-modal-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            padding: 10px 12px;
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            background: var(--surface2);
+        }
+
+        .assign-ejecutivo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .assign-ejecutivo-btn {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .assign-ejecutivo-btn:hover {
+            border-color: var(--dark);
+            background: var(--surface2);
+        }
+
+        .assign-ejecutivo-btn.current {
+            border-color: var(--yellow-dark);
+            background: var(--yellow-light);
+        }
+
+        .assign-ejecutivo-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .assign-ejecutivo-signature {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .assign-ejecutivo-action {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--dark);
+            white-space: nowrap;
+        }
+
         .project-progress {
             display: flex;
             flex-direction: column;
@@ -951,6 +1294,40 @@
             padding-top: 12px;
             border-top: 1px dashed var(--border);
             font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .progress-state-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .progress-state-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface2);
+            padding: 10px 12px;
+        }
+
+        .progress-state-card.current {
+            border-color: var(--yellow-dark);
+            background: var(--yellow-light);
+        }
+
+        .progress-state-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .progress-state-desc {
+            margin-top: 4px;
+            font-size: 12px;
+            line-height: 1.45;
             color: var(--text-muted);
         }
 
@@ -1281,11 +1658,11 @@
         }
 
         .historial-item.cliente {
-            background: #f3e8ff;
+            background: #fff9d8;
         }
 
         .historial-item.cliente::before {
-            background: #9333ea;
+            background: #d4a200;
         }
 
         .historial-tipo {
@@ -1348,11 +1725,34 @@
             .filters {
                 gap: 8px;
             }
+
+            .edit-section {
+                padding: 12px;
+            }
+
+            .edit-section-inner {
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .edit-section-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 9px;
+            }
+
+            .edit-section-title {
+                font-size: 16px;
+            }
+
+            .edit-section .action-btn {
+                margin-left: 48px;
+            }
         }
     </style>
 </head>
 
-<body>
+<body data-role="{% if is_admin %}admin{% elif is_ejecutivo %}ejecutivo{% else %}cliente{% endif %}">
 
     <!-- TOPBAR -->
     <nav class="topbar">
@@ -1366,6 +1766,17 @@
                         style="width:16px;height:16px;"></div>
                 <span id="usernameDisplay">{{ username }}</span>
             </div>
+            {% if is_admin %}
+            <button type="button" class="bosch-toggle-btn" id="boschToggleBtn" onclick="toggleBoschVisibility()"
+                title="Mostrar solicitudes Bosch" aria-label="Mostrar solicitudes Bosch">
+                <img src="/static/bosch.svg" alt="Bosch">
+            </button>
+            {% endif %}
+            {% if is_admin %}
+            <span class="role-pill admin">Administrador</span>
+            {% elif is_ejecutivo %}
+            <span class="role-pill ejecutivo">Ejecutivo</span>
+            {% endif %}
             <a href="/logout" class="logout-link">Cerrar sesión →</a>
         </div>
     </nav>
@@ -1376,14 +1787,34 @@
         <!-- Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">Mis <span>proyectos</span></h1>
-                <p class="page-sub">Resumen y seguimiento de todos tus proyectos</p>
+                <h1 class="page-title">{% if is_admin %}Panel <span>administrativo</span>{% elif is_ejecutivo %}Panel
+                    <span>ejecutivo</span>{% else %}Mis <span>proyectos</span>{% endif %}
+                </h1>
+                <p class="page-sub">{% if is_admin %}Vista global de solicitudes para gestión exclusiva del
+                    administrador{% elif is_ejecutivo %}Seguimiento y dictamen de solicitudes asignadas a tu bandeja{%
+                    else %}Resumen y seguimiento de todos tus proyectos{% endif %}</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                {% if is_admin %}
+                <a href="/admin" class="btn btn-yellow">Administrar clientes</a>
+                {% elif is_ejecutivo %}
+
+                {% else %}
                 <a href="{{ url_for('captura') }}" class="btn btn-yellow">+ Nuevo proyecto</a>
+                {% endif %}
                 <button class="btn btn-outline" onclick="exportCSV()">⬇ Exportar</button>
             </div>
         </div>
+
+        {% if is_admin %}
+        <div class="admin-banner">
+            <p>Modo administrador activo. Esta vista es exclusiva para el rol admin/supervisor.</p>
+        </div>
+        {% elif is_ejecutivo %}
+        <div class="admin-banner">
+            <p>Modo ejecutivo activo. Esta vista muestra solamente solicitudes con archivos asignados a tu usuario.</p>
+        </div>
+        {% endif %}
 
         <!-- KPIs -->
         <div class="kpi-grid" id="kpiGrid">
@@ -1392,22 +1823,37 @@
 
         <!-- Filters + Search -->
         <div class="filters">
+            {% if not is_admin and not is_ejecutivo %}
             <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()" title="Editar solicitud">
                 <img src="/static/icon-edit.svg" alt="Editar">
             </button>
             <span class="filter-separator">|</span>
+            {% endif %}
             <span class="filter-label">Filtrar:</span>
             <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">Todos</button>
             <button class="filter-chip" data-filter="FINALIZADO"
                 onclick="setFilter(this,'FINALIZADO')">Finalizados</button>
             <button class="filter-chip" data-filter="EN PROCESO" onclick="setFilter(this,'EN PROCESO')">En
                 proceso</button>
+            <button class="filter-chip" data-filter="FALTA INFORMACION"
+                onclick="setFilter(this,'FALTA INFORMACION')">Falta información</button>
+            <button class="filter-chip" data-filter="RECHAZADO"
+                onclick="setFilter(this,'RECHAZADO')">Rechazados</button>
             <button class="filter-chip" data-filter="PENDIENTE"
                 onclick="setFilter(this,'PENDIENTE')">Pendientes</button>
             <button class="filter-chip" data-filter="EN REVISIÓN" onclick="setFilter(this,'EN REVISIÓN')">En
                 revisión</button>
+            {% if is_admin or is_ejecutivo %}
+            <select id="clientFilter" class="filter-select" onchange="handleRoleFilters()" title="Filtrar por cliente">
+                <option value="all">Todos los clientes</option>
+            </select>
+            <select id="companyFilter" class="filter-select" onchange="handleRoleFilters()" title="Filtrar por empresa">
+                <option value="all">Todas las empresas</option>
+            </select>
+            {% endif %}
             <div class="search-wrapper">
-                <input class="search-input" id="searchInput" type="search" placeholder="Buscar folio, proyecto, tipo..."
+                <input class="search-input" id="searchInput" type="search"
+                    placeholder="{% if is_admin or is_ejecutivo %}Buscar folio, cliente, proyecto, tipo...{% else %}Buscar folio, proyecto, tipo...{% endif %}"
                     autocomplete="off" oninput="handleSearchInput()">
                 <button class="clear-search" id="clearSearch" onclick="clearSearch()"
                     title="Limpiar búsqueda">×</button>
@@ -1415,13 +1861,15 @@
         </div>
 
         <!-- Edit Section -->
-        <div class="edit-section" id="editSection"
-            style="display: none; margin-top: 16px; padding: 12px 16px; background: #f3e8ff; border-radius: 8px; border: 1px solid #e0d2ff;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 13px; font-weight: 600; color: #6b21a8;">Modo edición activado</span>
-                <span style="font-size: 11px; color: #9333ea;">Selecciona una solicitud para editarla</span>
-                <button type="button" class="action-btn" onclick="cancelEditMode()"
-                    style="margin-left: auto;">Cancelar</button>
+        <div class="edit-section" id="editSection">
+            <div class="edit-section-inner">
+                <span class="edit-section-icon" aria-hidden="true">✎</span>
+                <div class="edit-section-copy">
+                    <span class="edit-section-title">Modo edición activo</span>
+                    <span class="edit-section-desc">Los cambios quedarán registrados en el historial de ciclos de la
+                        solicitud</span>
+                </div>
+                <button type="button" class="action-btn" onclick="cancelEditMode()">Cancelar</button>
             </div>
         </div>
 
@@ -1434,6 +1882,9 @@
                             <th onclick="sortBy('fecha')" id="th-fecha">Fecha recepción <span
                                     class="sort-arrow">↕</span></th>
                             <th onclick="sortBy('folio')" id="th-folio">Folio <span class="sort-arrow">↕</span></th>
+                            {% if is_admin or is_ejecutivo %}
+                            <th onclick="sortBy('client')" id="th-client">Cliente <span class="sort-arrow">↕</span></th>
+                            {% endif %}
                             <th onclick="sortBy('tipo')" id="th-tipo">Tipo de servicio <span class="sort-arrow">↕</span>
                             </th>
                             <th onclick="sortBy('modalidad')" id="th-modalidad">Modalidad <span
@@ -1469,90 +1920,23 @@
         </div>
     </div>
 
-    <!-- MODAL EDICIÓN -->
-    <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal(event)">
-        <div class="modal">
+    <div class="modal-overlay" id="assignModalOverlay" onclick="closeAssignModal(event)">
+        <div class="modal modal-assign">
             <div class="modal-header">
-                <span class="modal-title">Editar solicitud</span>
-                <button class="modal-close" onclick="closeEditModalBtn()">×</button>
+                <span class="modal-title" id="assignModalTitle">Asignar ejecutivo</span>
+                <button class="modal-close" onclick="closeAssignModalBtn()">×</button>
             </div>
-            <form id="editForm" onsubmit="submitEditForm(event)" enctype="multipart/form-data">
-                <div id="editModalBody"
-                    style="max-height: 70vh; overflow-y: auto; padding: 20px; gap: 15px; display: flex; flex-direction: column;">
-                    <div class="form-group">
-                        <label>Tipo de servicio</label>
-                        <input type="text" id="editTipoServicio" name="tipo_servicio">
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre del proyecto</label>
-                        <input type="text" id="editNombreProyecto" name="nombre_proyecto">
-                    </div>
-                    <div class="form-group">
-                        <label>Norma(s)</label>
-                        <input type="text" id="editNorma" name="norma">
-                    </div>
-                    <div class="form-group">
-                        <label>Número de SKU's / Ítems / Modelos</label>
-                        <input type="text" id="editNumSkus" name="num_skus">
-                    </div>
-                    <div class="form-group">
-                        <label>Medidas superficie</label>
-                        <input type="text" id="editMedidas" name="medidas">
-                    </div>
-                    <div class="form-group">
-                        <label>Prioridad</label>
-                        <select id="editPrioridad" name="prioridad">
-                            <option value="">Seleccionar...</option>
-                            <option value="urgente">Urgente (24h)</option>
-                            <option value="regular">Regular (72h)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Importador</label>
-                        <input type="text" id="editImportador" name="importador">
-                    </div>
-                    <div class="form-group">
-                        <label>Marca</label>
-                        <input type="text" id="editMarca" name="marca">
-                    </div>
-                    <div class="form-group">
-                        <label>País de origen</label>
-                        <input type="text" id="editPaisOrigen" name="pais_origen">
-                    </div>
-                    <div class="form-group">
-                        <label>Contenido</label>
-                        <textarea id="editContenido" name="contenido" rows="3"></textarea>
-                    </div>
-                    <div class="images-section">
-                        <label style="font-weight: 600;">Imágenes adjuntas</label>
-                        <div class="images-empty-state" id="previasImagesEmpty">
-                            Esta solicitud no tiene imágenes cargadas. Puedes agregar nuevas en este ciclo.
-                        </div>
-                        <div class="images-grid" id="previasImages"></div>
-                        <label style="font-weight: 600; margin-top: 12px; display: block;">Agregar imágenes</label>
-                        <div class="upload-inline-actions">
-                            <button type="button" class="action-btn primary"
-                                onclick="triggerEditImageFiles()">Seleccionar archivos</button>
-                            <span class="upload-inline-help">JPG, PNG, GIF, WEBP y PDF.</span>
-                        </div>
-                        <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf"
-                            style="display: none;">
-                        <div class="images-empty-state" id="newImagesEmpty">No has seleccionado archivos nuevos.</div>
-                        <div class="images-grid" id="newImages" style="margin-top: 8px;"></div>
-                    </div>
-                    <div class="form-group">
-                        <label style="color: var(--danger); font-weight: 600;">Comentario de la edición *</label>
-                        <textarea id="editComentario" name="comentario_edicion"
-                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" required
-                            style="border-color: var(--danger);"></textarea>
-                    </div>
-                </div>
-                <div
-                    style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="action-btn" onclick="closeEditModalBtn()">Cancelar</button>
-                    <button type="submit" class="action-btn primary">Guardar cambios</button>
-                </div>
-            </form>
+            <div id="assignModalBody" class="assign-modal-body"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="actionsModalOverlay" onclick="closeEjecutivoActionsModal(event)">
+        <div class="modal modal-actions">
+            <div class="modal-header">
+                <span class="modal-title" id="actionsModalTitle">Acciones</span>
+                <button class="modal-close" onclick="closeEjecutivoActionsModalBtn()">×</button>
+            </div>
+            <div id="actionsModalBody" class="actions-modal-list"></div>
         </div>
     </div>
 
@@ -1566,11 +1950,21 @@
         <button class="toast-close" onclick="hideToast()">×</button>
     </div>
 
+    {% if is_ejecutivo %}
+    <input type="file" id="finalDeliverableInput" multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt,.zip" style="display:none;">
+    {% endif %}
+
     <script>
         /* =====================
            DATA
            ===================== */
+        const isAdmin = {{ 'true' if is_admin else 'false' }};
+        const isEjecutivo = {{ 'true' if is_ejecutivo else 'false' }};
+        const isClient = !isAdmin && !isEjecutivo;
+        const adminEjecutivos = {{ ejecutivos | tojson }};
         let solicitudes = [];
+        let currentDeliverableFolio = null;
 
         /* =====================
            STATE
@@ -1580,6 +1974,9 @@
         let sortDir = -1;
         let currentPage = 1;
         let itemsPerPage = 10;
+        let currentClientFilter = "all";
+        let currentCompanyFilter = "all";
+        let showBoschRequests = false;
 
         /* =====================
            INIT
@@ -1590,7 +1987,87 @@
             document.getElementById("footerDate").textContent = "Actualizado: " + new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
             const th = document.getElementById("th-fecha");
             if (th) th.classList.add("sorted");
+            syncBoschToggleButton();
+            buildRoleFilters();
             buildKPIs();
+            renderTable();
+        }
+
+        function isBoschSolicitud(solicitud) {
+            return String((solicitud && solicitud.client) || "").trim().toLowerCase() === "bosch";
+        }
+
+        function getRoleScopedSolicitudes() {
+            if (!isAdmin) return solicitudes;
+            return showBoschRequests
+                ? solicitudes.filter(s => isBoschSolicitud(s))
+                : solicitudes.filter(s => !isBoschSolicitud(s));
+        }
+
+        function syncBoschToggleButton() {
+            const btn = document.getElementById("boschToggleBtn");
+            if (!btn) return;
+
+            btn.classList.toggle("active", showBoschRequests);
+            const label = showBoschRequests ? "Mostrando solo Bosch" : "Mostrar solo Bosch";
+            btn.title = label;
+            btn.setAttribute("aria-label", label);
+        }
+
+        function toggleBoschVisibility() {
+            if (!isAdmin) return;
+
+            showBoschRequests = !showBoschRequests;
+            currentClientFilter = "all";
+            currentCompanyFilter = "all";
+            currentPage = 1;
+            syncBoschToggleButton();
+            buildRoleFilters();
+            buildKPIs();
+            renderTable();
+        }
+
+        function buildRoleFilters() {
+            if (!isAdmin && !isEjecutivo) return;
+
+            const clientSelect = document.getElementById("clientFilter");
+            const companySelect = document.getElementById("companyFilter");
+            if (!clientSelect || !companySelect) return;
+
+            const visibleSolicitudes = getRoleScopedSolicitudes();
+
+            const currentClient = currentClientFilter;
+            const currentCompany = currentCompanyFilter;
+
+            const uniqueClients = [...new Set(
+                visibleSolicitudes.map(s => (s.client || "").trim()).filter(Boolean)
+            )].sort((a, b) => a.localeCompare(b));
+
+            const uniqueCompanies = [...new Set(
+                visibleSolicitudes.map(s => (s.empresa || "").trim()).filter(Boolean)
+            )].sort((a, b) => a.localeCompare(b));
+
+            clientSelect.innerHTML = '<option value="all">Todos los clientes</option>' +
+                uniqueClients.map(client => `<option value="${client}">${client}</option>`).join("");
+
+            companySelect.innerHTML = '<option value="all">Todas las empresas</option>' +
+                uniqueCompanies.map(company => `<option value="${company}">${company}</option>`).join("");
+
+            clientSelect.value = uniqueClients.includes(currentClient) ? currentClient : "all";
+            companySelect.value = uniqueCompanies.includes(currentCompany) ? currentCompany : "all";
+
+            currentClientFilter = clientSelect.value;
+            currentCompanyFilter = companySelect.value;
+        }
+
+        function handleRoleFilters() {
+            if (!isAdmin && !isEjecutivo) return;
+            const clientSelect = document.getElementById("clientFilter");
+            const companySelect = document.getElementById("companyFilter");
+
+            currentClientFilter = clientSelect ? clientSelect.value : "all";
+            currentCompanyFilter = companySelect ? companySelect.value : "all";
+            currentPage = 1;
             renderTable();
         }
 
@@ -1613,10 +2090,11 @@
            KPIs
            ===================== */
         function buildKPIs() {
-            const total = solicitudes.length;
-            const finalizados = solicitudes.filter(s => s.estatus === "FINALIZADO").length;
-            const enProceso = solicitudes.filter(s => s.estatus === "EN PROCESO").length;
-            const pendientes = solicitudes.filter(s => s.estatus === "PENDIENTE").length;
+            const visibleSolicitudes = getRoleScopedSolicitudes();
+            const total = visibleSolicitudes.length;
+            const finalizados = visibleSolicitudes.filter(s => s.estatus === "FINALIZADO").length;
+            const faltaInfo = visibleSolicitudes.filter(s => s.estatus === "FALTA INFORMACION").length;
+            const pendientes = visibleSolicitudes.filter(s => s.estatus === "PENDIENTE").length;
 
             const grid = document.getElementById("kpiGrid");
             grid.innerHTML = `
@@ -1631,9 +2109,9 @@
                 <div class="kpi-sub">Proyectos completados</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-label">En proceso</div>
-                <div class="kpi-value">${enProceso}</div>
-                <div class="kpi-sub">En atención activa</div>
+                <div class="kpi-label">Falta información</div>
+                <div class="kpi-value">${faltaInfo}</div>
+                <div class="kpi-sub">Datos pendientes de actualización</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Pendientes</div>
@@ -1712,22 +2190,31 @@
         function renderTable() {
             const searchInput = document.getElementById("searchInput");
             const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            const visibleSolicitudes = getRoleScopedSolicitudes();
 
-            let data = solicitudes.filter(s => {
+            let data = visibleSolicitudes.filter(s => {
                 const matchFilter = currentFilter === "all" || s.estatus === currentFilter;
+                const matchClient = !isAdmin && !isEjecutivo
+                    ? true
+                    : (currentClientFilter === "all" || (s.client || "").trim() === currentClientFilter);
+                const matchCompany = !isAdmin && !isEjecutivo
+                    ? true
+                    : (currentCompanyFilter === "all" || (s.empresa || "").trim() === currentCompanyFilter);
 
                 // Si no hay query, mostrar todo (según el filtro)
-                if (!query) return matchFilter;
+                if (!query) return matchFilter && matchClient && matchCompany;
 
                 // Búsqueda en múltiples campos
                 const matchSearch =
                     (s.folio && s.folio.toLowerCase().includes(query)) ||
+                    (!isClient && s.client && s.client.toLowerCase().includes(query)) ||
+                    (!isClient && s.empresa && s.empresa.toLowerCase().includes(query)) ||
                     (s.proyecto && s.proyecto.toLowerCase().includes(query)) ||
                     (s.tipo && s.tipo.toLowerCase().includes(query)) ||
                     (s.modalidad && s.modalidad.toLowerCase().includes(query)) ||
                     (s.estatus && s.estatus.toLowerCase().includes(query));
 
-                return matchFilter && matchSearch;
+                return matchFilter && matchClient && matchCompany && matchSearch;
             });
 
             data.sort((a, b) => {
@@ -1744,7 +2231,7 @@
                 const mensaje = query
                     ? `No se encontraron resultados para "${query}"`
                     : "No se encontraron solicitudes.";
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="8">${mensaje}</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="${(isAdmin || isEjecutivo) ? 9 : 8}">${mensaje}</td></tr>`;
                 document.getElementById("footerCount").textContent = "0 solicitudes";
                 document.getElementById("pagination").innerHTML = "";
                 return;
@@ -1757,22 +2244,117 @@
             const endIdx = startIdx + itemsPerPage;
             const pageData = data.slice(startIdx, endIdx);
 
+            function buildAdminActions(s) {
+                const compatibleEjecutivos = Array.isArray(s.compatible_ejecutivos)
+                    ? s.compatible_ejecutivos
+                    : [];
+                const pool = compatibleEjecutivos.length ? compatibleEjecutivos : adminEjecutivos;
+                const hasOptions = pool.length > 0;
+                const encodedFolio = encodeURIComponent(s.folio || "");
+                const currentAssigned = s.assigned_to
+                    ? `Actual: <strong>${s.assigned_to}</strong>`
+                    : "Sin asignar";
+                const filterHint = compatibleEjecutivos.length
+                    ? `Compatibles por norma: ${compatibleEjecutivos.length}`
+                    : "Sin filtro por norma";
+                return `
+                    <div class="assign-actions" onclick="event.stopPropagation()">
+                        <div class="assign-row">
+                            <button class="action-btn primary" onclick="openAssignModalByFolio('${encodedFolio}', event)" ${hasOptions ? "" : "disabled"}>Asignar</button>
+                        </div>
+                        <div class="assign-meta">${currentAssigned}</div>
+                        <div class="assign-meta">${filterHint}</div>
+                    </div>
+                `;
+            }
+
+            function buildEjecutivoActions(s) {
+                const folioEncoded = encodeURIComponent(s.folio || "");
+                const solicitudIndex = solicitudes.indexOf(s);
+                return `
+                    <div class="action-btns" onclick="event.stopPropagation()">
+                        <button type="button" class="actions-trigger-btn" onclick="openEjecutivoActionsModal('${folioEncoded}', ${solicitudIndex}, event)" title="Abrir acciones" aria-label="Abrir acciones">
+                            <img src="/static/accion.svg" alt="">
+                        </button>
+                    </div>
+                `;
+            }
+
+            function openEjecutivoActionsModal(encodedFolio, solicitudIndex, event) {
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                const folio = decodeURIComponent(encodedFolio || "");
+                if (!folio) {
+                    showToast("error", "Acciones", "No se encontró el folio.");
+                    return;
+                }
+
+                const body = document.getElementById("actionsModalBody");
+                const title = document.getElementById("actionsModalTitle");
+                const overlay = document.getElementById("actionsModalOverlay");
+                if (!body || !title || !overlay) return;
+
+                title.textContent = `Acciones • ${folio}`;
+                body.innerHTML = `
+                    <div class="actions-modal-title">Selecciona una acción para este folio</div>
+                    <button class="action-btn primary" onclick="closeEjecutivoActionsModalBtn(); openModal(${solicitudIndex}, event, 'progreso')">Ver progreso</button>
+                    <button class="action-btn" onclick="closeEjecutivoActionsModalBtn(); downloadClientUploadsByFolio('${encodedFolio}', event)">Descargar archivos del cliente</button>
+                    <button class="action-btn warning" onclick="closeEjecutivoActionsModalBtn(); markFolioMissingInfo('${encodedFolio}', event)">Marcar falta información</button>
+                    <button class="action-btn" onclick="closeEjecutivoActionsModalBtn(); updateFolioStatus('${encodedFolio}', 'rechazado', event)">Rechazar folio</button>
+                    <button class="action-btn success" onclick="closeEjecutivoActionsModalBtn(); updateFolioStatus('${encodedFolio}', 'aceptado', event)">Aceptar folio</button>
+                    <button class="action-btn" onclick="closeEjecutivoActionsModalBtn(); triggerFinalDeliverableUpload('${encodedFolio}', event)">Subir entregable final</button>
+                `;
+
+                overlay.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+
+            function closeEjecutivoActionsModal(event) {
+                if (event && event.target !== document.getElementById("actionsModalOverlay")) return;
+                closeEjecutivoActionsModalBtn();
+            }
+
+            function closeEjecutivoActionsModalBtn() {
+                const overlay = document.getElementById("actionsModalOverlay");
+                if (!overlay) return;
+
+                overlay.classList.remove("open");
+
+                const assignModalOpen = document.getElementById("assignModalOverlay")?.classList.contains("open");
+                const detailModalOpen = document.getElementById("modalOverlay")?.classList.contains("open");
+                if (!assignModalOpen && !detailModalOpen) {
+                    document.body.style.overflow = "";
+                }
+            }
+
+            window.openEjecutivoActionsModal = openEjecutivoActionsModal;
+            window.closeEjecutivoActionsModal = closeEjecutivoActionsModal;
+            window.closeEjecutivoActionsModalBtn = closeEjecutivoActionsModalBtn;
+
             tbody.innerHTML = pageData.map((s, i) => `
             <tr class="solicitud-row" data-folio="${s.folio}" data-estatus="${s.estatus}" onclick="handleRowClick('${s.folio}', event)" onpointerdown="startRowHold('${s.folio}', event)" onpointerup="cancelRowHold()" onpointerleave="cancelRowHold()" onpointercancel="cancelRowHold()">
                 <td class="td-date">${formatDate(s.fecha)}</td>
                 <td class="td-folio"><a href="javascript:void(0)" onclick="openModal(${solicitudes.indexOf(s)}, event)" class="folio-link">${highlightText(s.folio, query)}</a></td>
+                ${(isAdmin || isEjecutivo) ? `<td>${highlightText(s.client || "—", query)}</td>` : ""}
                 <td style="font-size:12px;">${highlightText(s.tipo, query)}</td>
                 <td><span style="font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 8px;">${highlightText(s.modalidad, query)}</span></td>
                 <td class="td-proyecto">${highlightText(s.proyecto, query)}</td>
                 <td>${statusBadge(s.estatus)}</td>
                 <td>${cicloHtml(s)}</td>
                 <td>
-                    <div class="action-btns">
-                        <button class="action-btn primary icon-only" id="btn-${s.folio}" onclick="openModal(${solicitudes.indexOf(s)}, event, 'progreso')" title="Ver progreso" aria-label="Ver progreso">
-                            <img src="/static/reloj.svg" alt="">
-                        </button>
-                        <button class="action-btn ${s.estatus === 'FINALIZADO' ? 'cert-ready' : ''}" onclick="descargar('${s.folio}')" ${s.estatus !== 'FINALIZADO' ? 'disabled title="Disponible al finalizar"' : 'title="Descargar entregable final"'}>⬇ Cert.</button>
-                    </div>
+                    ${isAdmin
+                    ? buildAdminActions(s)
+                    : isEjecutivo
+                        ? buildEjecutivoActions(s)
+                        : `<div class="action-btns">
+                            <button class="action-btn primary icon-only" id="btn-${s.folio}" onclick="openModal(${solicitudes.indexOf(s)}, event, 'progreso')" title="Ver progreso" aria-label="Ver progreso">
+                                <img src="/static/reloj.svg" alt="">
+                            </button>
+                            <button class="action-btn ${s.estatus === 'FINALIZADO' ? 'cert-ready' : ''}" onclick="descargar('${s.folio}')" ${s.estatus !== 'FINALIZADO' ? 'disabled title="Disponible al finalizar"' : 'title="Descargar entregable final"'}>⬇ Cert.</button>
+                       </div>`}
                 </td>
             </tr>
         `).join("");
@@ -1843,6 +2425,9 @@
             const map = {
                 "FINALIZADO": ["badge-finalizado", "Finalizado"],
                 "EN PROCESO": ["badge-proceso", "En proceso"],
+                "FALTA INFORMACION": ["badge-pendiente", "Falta información"],
+                "RECHAZADO": ["badge-rechazado", "Rechazado"],
+                "CANCELADO": ["badge-rechazado", "Cancelado"],
                 "PENDIENTE": ["badge-pendiente", "Pendiente"],
                 "EN REVISIÓN": ["badge-revision", "En revisión"],
             };
@@ -1864,6 +2449,248 @@
                 window.location.href = `/historial/${encodeURIComponent(folio)}`;
             } else {
                 showToast("error", "Error", "No se encontró el folio de la solicitud");
+            }
+        }
+
+        function openAssignModalByFolio(encodedFolio, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            if (!folio) {
+                showToast("error", "Asignación", "No se encontró el folio para asignar.");
+                return;
+            }
+
+            const solicitud = solicitudes.find(item => item.folio === folio);
+            if (!solicitud) {
+                showToast("error", "Asignación", "No se encontró la solicitud.");
+                return;
+            }
+
+            const compatibleEjecutivos = Array.isArray(solicitud.compatible_ejecutivos)
+                ? solicitud.compatible_ejecutivos
+                : [];
+            const pool = compatibleEjecutivos.length ? compatibleEjecutivos : adminEjecutivos;
+            const currentAssigned = solicitud.assigned_to || "";
+
+            const body = document.getElementById("assignModalBody");
+            const title = document.getElementById("assignModalTitle");
+            if (!body || !title) return;
+
+            title.textContent = `Asignar ejecutivo • ${folio}`;
+
+            if (!pool.length) {
+                body.innerHTML = `<div class="assign-modal-note">No hay ejecutivos disponibles para esta solicitud.</div>`;
+            } else {
+                const currentAssignedEjecutivo = pool.find(e => String(e.firma || "") === currentAssigned);
+                const listHtml = pool.map(e => {
+                    const firma = String(e.firma || "");
+                    const nombre = String(e.nombre || firma || "Sin nombre");
+                    const isCurrent = currentAssigned && currentAssigned === firma;
+                    const encodedFirma = encodeURIComponent(firma);
+
+                    return `
+                        <button type="button" class="assign-ejecutivo-btn ${isCurrent ? "current" : ""}" onclick="assignFolioToEjecutivo('${encodedFolio}', '${encodedFirma}', event)">
+                            <div>
+                                <div class="assign-ejecutivo-name">${escapeHtml(nombre)}</div>
+                            </div>
+                            <span class="assign-ejecutivo-action">${isCurrent ? "Asignado" : "Asignar"}</span>
+                        </button>
+                    `;
+                }).join("");
+
+                const hint = compatibleEjecutivos.length
+                    ? `Mostrando ${compatibleEjecutivos.length} ejecutivo(s) compatible(s) por norma.`
+                    : "Mostrando todos los ejecutivos disponibles.";
+
+                const currentLabel = currentAssigned
+                    ? `Actual: <strong>${escapeHtml(currentAssignedEjecutivo ? (currentAssignedEjecutivo.nombre || "Ejecutivo") : "Ejecutivo asignado")}</strong>`
+                    : "Sin asignar";
+
+                body.innerHTML = `
+                    <div class="assign-meta">${currentLabel}</div>
+                    <div class="assign-modal-note">${hint}</div>
+                    <div class="assign-ejecutivo-list">${listHtml}</div>
+                `;
+            }
+
+            document.getElementById("assignModalOverlay").classList.add("open");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeAssignModal(event) {
+            if (event.target === document.getElementById("assignModalOverlay")) {
+                closeAssignModalBtn();
+            }
+        }
+
+        function closeAssignModalBtn() {
+            const overlay = document.getElementById("assignModalOverlay");
+            if (overlay) {
+                overlay.classList.remove("open");
+            }
+
+            const detailModalOpen = document.getElementById("modalOverlay")?.classList.contains("open");
+            if (!detailModalOpen) {
+                document.body.style.overflow = "";
+            }
+        }
+
+        async function assignFolioToEjecutivo(encodedFolio, encodedEjecutivo, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            const ejecutivo = decodeURIComponent(encodedEjecutivo || "");
+            if (!folio || !ejecutivo) {
+                showToast("error", "Asignación", "No se pudo identificar el folio o ejecutivo.");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/assign-folio", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ folio, ejecutivo })
+                });
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    showToast("error", "Asignación", data.error || "No se pudo asignar el folio");
+                    return;
+                }
+
+                closeAssignModalBtn();
+                showToast("success", "Asignación", `Folio ${folio} asignado a ${ejecutivo}`);
+                await loadSolicitudes();
+            } catch (e) {
+                showToast("error", "Asignación", "Error de conexión al asignar folio");
+            }
+        }
+
+        async function updateFolioStatus(encodedFolio, newStatus, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            if (!folio) {
+                showToast("error", "Folio", "No se encontró el folio.");
+                return;
+            }
+
+            const statusText = newStatus === "aceptado" ? "aceptar" : "rechazar";
+            if (!confirm(`¿Confirmas ${statusText} todo el folio ${folio}?`)) return;
+
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(folio)}/bulk-status`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    showToast("error", "Estatus", data.error || "No se pudo actualizar el folio.");
+                    return;
+                }
+                showToast("success", "Estatus", `Folio ${folio} actualizado correctamente.`);
+                await loadSolicitudes();
+            } catch (_e) {
+                showToast("error", "Estatus", "Error de conexión al actualizar el folio.");
+            }
+        }
+
+        async function markFolioMissingInfo(encodedFolio, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            if (!folio) {
+                showToast("error", "Folio", "No se encontró el folio.");
+                return;
+            }
+
+            if (!confirm(`¿Marcar el folio ${folio} como "Falta información"?`)) return;
+
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(folio)}/estatus`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        estatus: "FALTA INFORMACION",
+                        comentario: "Estatus marcado por ejecutivo: requiere información o ajustes del cliente."
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    showToast("error", "Estatus", data.error || "No se pudo marcar falta de información.");
+                    return;
+                }
+                showToast("success", "Estatus", `Folio ${folio} marcado como Falta información.`);
+                await loadSolicitudes();
+            } catch (_e) {
+                showToast("error", "Estatus", "Error de conexión al actualizar el estatus.");
+            }
+        }
+
+        function triggerFinalDeliverableUpload(encodedFolio, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            if (!folio) {
+                showToast("error", "Entregable", "No se encontró el folio.");
+                return;
+            }
+
+            currentDeliverableFolio = folio;
+            const input = document.getElementById("finalDeliverableInput");
+            if (!input) return;
+            input.value = "";
+            input.click();
+        }
+
+        async function uploadFinalDeliverableFiles(files) {
+            if (!currentDeliverableFolio) {
+                showToast("error", "Entregable", "No se encontró el folio para el entregable.");
+                return;
+            }
+            if (!files || files.length === 0) {
+                showToast("error", "Entregable", "Selecciona al menos un archivo.");
+                return;
+            }
+
+            const formData = new FormData();
+            for (const file of files) {
+                if (file) {
+                    formData.append("files[]", file);
+                }
+            }
+
+            try {
+                const res = await fetch(`/api/solicitud/${encodeURIComponent(currentDeliverableFolio)}/entregable-final`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    showToast("error", "Entregable", data.error || "No se pudo subir el entregable final.");
+                    return;
+                }
+                showToast("success", "Entregable", `Archivos finales cargados para ${currentDeliverableFolio}.`);
+                await loadSolicitudes();
+            } catch (_e) {
+                showToast("error", "Entregable", "Error de conexión al subir el entregable final.");
             }
         }
 
@@ -1896,6 +2723,15 @@
                 minute: '2-digit',
                 hour12: false
             });
+        }
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#39;");
         }
 
         /* =====================
@@ -2002,16 +2838,40 @@
             const fechaAjustes = findDate(e => String(e.texto || "").toLowerCase().includes("actualización del cliente"))
                 || findDate(e => e.rol === "cliente" && e.tipo === "comentario");
             const fechaFinal = findDate(e => e.estatus_nuevo === "FINALIZADO");
+            const estatusActualLabel = {
+                "PENDIENTE": "Recibida",
+                "EN PROCESO": "En proceso",
+                "FALTA INFORMACION": "Falta información",
+                "RECHAZADO": "Rechazado",
+                "CANCELADO": "Cancelado",
+                "FINALIZADO": "Finalizada",
+            }[estatusActual] || estatusActual || "PENDIENTE";
+
+            let activeStageLabel = "Recibida";
+            if (estatusActual === "FINALIZADO") {
+                activeStageLabel = "Finalizada";
+            } else if (estatusActual === "FALTA INFORMACION") {
+                activeStageLabel = "Ajustes cliente";
+            } else if (estatusActual === "EN PROCESO") {
+                activeStageLabel = fechaRevision ? "En revisión" : (fechaAsignada ? "Asignada" : "Recibida");
+            } else if (estatusActual === "RECHAZADO" || estatusActual === "CANCELADO") {
+                activeStageLabel = "En revisión";
+            } else if (fechaAsignada) {
+                activeStageLabel = "Asignada";
+            }
 
             const stages = [
                 { label: "Recibida", done: true, date: fechaRecibida },
-                { label: "Asignada", done: Boolean(fechaAsignada) || estatusActual !== "PENDIENTE", date: fechaAsignada },
-                { label: "En revisión", done: Boolean(fechaRevision) || estatusActual === "FINALIZADO", date: fechaRevision },
+                { label: "Asignada", done: Boolean(fechaAsignada) || ["EN PROCESO", "FALTA INFORMACION", "FINALIZADO", "RECHAZADO", "CANCELADO"].includes(estatusActual), date: fechaAsignada },
+                { label: "En revisión", done: Boolean(fechaRevision) || ["FALTA INFORMACION", "FINALIZADO", "RECHAZADO", "CANCELADO"].includes(estatusActual), date: fechaRevision },
                 { label: "Ajustes cliente", done: Boolean(fechaAjustes) || estatusActual === "FINALIZADO", date: fechaAjustes },
                 { label: "Finalizada", done: estatusActual === "FINALIZADO", date: fechaFinal },
             ];
 
-            let activeIndex = stages.findIndex(stage => !stage.done);
+            let activeIndex = stages.findIndex(stage => stage.label === activeStageLabel);
+            if (activeIndex === -1) {
+                activeIndex = stages.findIndex(stage => !stage.done);
+            }
             if (activeIndex === -1) activeIndex = stages.length - 1;
 
             const stageHtml = stages.map((stage, idx) => {
@@ -2028,10 +2888,71 @@
                 </div>`;
             }).join("");
 
+            const stateGuide = [
+                {
+                    key: "Recibida",
+                    title: "Recibida",
+                    desc: "Tu solicitud fue registrada correctamente y ya quedó en la fila de atención."
+                },
+                {
+                    key: "Asignada",
+                    title: "Asignada",
+                    desc: "El proyecto ya fue canalizado a un ejecutivo responsable para darle seguimiento."
+                },
+                {
+                    key: "En revisión",
+                    title: "En revisión",
+                    desc: "Estamos validando la información, archivos y alcance para emitir observaciones o cierre."
+                },
+                {
+                    key: "Ajustes cliente",
+                    title: "Ajustes cliente",
+                    desc: "Necesitamos datos, correcciones o archivos adicionales de tu parte para continuar."
+                },
+                {
+                    key: "Finalizada",
+                    title: "Finalizada",
+                    desc: "El proyecto quedó concluido y el entregable final ya está disponible para descarga."
+                }
+            ];
+
+            if (estatusActual === "RECHAZADO") {
+                stateGuide.push({
+                    key: "RECHAZADO",
+                    title: "Rechazado",
+                    desc: "El folio fue rechazado durante la revisión y ya no continuará en este ciclo."
+                });
+            }
+
+            if (estatusActual === "CANCELADO") {
+                stateGuide.push({
+                    key: "CANCELADO",
+                    title: "Cancelado",
+                    desc: "La solicitud fue detenida y cerrada sin continuar el proceso."
+                });
+            }
+
+            const currentGuideKey = {
+                "PENDIENTE": "Recibida",
+                "EN PROCESO": activeStageLabel,
+                "FALTA INFORMACION": "Ajustes cliente",
+                "FINALIZADO": "Finalizada",
+                "RECHAZADO": "RECHAZADO",
+                "CANCELADO": "CANCELADO",
+            }[estatusActual] || activeStageLabel;
+
+            const guideHtml = stateGuide.map(state => `
+                <div class="progress-state-card ${state.key === currentGuideKey ? "current" : ""}">
+                    <div class="progress-state-title">${state.title}</div>
+                    <div class="progress-state-desc">${state.desc}</div>
+                </div>
+            `).join("");
+
             return `
             <div class="project-progress">
                 ${stageHtml}
-                <div class="progress-summary">Estatus actual: <strong>${s.estatus || "PENDIENTE"}</strong> · Ciclo ${s.ciclo || 1}</div>
+                <div class="progress-summary">Estatus actual: <strong>${estatusActualLabel}</strong> · Ciclo ${s.ciclo || 1}</div>
+                <div class="progress-state-guide">${guideHtml}</div>
             </div>`;
         }
 
@@ -2151,6 +3072,51 @@
             }
         }
 
+        async function downloadClientUploadsByFolio(encodedFolio, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const folio = decodeURIComponent(encodedFolio || "");
+            if (!folio) {
+                showToast("error", "Descarga", "No se encontró el folio.");
+                return;
+            }
+
+            const endpoint = `/api/solicitud/${encodeURIComponent(folio)}/cliente-archivos/download`;
+
+            try {
+                const res = await fetch(endpoint, { method: "GET" });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    showToast("error", "Descarga", data.error || "No se pudieron descargar los archivos del cliente.");
+                    return;
+                }
+
+                const blob = await res.blob();
+                const disposition = res.headers.get("content-disposition") || "";
+                let fileName = `cliente_archivos_${folio}.zip`;
+                const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^\";]+)"?/i);
+                if (match) {
+                    fileName = decodeURIComponent(match[1] || match[2] || fileName);
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                showToast("success", "Descarga iniciada", `Archivos del cliente de ${folio} listos.`);
+            } catch (_e) {
+                showToast("error", "Descarga", "Error de conexión al descargar archivos del cliente.");
+            }
+        }
+
         /* =====================
            TOAST
            ===================== */
@@ -2171,209 +3137,12 @@
         }
 
         /* =====================
-           EDIT MODAL
-           ===================== */
-        let currentEditFolio = null;
-
-        async function openEditModal(folio) {
-            currentEditFolio = folio;
-            const snapshot = solicitudes.find(s => s.folio === folio);
-            if (snapshot && (snapshot.estatus || "").toUpperCase() === "FINALIZADO") {
-                showToast("error", "No editable", "No se puede editar una solicitud con estatus FINALIZADO.");
-                currentEditFolio = null;
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/solicitud/${encodeURIComponent(folio)}`);
-                if (!response.ok) {
-                    showToast("error", "Error", "No se pudo cargar la solicitud");
-                    currentEditFolio = null;
-                    return;
-                }
-                const data = await response.json();
-
-                if ((data.estatus || "").toUpperCase() === "FINALIZADO") {
-                    showToast("error", "No editable", "No se puede editar una solicitud con estatus FINALIZADO.");
-                    currentEditFolio = null;
-                    return;
-                }
-
-                // Llenar formulario
-                document.getElementById("editTipoServicio").value = data.tipo_servicio || "";
-                document.getElementById("editNombreProyecto").value = data.nombre_proyecto || "";
-                document.getElementById("editNorma").value = data.norma || "";
-                document.getElementById("editNumSkus").value = data.num_skus || "";
-                document.getElementById("editMedidas").value = data.medidas || "";
-                document.getElementById("editPrioridad").value = data.prioridad || "";
-                document.getElementById("editImportador").value = data.importador || "";
-                document.getElementById("editMarca").value = data.marca || "";
-                document.getElementById("editPaisOrigen").value = data.pais_origen || "";
-                document.getElementById("editContenido").value = data.contenido || "";
-                document.getElementById("editComentario").value = "";
-
-                // Cargar imágenes previas
-                const previasContainer = document.getElementById("previasImages");
-                const previasEmpty = document.getElementById("previasImagesEmpty");
-                previasContainer.innerHTML = "";
-                const files = Array.isArray(data.files) ? data.files : [];
-                const imageFiles = files.filter(file => file && file.is_image);
-
-                previasEmpty.style.display = imageFiles.length ? "none" : "flex";
-
-                imageFiles.forEach((file, index) => {
-                    const thumb = document.createElement("div");
-                    thumb.className = "image-thumbnail";
-
-                    if (file.is_image && file.url) {
-                        thumb.style.backgroundImage = `url('${file.url}')`;
-                        thumb.style.backgroundSize = "cover";
-                        thumb.style.backgroundPosition = "center";
-                        thumb.textContent = "";
-                    } else {
-                        thumb.textContent = "📄";
-                    }
-
-                    if (file.is_image && file.file_path) {
-                        const replaceBtn = document.createElement("button");
-                        replaceBtn.type = "button";
-                        replaceBtn.className = "image-replace-btn";
-                        replaceBtn.textContent = "↻";
-                        replaceBtn.title = "Reemplazar imagen";
-
-                        const replaceInput = document.createElement("input");
-                        replaceInput.type = "file";
-                        replaceInput.accept = "image/*";
-                        replaceInput.name = `replace_file_${index}`;
-                        replaceInput.className = "image-replace-input";
-
-                        const targetInput = document.createElement("input");
-                        targetInput.type = "hidden";
-                        targetInput.name = `replace_target_${index}`;
-                        targetInput.value = file.file_path;
-
-                        replaceBtn.addEventListener("click", () => replaceInput.click());
-                        replaceInput.addEventListener("change", () => {
-                            const selected = replaceInput.files[0];
-                            if (!selected) return;
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                thumb.style.backgroundImage = `url('${event.target.result}')`;
-                                thumb.style.backgroundSize = "cover";
-                                thumb.style.backgroundPosition = "center";
-                                thumb.textContent = "";
-                                thumb.classList.add("image-replace-pending");
-                            };
-                            reader.readAsDataURL(selected);
-                        });
-
-                        thumb.appendChild(replaceBtn);
-                        thumb.appendChild(replaceInput);
-                        thumb.appendChild(targetInput);
-                    }
-
-                    previasContainer.appendChild(thumb);
-                });
-
-                // Limpiar input de nuevas imágenes
-                document.getElementById("editImageFiles").value = "";
-                document.getElementById("newImages").innerHTML = "";
-                document.getElementById("newImagesEmpty").style.display = "flex";
-
-                document.getElementById("editModalOverlay").classList.add("open");
-                document.body.style.overflow = "hidden";
-            } catch (error) {
-                console.error("Error:", error);
-                showToast("error", "Error", "Ocurrió un error al cargar la solicitud");
-            }
-        }
-
-        function closeEditModal(e) {
-            if (e && e.target === document.getElementById("editModalOverlay")) closeEditModalBtn();
-        }
-
-        function closeEditModalBtn() {
-            document.getElementById("editModalOverlay").classList.remove("open");
-            document.body.style.overflow = "";
-            currentEditFolio = null;
-            // Limpiar
-            document.getElementById("editImageFiles").value = "";
-            document.getElementById("newImages").innerHTML = "";
-            document.getElementById("newImagesEmpty").style.display = "flex";
-        }
-
-        function triggerEditImageFiles() {
-            document.getElementById("editImageFiles").click();
-        }
-
-        function renderNewEditFiles(fileList) {
-            const newImagesContainer = document.getElementById("newImages");
-            const emptyState = document.getElementById("newImagesEmpty");
-            const selectedFiles = Array.from(fileList || []);
-
-            newImagesContainer.innerHTML = "";
-            emptyState.style.display = selectedFiles.length ? "none" : "flex";
-
-            selectedFiles.forEach((file, index) => {
-                const div = document.createElement("div");
-                div.className = "image-thumbnail";
-                const removeBtn = document.createElement("button");
-                removeBtn.type = "button";
-                removeBtn.className = "image-remove-btn";
-                removeBtn.textContent = "×";
-                removeBtn.setAttribute("onclick", `removeNewImage(this, ${index})`);
-
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        div.style.backgroundImage = `url('${event.target.result}')`;
-                        div.style.backgroundSize = "cover";
-                        div.style.backgroundPosition = "center";
-                        div.appendChild(removeBtn);
-                        newImagesContainer.appendChild(div);
-                    };
-                    reader.readAsDataURL(file);
-                    return;
-                }
-
-                div.textContent = "PDF";
-                div.appendChild(removeBtn);
-                newImagesContainer.appendChild(div);
-            });
-        }
-
-        // Manejador de imágenes nuevas
-        document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.getElementById("editImageFiles");
-            if (fileInput) {
-                fileInput.addEventListener("change", function (e) {
-                    renderNewEditFiles(this.files);
-                });
-            }
-        });
-
-        function removeNewImage(btn, index) {
-            const fileInput = document.getElementById("editImageFiles");
-            const dt = new DataTransfer();
-
-            Array.from(fileInput.files).forEach((file, i) => {
-                if (i !== index) {
-                    dt.items.add(file);
-                }
-            });
-
-            fileInput.files = dt.files;
-
-            // Re-mostrar
-            renderNewEditFiles(fileInput.files);
-        }
-
-        /* =====================
            EDIT MODE
            ===================== */
         let editModeActive = false;
 
         function activateEditMode() {
+            if (!isClient) return;
             editModeActive = true;
             document.getElementById("mainTable").parentElement.classList.add("edit-mode");
             document.getElementById("editSection").style.display = "block";
@@ -2381,6 +3150,7 @@
         }
 
         function cancelEditMode() {
+            if (!isClient) return;
             editModeActive = false;
             document.getElementById("mainTable").parentElement.classList.remove("edit-mode");
             document.getElementById("editSection").style.display = "none";
@@ -2391,11 +3161,32 @@
         }
 
         function toggleEditMode() {
+            if (!isClient) return;
             editModeActive ? cancelEditMode() : activateEditMode();
         }
 
         document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape" && editModeActive) {
+            if (e.key !== "Escape") return;
+
+            const actionsOverlay = document.getElementById("actionsModalOverlay");
+            if (actionsOverlay && actionsOverlay.classList.contains("open")) {
+                closeEjecutivoActionsModalBtn();
+                return;
+            }
+
+            const assignOverlay = document.getElementById("assignModalOverlay");
+            if (assignOverlay && assignOverlay.classList.contains("open")) {
+                closeAssignModalBtn();
+                return;
+            }
+
+            const detailOverlay = document.getElementById("modalOverlay");
+            if (detailOverlay && detailOverlay.classList.contains("open")) {
+                closeModalBtn();
+                return;
+            }
+
+            if (editModeActive) {
                 cancelEditMode();
             }
         });
@@ -2423,48 +3214,22 @@
 
             event.preventDefault();
             event.stopPropagation();
-
-            openEditModal(folio);
             cancelEditMode();
+            window.location.href = `/editar/${encodeURIComponent(folio)}`;
         }
 
-        async function submitEditForm(e) {
-            e.preventDefault();
-
-            if (!currentEditFolio) {
-                showToast("error", "Error", "Folio no válido");
-                return;
-            }
-
-            const formData = new FormData(document.getElementById("editForm"));
-
-            try {
-                const response = await fetch(`/api/solicitud/${encodeURIComponent(currentEditFolio)}/edit`, {
-                    method: "POST",
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    showToast("error", "Error", data.error || "No se pudieron guardar los cambios");
-                    return;
-                }
-
-                showToast("success", "Éxito", `Solicitud actualizada. Nuevo ciclo: ${data.ciclo_nuevo}`);
-                closeEditModalBtn();
-
-                // Recargar solicitudes
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                loadSolicitudes();
-            } catch (error) {
-                console.error("Error:", error);
-                showToast("error", "Error", "Ocurrió un error al guardar los cambios");
-            }
-        }
         /* =====================
            BOOT
            ===================== */
+        const finalDeliverableInput = document.getElementById("finalDeliverableInput");
+        if (finalDeliverableInput) {
+            finalDeliverableInput.addEventListener("change", function () {
+                if (this.files && this.files.length > 0) {
+                    uploadFinalDeliverableFiles(this.files);
+                }
+            });
+        }
+
         loadSolicitudes();
     </script>
 

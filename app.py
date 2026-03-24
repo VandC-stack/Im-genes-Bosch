@@ -43,12 +43,26 @@ STATUS_ASSIGNED = "asignado"
 STATUS_IN_REVIEW = "en_revision"
 STATUS_ACCEPTED = "aceptado"
 STATUS_REJECTED = "rechazado"
+REQ_STATUS_PENDING = "PENDIENTE"
+REQ_STATUS_IN_PROGRESS = "EN PROCESO"
+REQ_STATUS_MISSING_INFO = "FALTA INFORMACION"
+REQ_STATUS_REJECTED = "RECHAZADO"
+REQ_STATUS_FINISHED = "FINALIZADO"
+REQ_STATUS_CANCELED = "CANCELADO"
 VALID_STATUSES = {
     STATUS_UPLOADED,
     STATUS_ASSIGNED,
     STATUS_IN_REVIEW,
     STATUS_ACCEPTED,
     STATUS_REJECTED
+}
+VALID_REQUEST_STATUSES = {
+    REQ_STATUS_PENDING,
+    REQ_STATUS_IN_PROGRESS,
+    REQ_STATUS_MISSING_INFO,
+    REQ_STATUS_REJECTED,
+    REQ_STATUS_FINISHED,
+    REQ_STATUS_CANCELED,
 }
 
 
@@ -76,6 +90,49 @@ def load_users():
     with open(USERS_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data if isinstance(data, list) else []
+
+
+def save_users(users):
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, indent=4, ensure_ascii=False)
+
+
+def build_admin_users_list():
+    """Build unified admin user list from config.json and Users.json."""
+    users_list = []
+
+    config = load_config()
+    clients = config.get("clients", {})
+    for username, data in clients.items():
+        users_list.append({
+            "username": username,
+            "display_name": data.get("nombre") or username,
+            "role": data.get("role", "Cliente"),
+            "folder": data.get("folder", ""),
+            "normas": data.get("normas", ""),
+            "empresa": data.get("empresa", ""),
+            "email": data.get("email", ""),
+            "telefono": data.get("telefono", ""),
+            "source": "config",
+        })
+
+    for user in load_users():
+        username = str(user.get("FIRMA") or "").strip()
+        if not username:
+            continue
+        users_list.append({
+            "username": username,
+            "display_name": str(user.get("NOMBRE") or username).strip(),
+            "role": user.get("PUESTO", "Ejecutivo"),
+            "folder": "",
+            "normas": user.get("NORMAS", "") or "",
+            "empresa": user.get("EMPRESA", "") or "",
+            "email": user.get("CORREO", "") or "",
+            "telefono": user.get("TELEFONO", "") or "",
+            "source": "users",
+        })
+
+    return users_list
 
 
 def save_config(path):
@@ -545,6 +602,43 @@ def normalize_status(value: Optional[str], assigned_to: Optional[str] = None) ->
     return STATUS_ASSIGNED if assigned_to else STATUS_UPLOADED
 
 
+def normalize_request_status(value: Optional[str]) -> str:
+    if not value:
+        return ""
+    normalized = str(value).strip().upper().replace("Á", "A")
+    if normalized == "FALTA INFORMACION":
+        return REQ_STATUS_MISSING_INFO
+    if normalized == "RECHAZADO":
+        return REQ_STATUS_REJECTED
+    return normalized
+
+
+def request_status_from_assignments(statuses: list[str]) -> str:
+    if not statuses:
+        return REQ_STATUS_PENDING
+    if statuses and all(s == STATUS_ACCEPTED for s in statuses):
+        return REQ_STATUS_FINISHED
+    if statuses and all(s == STATUS_REJECTED for s in statuses):
+        return REQ_STATUS_REJECTED
+    if any(s == STATUS_ACCEPTED for s in statuses) and any(s == STATUS_REJECTED for s in statuses):
+        return REQ_STATUS_MISSING_INFO
+    if any(s == STATUS_REJECTED for s in statuses):
+        return REQ_STATUS_MISSING_INFO
+    if any(s == STATUS_IN_REVIEW for s in statuses):
+        return REQ_STATUS_IN_PROGRESS
+    if any(s == STATUS_ASSIGNED for s in statuses):
+        return REQ_STATUS_IN_PROGRESS
+    return REQ_STATUS_PENDING
+
+
+def resolved_request_status(request_data: dict, linked_assignments: list[dict]) -> str:
+    explicit_status = normalize_request_status(request_data.get("estatus"))
+    if explicit_status in VALID_REQUEST_STATUSES:
+        return explicit_status
+    linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked_assignments]
+    return request_status_from_assignments(linked_statuses)
+
+
 def generate_folio(existing_folios: set) -> str:
     date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
     while True:
@@ -604,7 +698,7 @@ def append_history(entries):
         json.dump(history, f, indent=2, ensure_ascii=False)
 
 
-def list_images(username=None, name_filter=None, date_from=None, date_to=None, all_clients=False):
+def list_images(username=None, name_filter=None, date_from=None, date_to=None, all_clients=False, role=None):
     entries = []
     assignments = load_assignments()
     assignments_by_path = {
@@ -676,6 +770,42 @@ def list_images(username=None, name_filter=None, date_from=None, date_to=None, a
                     })
                 except OSError:
                     continue
+    elif role == ROLE_EJECUTIVO:
+        # Ejecutivo: listar imágenes de sus folios asignados
+        ejecutivo_assignments = [
+            a for a in assignments
+            if str(a.get("assigned_to", "")).strip() == username and a.get("file_path")
+        ]
+        
+        for assignment in ejecutivo_assignments:
+            full_path = assignment.get("file_path")
+            if not full_path or not os.path.exists(full_path):
+                continue
+            if not is_allowed_extension(full_path):
+                continue
+            
+            try:
+                stats = os.stat(full_path)
+                mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
+                filename = assignment.get("filename") or os.path.basename(full_path)
+                status = normalize_status(
+                    assignment.get("status") if assignment else None,
+                    assignment.get("assigned_to") if assignment else None
+                )
+                entries.append({
+                    "name": filename,
+                    "url": url_for("serve_file_by_path", file_path=full_path),
+                    "modified": mtime,
+                    "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
+                    "size": stats.st_size,
+                    "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else "",
+                    "is_image": is_image_extension(filename),
+                    "file_path": full_path,
+                    "status": status,
+                    "folio": assignment.get("folio") if assignment else None
+                })
+            except OSError:
+                continue
     else:
         # Cliente: listar solo sus propias imágenes
         folder = get_upload_folder(username)
@@ -860,9 +990,9 @@ def index():
     
     # Redirigir según el rol
     if role == ROLE_SUPERVISOR:
-        return redirect(url_for("solicitudes"))
+        return redirect(url_for("dashboard_admin"))
     elif role == ROLE_EJECUTIVO:
-        return redirect(url_for("ejecutivo_panel"))
+        return redirect(url_for("dashboard_ejecutivo"))
     elif role == ROLE_BOSCH:
         # ROLE_BOSCH: mostrar index normal
         pass
@@ -877,9 +1007,9 @@ def welcome():
     role = normalize_role(session.get("role"))
 
     if role == ROLE_SUPERVISOR:
-        return redirect(url_for("solicitudes"))
+        return redirect(url_for("dashboard_admin"))
     if role == ROLE_EJECUTIVO:
-        return redirect(url_for("ejecutivo_panel"))
+        return redirect(url_for("dashboard_ejecutivo"))
     if role == ROLE_BOSCH:
         return redirect(url_for("index"))
 
@@ -891,7 +1021,49 @@ def welcome():
 @role_required(ROLE_CLIENTE)
 def dashboard():
     """Vista principal del cliente con resumen de solicitudes"""
-    return render_template("dashboard.html", username=session.get("username"))
+    return render_template(
+        "dashboard.html",
+        username=session.get("username"),
+        is_admin=False,
+        is_ejecutivo=False,
+        ejecutivos=[]
+    )
+
+
+@app.route("/dashboard-ejecutivo")
+@login_required
+@role_required(ROLE_EJECUTIVO)
+def dashboard_ejecutivo():
+    """Vista principal exclusiva para ejecutivos."""
+    return render_template(
+        "dashboard.html",
+        username=session.get("username"),
+        is_admin=False,
+        is_ejecutivo=True,
+        ejecutivos=[]
+    )
+
+
+@app.route("/dashboard-admin")
+@login_required
+@role_required(ROLE_SUPERVISOR)
+def dashboard_admin():
+    """Vista principal exclusiva para administración/supervisor"""
+    ejecutivos = [
+        {
+            "firma": item.get("firma"),
+            "nombre": item.get("nombre"),
+        }
+        for item in get_compatible_ejecutivos(None)
+        if str(item.get("puesto", "")).strip().lower() == "ejecutivo"
+    ]
+    return render_template(
+        "dashboard.html",
+        username=session.get("username"),
+        is_admin=True,
+        is_ejecutivo=False,
+        ejecutivos=ejecutivos
+    )
 
 
 @app.route("/captura")
@@ -900,6 +1072,20 @@ def dashboard():
 def captura():
     """Formulario para crear una nueva solicitud"""
     return render_template("captura.html", username=session.get("username"))
+
+
+@app.route("/editar/<folio>")
+@login_required
+@role_required(ROLE_CLIENTE)
+def editar_solicitud_page(folio):
+    """Página dedicada para edición de solicitudes del cliente."""
+    username = session.get("username")
+    requests_data = load_service_requests()
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud or solicitud.get("client") != username:
+        abort(403)
+
+    return render_template("editar_solicitud.html", username=username, folio=folio)
 
 
 @app.route("/historial/<folio>")
@@ -916,8 +1102,8 @@ def historial(folio):
         back_url = url_for("ejecutivo_panel")
         back_label = "Volver al Panel"
     elif role == ROLE_SUPERVISOR:
-        back_url = url_for("solicitudes")
-        back_label = "Volver a Solicitudes"
+        back_url = url_for("dashboard_admin")
+        back_label = "Volver al Dashboard"
     
     if role == ROLE_CLIENTE:
         # Verificar que la solicitud pertenece al cliente
@@ -1062,11 +1248,15 @@ def upload():
 
 @app.route("/api/solicitudes", methods=["GET", "POST"])
 @login_required
-@role_required(ROLE_CLIENTE)
+@role_required(ROLE_CLIENTE, ROLE_SUPERVISOR, ROLE_EJECUTIVO)
 def api_solicitudes():
     username = session.get("username")
+    role = normalize_role(session.get("role"))
 
     if request.method == "POST":
+        if role != ROLE_CLIENTE:
+            return jsonify({"error": "No autorizado"}), 403
+
         tipo_servicio = request.form.get("tipo_servicio", "").strip()
         nombre_proyecto = request.form.get("nombre_proyecto", "").strip()
         norma = request.form.get("norma", "").strip()
@@ -1180,17 +1370,6 @@ def api_solicitudes():
 
         return jsonify({"status": "ok", "folio": folio})
 
-    def request_status(statuses):
-        if not statuses:
-            return "PENDIENTE"
-        if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
-            return "FINALIZADO"
-        if any(s == STATUS_IN_REVIEW for s in statuses):
-            return "EN PROCESO"
-        if any(s == STATUS_ASSIGNED for s in statuses):
-            return "EN PROCESO"
-        return "PENDIENTE"
-
     tipo_map = {
         "consultoria": "Consultoria",
         "constancia": "Constancia",
@@ -1198,11 +1377,50 @@ def api_solicitudes():
     }
     modalidad_map = {"urgente": "URGENTE", "regular": "REGULAR"}
 
-    requests_data = load_service_requests()
-    client_requests = [r for r in requests_data if r.get("client") == username]
+    def get_ejecutivos_for_dashboard(norma_value: Optional[str]) -> list:
+        """Filtro para dashboard admin: una norma => match exacto; varias normas => match por cualquiera."""
+        required_normas = parse_normas(norma_value)
+        candidates = []
+        for user in load_users():
+            if str(user.get("PUESTO", "")).strip().lower() != "ejecutivo":
+                continue
+            firma = str(user.get("FIRMA") or "").strip()
+            nombre = str(user.get("NOMBRE") or firma).strip()
+            user_normas = parse_normas(user.get("NORMAS"))
 
+            if not required_normas:
+                candidates.append({"firma": firma, "nombre": nombre})
+                continue
+
+            # Si hay varias normas en la solicitud, ampliamos por intersección (cualquiera).
+            if user_normas.intersection(required_normas):
+                candidates.append({"firma": firma, "nombre": nombre})
+
+        candidates.sort(key=lambda x: x.get("nombre", ""))
+        return candidates
+
+    requests_data = load_service_requests()
+    requests_by_folio = {r.get("folio"): r for r in requests_data if r.get("folio")}
+    compatible_cache = {}
     assignments = load_assignments()
-    client_assignments = [a for a in assignments if a.get("client") == username]
+
+    if role == ROLE_SUPERVISOR:
+        client_requests = list(requests_data)
+        client_assignments = list(assignments)
+    elif role == ROLE_EJECUTIVO:
+        client_assignments = [
+            a for a in assignments
+            if str(a.get("assigned_to") or "").strip() == username
+        ]
+        assigned_folios = {a.get("folio") for a in client_assignments if a.get("folio")}
+        client_requests = [
+            r for r in requests_data
+            if r.get("folio") in assigned_folios
+        ]
+    else:
+        client_requests = [r for r in requests_data if r.get("client") == username]
+        client_assignments = [a for a in assignments if a.get("client") == username]
+
     assignments_by_folio = {}
     for assignment in client_assignments:
         folio = assignment.get("folio")
@@ -1217,13 +1435,12 @@ def api_solicitudes():
         folio = req.get("folio")
         used_folios.add(folio)
         linked = assignments_by_folio.get(folio, [])
-        statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
-        status_label = request_status(statuses)
-        
-        # Si la solicitud está explícitamente marcada como FINALIZADO, prevalecer ese estado
-        explicit_estatus = str(req.get("estatus", "")).strip().upper()
-        if explicit_estatus == "FINALIZADO":
-            status_label = "FINALIZADO"
+        client_username = req.get("client") or ""
+        client_profile = get_client(client_username) if client_username else {}
+        empresa = req.get("empresa") or (client_profile.get("empresa") if isinstance(client_profile, dict) else "") or ""
+        assigned_set = {str(a.get("assigned_to") or "").strip() for a in linked if a.get("assigned_to")}
+        assigned_to = None if not assigned_set else (next(iter(assigned_set)) if len(assigned_set) == 1 else "Varios")
+        status_label = resolved_request_status(req, linked)
 
         created_at = parse_iso_date(req.get("created_at"))
         completion_dates = [parse_iso_date(a.get("status_updated_at")) for a in linked]
@@ -1232,14 +1449,25 @@ def api_solicitudes():
 
         # Obtener el ciclo máximo de los assignments vinculados
         ciclo_actual = get_max_cycle(linked)
+        norma_value = req.get("norma") or ""
+        norma_key = str(norma_value).strip().upper()
+        if role == ROLE_SUPERVISOR:
+            if norma_key not in compatible_cache:
+                compatible_cache[norma_key] = get_ejecutivos_for_dashboard(norma_value)
+            compatible_ejecutivos = compatible_cache[norma_key]
+        else:
+            compatible_ejecutivos = []
 
         solicitudes.append({
             "fecha": req.get("created_at"),
             "folio": folio,
+            "client": client_username or "—",
+            "empresa": empresa,
             "tipo": tipo_map.get(req.get("tipo_servicio"), req.get("tipo_servicio") or "—"),
             "modalidad": modalidad_map.get(req.get("prioridad"), (req.get("prioridad") or "").upper() or "—"),
             "proyecto": req.get("nombre_proyecto") or "—",
             "estatus": status_label,
+            "assigned_to": assigned_to,
             "fechaEnvio": completed_at.isoformat() if completed_at else None,
             "ciclo": ciclo_actual,
             "norma": req.get("norma"),
@@ -1249,15 +1477,19 @@ def api_solicitudes():
             "importador": req.get("importador"),
             "marca": req.get("marca"),
             "pais_origen": req.get("pais_origen"),
-            "contenido": req.get("contenido")
+            "contenido": req.get("contenido"),
+            "compatible_ejecutivos": compatible_ejecutivos,
         })
 
     for folio, linked in assignments_by_folio.items():
         if folio in used_folios:
             continue
 
-        statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
-        status_label = request_status(statuses)
+        assigned_set = {str(a.get("assigned_to") or "").strip() for a in linked if a.get("assigned_to")}
+        assigned_to = None if not assigned_set else (next(iter(assigned_set)) if len(assigned_set) == 1 else "Varios")
+        status_label = request_status_from_assignments([
+            normalize_status(a.get("status"), a.get("assigned_to")) for a in linked
+        ])
 
         created_at = None
         for a in linked:
@@ -1271,15 +1503,30 @@ def api_solicitudes():
 
         # Obtener el ciclo máximo de los assignments vinculados
         ciclo_actual = get_max_cycle(linked)
+        request_data = requests_by_folio.get(folio)
+        norma_value = request_data.get("norma") if request_data else ""
+        norma_key = str(norma_value).strip().upper()
+        if role == ROLE_SUPERVISOR:
+            if norma_key not in compatible_cache:
+                compatible_cache[norma_key] = get_ejecutivos_for_dashboard(norma_value)
+            compatible_ejecutivos = compatible_cache[norma_key]
+        else:
+            compatible_ejecutivos = []
 
         project_hint = linked[0].get("filename") if linked else "—"
+        assignment_client = linked[0].get("client") if linked else ""
+        assignment_client_profile = get_client(assignment_client) if assignment_client else {}
+        empresa = (assignment_client_profile.get("empresa") if isinstance(assignment_client_profile, dict) else "") or ""
         solicitudes.append({
             "fecha": created_at.isoformat() if created_at else None,
             "folio": folio,
+            "client": assignment_client or "—",
+            "empresa": empresa,
             "tipo": "Archivo",
             "modalidad": "REGULAR",
             "proyecto": f"Archivo: {project_hint}",
             "estatus": status_label,
+            "assigned_to": assigned_to,
             "fechaEnvio": completed_at.isoformat() if completed_at else None,
             "ciclo": ciclo_actual,
             "norma": "",
@@ -1289,7 +1536,8 @@ def api_solicitudes():
             "importador": "",
             "marca": "",
             "pais_origen": "",
-            "contenido": ""
+            "contenido": "",
+            "compatible_ejecutivos": compatible_ejecutivos,
         })
 
     solicitudes = sorted(solicitudes, key=lambda x: x.get("fecha") or "", reverse=True)
@@ -1318,8 +1566,12 @@ def get_solicitud(folio):
     linked = [a for a in assignments if a.get("folio") == folio]
     ciclo_actual = get_max_cycle(linked)
     
-    # Leer estatus directamente de service_requests (fuente única de verdad)
-    estatus = solicitud.get("estatus", "PENDIENTE")
+    # Mantener compatibilidad con registros antiguos: si no hay estatus explícito, derivarlo de assignments.
+    estatus = normalize_request_status(solicitud.get("estatus"))
+    if estatus not in VALID_REQUEST_STATUSES:
+        estatus = request_status_from_assignments([
+            normalize_status(a.get("status"), a.get("assigned_to")) for a in linked
+        ])
 
     files = []
     for entry in solicitud.get("files", []):
@@ -1387,9 +1639,9 @@ def edit_solicitud(folio):
     assignments = load_assignments()
     linked_assignments = [a for a in assignments if a.get("folio") == folio]
     statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked_assignments]
-    explicit_estatus = str(solicitud.get("estatus", "")).strip().upper()
-    esta_finalizada = explicit_estatus == "FINALIZADO" or (
-        statuses and all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses)
+    explicit_estatus = normalize_request_status(solicitud.get("estatus"))
+    esta_finalizada = explicit_estatus == REQ_STATUS_FINISHED or (
+        statuses and all(s == STATUS_ACCEPTED for s in statuses)
     )
     if esta_finalizada:
         return jsonify({"error": "No se puede editar una solicitud con estatus FINALIZADO"}), 403
@@ -1654,15 +1906,7 @@ def get_solicitud_historial(folio):
     
     # Función para calcular estado a partir de statuses
     def calc_status(statuses):
-        if not statuses:
-            return "PENDIENTE"
-        if all(s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in statuses):
-            return "FINALIZADO"
-        if any(s == STATUS_IN_REVIEW for s in statuses):
-            return "EN PROCESO"
-        if any(s == STATUS_ASSIGNED for s in statuses):
-            return "EN PROCESO"
-        return "PENDIENTE"
+        return request_status_from_assignments(statuses)
     
     # Construir historial con evento inicial
     historial_formateado = []
@@ -1738,16 +1982,43 @@ def get_solicitud_historial(folio):
                         "rol": "ejecutivo",
                         "icono": "🔄",
                         "texto": "Cambio de estatus",
-                        "estatus_anterior": "EN PROCESO",
-                        "estatus_nuevo": "EN PROCESO"
+                        "estatus_anterior": REQ_STATUS_IN_PROGRESS,
+                        "estatus_nuevo": REQ_STATUS_IN_PROGRESS
+                    })
+                except:
+                    pass
+
+        # Si hay assignments rechazados, reflejar el estatus resultante del folio
+        rejected = [a for a in linked if normalize_status(a.get("status"), a.get("assigned_to")) == STATUS_REJECTED]
+        if rejected:
+            linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+            rejected_request_status = request_status_from_assignments(linked_statuses)
+            rejected_assignment = max(rejected, key=lambda a: parse_iso_date(a.get("status_updated_at")) or datetime.min)
+            if rejected_assignment.get("status_updated_at"):
+                try:
+                    if 'T' in rejected_assignment.get("status_updated_at", ""):
+                        dt = datetime.fromisoformat(rejected_assignment.get("status_updated_at").replace('Z', '+00:00'))
+                    else:
+                        dt = datetime.strptime(rejected_assignment.get("status_updated_at"), "%Y-%m-%d %H:%M:%S")
+                    fecha_str = dt.strftime("%Y-%m-%d %H:%M")
+                    historial_formateado.append({
+                        "id": len(historial_formateado),
+                        "tipo": "evento",
+                        "fecha": fecha_str,
+                        "autor": rejected_assignment.get("status_updated_by", "Sistema"),
+                        "rol": "ejecutivo",
+                        "icono": "🔄",
+                        "texto": "Cambio de estatus",
+                        "estatus_anterior": REQ_STATUS_IN_PROGRESS,
+                        "estatus_nuevo": rejected_request_status
                     })
                 except:
                     pass
         
-        # Si hay algún assignment finalizado, generar evento
-        finalized = [a for a in linked if normalize_status(a.get("status"), a.get("assigned_to")) in {STATUS_ACCEPTED, STATUS_REJECTED}]
-        if finalized:
-            final_assignment = min(finalized, key=lambda a: parse_iso_date(a.get("status_updated_at")) or datetime.min)
+        # Si todos están aceptados, generar evento de finalización
+        accepted = [a for a in linked if normalize_status(a.get("status"), a.get("assigned_to")) == STATUS_ACCEPTED]
+        if linked and len(accepted) == len(linked):
+            final_assignment = max(accepted, key=lambda a: parse_iso_date(a.get("status_updated_at")) or datetime.min)
             if final_assignment.get("status_updated_at"):
                 try:
                     if 'T' in final_assignment.get("status_updated_at", ""):
@@ -1769,8 +2040,8 @@ def get_solicitud_historial(folio):
                         "rol": "ejecutivo",
                         "icono": "🔄",
                         "texto": "Cambio de estatus",
-                        "estatus_anterior": estatus_anterior,
-                        "estatus_nuevo": "FINALIZADO"
+                        "estatus_anterior": REQ_STATUS_IN_PROGRESS,
+                        "estatus_nuevo": REQ_STATUS_FINISHED
                     })
                 except:
                     pass
@@ -2010,10 +2281,11 @@ def download_solicitud_attachment(folio, attachment_id):
 
 @app.route("/api/solicitud/<folio>/estatus", methods=["POST"])
 @login_required
-@role_required(ROLE_SUPERVISOR)
+@role_required(ROLE_SUPERVISOR, ROLE_EJECUTIVO)
 def update_solicitud_estatus(folio):
-    """Cambiar el estatus de una solicitud (solo supervisor)"""
+    """Cambiar el estatus de una solicitud (supervisor o ejecutivo asignado)."""
     username = session.get("username")
+    role = normalize_role(session.get("role"))
     requests_data = load_service_requests()
     
     # Buscar la solicitud
@@ -2027,16 +2299,32 @@ def update_solicitud_estatus(folio):
     
     if solicitud is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if role == ROLE_EJECUTIVO:
+        assignments = load_assignments()
+        has_access = any(
+            a.get("folio") == folio and str(a.get("assigned_to") or "").strip() == username
+            for a in assignments
+        )
+        if not has_access:
+            return jsonify({"error": "No autorizado para cambiar este estatus"}), 403
     
     data = request.get_json() or {}
-    nuevo_estatus = data.get("estatus", "").strip().upper()
+    nuevo_estatus = normalize_request_status(data.get("estatus", ""))
     comentario = data.get("comentario", "").strip()
-    
-    estatus_validos = ["PENDIENTE", "EN PROCESO", "FINALIZADO", "CANCELADO"]
+
+    estatus_validos = [
+        REQ_STATUS_PENDING,
+        REQ_STATUS_IN_PROGRESS,
+        REQ_STATUS_MISSING_INFO,
+        REQ_STATUS_REJECTED,
+        REQ_STATUS_FINISHED,
+        REQ_STATUS_CANCELED,
+    ]
     if nuevo_estatus not in estatus_validos:
         return jsonify({"error": "Estatus inválido"}), 400
-    
-    estatus_anterior = solicitud.get("estatus", "PENDIENTE")
+
+    estatus_anterior = normalize_request_status(solicitud.get("estatus")) or REQ_STATUS_PENDING
     if estatus_anterior == nuevo_estatus:
         return jsonify({"error": "El estatus es el mismo"}), 400
     
@@ -2049,7 +2337,7 @@ def update_solicitud_estatus(folio):
         "tipo": "cambio_estatus",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "usuario": username,
-        "rol": "supervisor",
+        "rol": role,
         "texto": comentario,
         "estatus_anterior": estatus_anterior,
         "estatus_nuevo": nuevo_estatus
@@ -2201,13 +2489,11 @@ def download_final_deliverable(folio):
     if not can_access_solicitud(solicitud, role, username):
         return jsonify({"error": "No autorizado"}), 403
 
-    explicit_status_final = str(solicitud.get("estatus", "")).strip().upper() == "FINALIZADO"
+    explicit_status_final = normalize_request_status(solicitud.get("estatus")) == REQ_STATUS_FINISHED
     assignments = load_assignments()
     linked = [a for a in assignments if a.get("folio") == folio]
     linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
-    derived_status_final = bool(linked_statuses) and all(
-        s in {STATUS_ACCEPTED, STATUS_REJECTED} for s in linked_statuses
-    )
+    derived_status_final = bool(linked_statuses) and all(s == STATUS_ACCEPTED for s in linked_statuses)
 
     if not (explicit_status_final or derived_status_final):
         return jsonify({"error": "El entregable solo se puede descargar cuando la solicitud está FINALIZADA"}), 400
@@ -2248,6 +2534,155 @@ def download_final_deliverable(folio):
         download_name=download_name,
         max_age=0
     )
+
+
+@app.route("/api/solicitud/<folio>/cliente-archivos/download", methods=["GET"])
+@login_required
+def download_client_uploaded_files(folio):
+    import io
+    import zipfile
+
+    username = session.get("username")
+    role = normalize_role(session.get("role"))
+
+    requests_data = load_service_requests()
+    solicitud = next((r for r in requests_data if r.get("folio") == folio), None)
+    if not solicitud:
+        return jsonify({"error": "Solicitud no encontrada"}), 404
+
+    if not can_access_solicitud(solicitud, role, username):
+        return jsonify({"error": "No autorizado"}), 403
+
+    if role == ROLE_EJECUTIVO:
+        assignments = load_assignments()
+        has_access = any(
+            a.get("folio") == folio and str(a.get("assigned_to") or "").strip() == username
+            for a in assignments
+        )
+        if not has_access:
+            return jsonify({"error": "No autorizado para esta solicitud"}), 403
+
+    files_list = solicitud.get("files", [])
+    if not isinstance(files_list, list) or not files_list:
+        return jsonify({"error": "No hay archivos del cliente para descargar"}), 404
+
+    zip_buffer = io.BytesIO()
+    written = 0
+    used_names = set()
+
+    try:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file_info in files_list:
+                if not isinstance(file_info, dict):
+                    continue
+
+                file_path = str(file_info.get("file_path") or "").strip()
+                if not file_path or not os.path.exists(file_path):
+                    continue
+
+                arcname = (
+                    str(file_info.get("original_name") or "").strip()
+                    or str(file_info.get("filename") or "").strip()
+                    or os.path.basename(file_path)
+                )
+
+                if not arcname:
+                    arcname = os.path.basename(file_path)
+
+                if arcname in used_names:
+                    base, ext = os.path.splitext(arcname)
+                    counter = 1
+                    candidate = f"{base}_{counter}{ext}"
+                    while candidate in used_names:
+                        counter += 1
+                        candidate = f"{base}_{counter}{ext}"
+                    arcname = candidate
+
+                zf.write(file_path, arcname=arcname)
+                used_names.add(arcname)
+                written += 1
+
+        if written == 0:
+            return jsonify({"error": "No se encontraron archivos disponibles para descargar"}), 404
+
+        zip_buffer.seek(0)
+    except Exception as e:
+        return jsonify({"error": f"Error al crear ZIP: {str(e)}"}), 500
+
+    download_name = f"cliente_archivos_{folio}.zip"
+    return send_file(
+        zip_buffer,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=download_name,
+        max_age=0
+    )
+
+
+@app.route("/api/file/replace", methods=["POST"])
+@login_required
+@role_required(ROLE_CLIENTE)
+def replace_gallery_file():
+    """Permite al cliente reemplazar un archivo desde la galería, incrementando el ciclo."""
+    username = session.get("username")
+    target_path = request.form.get("file_path", "").strip()
+    new_file = request.files.get("file")
+
+    if not target_path or not new_file or not new_file.filename:
+        return jsonify({"error": "Datos incompletos"}), 400
+
+    if not is_allowed_extension(new_file.filename):
+        return jsonify({"error": "Tipo de archivo no permitido"}), 400
+
+    assignments = load_assignments()
+    assignment = next((a for a in assignments if a.get("file_path") == target_path), None)
+    if not assignment:
+        return jsonify({"error": "Archivo no encontrado"}), 404
+
+    if assignment.get("client") != username:
+        return jsonify({"error": "No autorizado"}), 403
+
+    current_status = normalize_status(assignment.get("status"), assignment.get("assigned_to"))
+    if current_status == STATUS_ACCEPTED:
+        return jsonify({"error": "No se puede reemplazar un archivo aceptado"}), 400
+
+    old_ext = os.path.splitext(target_path)[1].lower()
+    new_ext = os.path.splitext(new_file.filename)[1].lower()
+    if old_ext and new_ext and old_ext != new_ext:
+        return jsonify({"error": f"La imagen debe conservar la extensión original ({old_ext})"}), 400
+
+    if not os.path.exists(target_path):
+        return jsonify({"error": "Archivo no encontrado en disco"}), 404
+
+    new_file.save(target_path)
+
+    folio = assignment.get("folio")
+    assignment["status"] = STATUS_UPLOADED
+    assignment["uploaded_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Incrementar ciclo_actual en todos los assignments del mismo folio
+    for a in assignments:
+        if a.get("folio") == folio:
+            ciclo_current = normalize_cycle_value(a.get("ciclo_actual", 1))
+            a["ciclo_actual"] = ciclo_current + 1
+            a["last_edited_at"] = datetime.now(timezone.utc).isoformat()
+            a["last_edited_by"] = username
+
+    save_assignments(assignments)
+
+    append_history([{
+        "filename": os.path.basename(target_path),
+        "original_name": new_file.filename,
+        "folder": os.path.dirname(target_path),
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        "url": url_for("serve_file_by_path", file_path=target_path),
+        "username": username
+    }])
+
+    return jsonify({
+        "status": "ok",
+        "url": url_for("serve_file_by_path", file_path=target_path)
+    })
 
 
 @app.route("/api/assignment/<file_path>/action", methods=["POST"])
@@ -2412,15 +2847,15 @@ def gallery():
 
     back_url = url_for("dashboard")
     if role == ROLE_SUPERVISOR:
-        back_url = url_for("solicitudes")
+        back_url = url_for("dashboard_admin")
     elif role == ROLE_EJECUTIVO:
         back_url = url_for("ejecutivo_panel")
     elif role == ROLE_BOSCH:
         back_url = url_for("index")
     
-    # Supervisor: ve todas las imágenes de todos los clientes
+    # Supervisor: ve todas las imágenes de todos los clientes; Ejecutivo: ve imágenes de sus folios asignados
     all_clients = (role == ROLE_SUPERVISOR)
-    images = list_images(username, query or None, date_from, date_to, all_clients=all_clients)
+    images = list_images(username, query or None, date_from, date_to, all_clients=all_clients, role=role)
 
     # Si se proporciona un folio específico, filtrar solo esos archivos
     if folio_filter:
@@ -2441,7 +2876,9 @@ def gallery():
         folio=folio_filter,
         history=history,
         current_folder=get_upload_folder(username),
-        back_url=back_url
+        back_url=back_url,
+        username=username,
+        role=role
     )
 
 
@@ -2752,99 +3189,14 @@ def assign_image():
 @login_required
 @role_required(ROLE_EJECUTIVO)
 def ejecutivo_panel():
-    username = session.get("username")
-    assignments = load_assignments()
-    
-    # Filtrar solo las asignaciones de este ejecutivo
-    my_assignments = [a for a in assignments if a.get("assigned_to") == username]
-    requests_by_folio = {
-        r.get("folio"): r for r in load_service_requests() if r.get("folio")
-    }
-    cycle_by_folio = {}
-    for assignment in my_assignments:
-        folio = assignment.get("folio")
-        if not folio:
-            continue
-        cycle_by_folio[folio] = max(
-            cycle_by_folio.get(folio, 1),
-            normalize_cycle_value(assignment.get("ciclo_actual", 1))
-        )
-    
-    assigned_images = []
-    
-    for assignment in my_assignments:
-        file_path = assignment.get("file_path")
-        filename = assignment.get("filename")
-        client = assignment.get("client")
-        folder = assignment.get("folder")
-        
-        if not file_path or not os.path.exists(file_path):
-            continue
-        
-        try:
-            stats = os.stat(file_path)
-            mtime = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
-            
-            assigned_images.append({
-                "filename": filename,
-                "client": client,
-                "folder": folder,
-                "file_path": file_path,
-                "url": url_for("serve_file_by_path", file_path=file_path),
-                "modified": mtime,
-                "modified_iso": mtime.strftime("%Y-%m-%d %H:%M"),
-                "size": stats.st_size,
-                "assigned_at": assignment.get("assigned_at"),
-                "assigned_by": assignment.get("assigned_by"),
-                "status": normalize_status(assignment.get("status"), assignment.get("assigned_to")),
-                "folio": assignment.get("folio"),
-                "ciclo_actual": cycle_by_folio.get(assignment.get("folio"), 1),
-                "comentarios_cliente": count_client_comments(requests_by_folio.get(assignment.get("folio"))),
-                "is_image": is_image_extension(filename),
-                "ext": filename.rsplit(".", 1)[1].lower() if "." in filename else ""
-            })
-        except OSError:
-            continue
-    
-    # Ordenar por fecha de asignación descendente
-    assigned_images = sorted(assigned_images, key=lambda x: x.get("assigned_at", ""), reverse=True)
-    
-    # Calcular contadores
-    total_assignments = len(assigned_images)
-    pending_count = len([img for img in assigned_images if img.get("status") in [STATUS_ASSIGNED, STATUS_IN_REVIEW]])
-    completed_count = len([img for img in assigned_images if img.get("status") in [STATUS_ACCEPTED, STATUS_REJECTED]])
-    
-    return render_template(
-        "ejecutivo.html",
-        images=assigned_images,
-        total_assignments=total_assignments,
-        pending_count=pending_count,
-        completed_count=completed_count,
-        stats={
-            "total": total_assignments,
-            "pending": pending_count,
-            "completed": completed_count
-        },
-        username=username
-    )
+    return redirect(url_for("dashboard_ejecutivo"))
 
 
 @app.route("/admin")
 @login_required
 @role_required(ROLE_SUPERVISOR)
 def admin_users():
-    config = load_config()
-    clients = config.get("clients", {})
-    
-    users_list = []
-    for username, data in clients.items():
-        users_list.append({
-            "username": username,
-            "role": data.get("role", "Cliente"),
-            "folder": data.get("folder", ""),
-            "normas": data.get("normas", "")
-        })
-    
+    users_list = build_admin_users_list()
     return render_template("admin.html", users=users_list)
 
 
@@ -2861,25 +3213,113 @@ def create_user():
     if normas is None:
         normas = ""
     normas = str(normas).strip()
+    empresa = str(data.get("empresa") or "").strip()
+    email = str(data.get("email") or "").strip()
+    telefono = str(data.get("telefono") or "").strip()
+    nombre = str(data.get("nombre") or username).strip()
+    normalized_role = normalize_role(role)
     
     if not username or not password or not folder:
         return jsonify({"error": "Todos los campos son requeridos"}), 400
     
     config = load_config()
+    existing_usernames = {str(item.get("FIRMA") or "").strip().lower() for item in load_users() if item.get("FIRMA")}
     
-    if username in config.get("clients", {}):
+    if username in config.get("clients", {}) or username.strip().lower() in existing_usernames:
         return jsonify({"error": "El usuario ya existe"}), 400
+
+    if normalized_role in {ROLE_CLIENTE, ROLE_BOSCH}:
+        config["clients"][username] = {
+            "password": password,
+            "folder": folder,
+            "role": role,
+            "normas": normas,
+            "empresa": empresa,
+            "email": email,
+            "telefono": telefono,
+            "nombre": nombre,
+        }
+
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+    else:
+        users = load_users()
+        users.append({
+            "NOMBRE": nombre,
+            "CORREO": email or None,
+            "TELEFONO": telefono or None,
+            "EMPRESA": empresa or None,
+            "FIRMA": username,
+            "PUESTO": role,
+            "CONTRASEÑA": password,
+            "NORMAS": normas or None,
+        })
+        save_users(users)
     
-    config["clients"][username] = {
-        "password": password,
-        "folder": folder,
-        "role": role,
-        "normas": normas
-    }
-    
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4)
-    
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/edit-user", methods=["POST"])
+@login_required
+@role_required(ROLE_SUPERVISOR)
+def edit_user():
+    data = request.get_json()
+    username = data.get("username", "").strip()
+
+    if not username:
+        return jsonify({"error": "Usuario requerido"}), 400
+
+    config = load_config()
+    if username in config.get("clients", {}):
+        user_data = config["clients"][username]
+
+        new_password = str(data.get("password") or "").strip()
+        if new_password:
+            user_data["password"] = new_password
+
+        for field in ("empresa", "email", "telefono", "normas", "folder", "nombre"):
+            value = data.get(field)
+            if value is not None:
+                user_data[field] = str(value).strip()
+
+        config["clients"][username] = user_data
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+
+        return jsonify({"status": "ok"})
+
+    users = load_users()
+    updated = False
+    for user in users:
+        if str(user.get("FIRMA") or "").strip() != username:
+            continue
+
+        new_password = str(data.get("password") or "").strip()
+        if new_password:
+            user["CONTRASEÑA"] = new_password
+
+        if data.get("role") is not None:
+            role_value = str(data.get("role") or "").strip().lower()
+            if role_value in {ROLE_EJECUTIVO, ROLE_SUPERVISOR}:
+                user["PUESTO"] = "Ejecutivo" if role_value == ROLE_EJECUTIVO else "Supervisor"
+
+        if data.get("nombre") is not None:
+            user["NOMBRE"] = str(data.get("nombre") or "").strip() or username
+        if data.get("empresa") is not None:
+            user["EMPRESA"] = str(data.get("empresa") or "").strip() or None
+        if data.get("email") is not None:
+            user["CORREO"] = str(data.get("email") or "").strip() or None
+        if data.get("telefono") is not None:
+            user["TELEFONO"] = str(data.get("telefono") or "").strip() or None
+        if data.get("normas") is not None:
+            user["NORMAS"] = str(data.get("normas") or "").strip() or None
+        updated = True
+        break
+
+    if not updated:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    save_users(users)
     return jsonify({"status": "ok"})
 
 
@@ -2898,15 +3338,21 @@ def delete_user():
         return jsonify({"error": "No puedes eliminarte a ti mismo"}), 400
     
     config = load_config()
-    
-    if username not in config.get("clients", {}):
+
+    if username in config.get("clients", {}):
+        del config["clients"][username]
+
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+
+        return jsonify({"status": "ok"})
+
+    users = load_users()
+    filtered_users = [user for user in users if str(user.get("FIRMA") or "").strip() != username]
+    if len(filtered_users) == len(users):
         return jsonify({"error": "Usuario no encontrado"}), 404
-    
-    del config["clients"][username]
-    
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4)
-    
+
+    save_users(filtered_users)
     return jsonify({"status": "ok"})
 
 
@@ -2933,8 +3379,34 @@ def update_assignment_status():
     assignment["status"] = new_status
     assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
     assignment["status_updated_by"] = username
-    
+
     save_assignments(assignments)
+
+    folio = assignment.get("folio")
+    if folio:
+        requests_data = load_service_requests()
+        req_index = next((i for i, r in enumerate(requests_data) if r.get("folio") == folio), None)
+        if req_index is not None:
+            solicitud = requests_data[req_index]
+            linked = [a for a in assignments if a.get("folio") == folio]
+            linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+            nuevo_estatus = request_status_from_assignments(linked_statuses)
+            estatus_anterior = normalize_request_status(solicitud.get("estatus")) or REQ_STATUS_PENDING
+            if nuevo_estatus != estatus_anterior:
+                solicitud["estatus"] = nuevo_estatus
+                historial = solicitud.setdefault("historial", [])
+                historial.append({
+                    "tipo": "cambio_estatus",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "usuario": username,
+                    "rol": ROLE_EJECUTIVO,
+                    "texto": "Estatus actualizado por revisión de archivos",
+                    "estatus_anterior": estatus_anterior,
+                    "estatus_nuevo": nuevo_estatus,
+                })
+                requests_data[req_index] = solicitud
+                save_service_requests(requests_data)
+
     return jsonify({"status": "ok", "new_status": new_status})
 
 
@@ -2981,8 +3453,10 @@ def update_bulk_folio_status(folio):
         assignment["status_updated_at"] = now_iso
         assignment["status_updated_by"] = username
 
-    estatus_anterior = solicitud.get("estatus", "PENDIENTE")
-    solicitud["estatus"] = "FINALIZADO"
+    estatus_anterior = normalize_request_status(solicitud.get("estatus")) or REQ_STATUS_PENDING
+    solicitud["estatus"] = request_status_from_assignments([
+        normalize_status(assignment.get("status"), assignment.get("assigned_to")) for assignment in linked
+    ])
     historial = solicitud.setdefault("historial", [])
     historial.append({
         "tipo": "cambio_estatus",
@@ -2991,7 +3465,7 @@ def update_bulk_folio_status(folio):
         "rol": role,
         "texto": f"Solicitud marcada de forma general como {new_status}",
         "estatus_anterior": estatus_anterior,
-        "estatus_nuevo": "FINALIZADO"
+        "estatus_nuevo": solicitud["estatus"]
     })
 
     requests_data[req_index] = solicitud
@@ -3002,7 +3476,7 @@ def update_bulk_folio_status(folio):
         "status": "ok",
         "new_status": new_status,
         "affected": len(linked),
-        "solicitud_estatus": "FINALIZADO"
+        "solicitud_estatus": solicitud["estatus"]
     })
 
 
@@ -3044,6 +3518,31 @@ def reupload_file():
         assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
         assignment["status_updated_by"] = username
         save_assignments(assignments)
+
+        folio = assignment.get("folio")
+        if folio:
+            requests_data = load_service_requests()
+            req_index = next((i for i, r in enumerate(requests_data) if r.get("folio") == folio), None)
+            if req_index is not None:
+                solicitud = requests_data[req_index]
+                linked = [a for a in assignments if a.get("folio") == folio]
+                linked_statuses = [normalize_status(a.get("status"), a.get("assigned_to")) for a in linked]
+                nuevo_estatus = request_status_from_assignments(linked_statuses)
+                estatus_anterior = normalize_request_status(solicitud.get("estatus")) or REQ_STATUS_PENDING
+                if nuevo_estatus != estatus_anterior:
+                    solicitud["estatus"] = nuevo_estatus
+                    historial = solicitud.setdefault("historial", [])
+                    historial.append({
+                        "tipo": "cambio_estatus",
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "usuario": username,
+                        "rol": ROLE_EJECUTIVO,
+                        "texto": "Estatus actualizado por reemplazo de archivo",
+                        "estatus_anterior": estatus_anterior,
+                        "estatus_nuevo": nuevo_estatus,
+                    })
+                    requests_data[req_index] = solicitud
+                    save_service_requests(requests_data)
         
         return jsonify({"status": "ok"})
     except OSError as e:
@@ -3074,9 +3573,18 @@ def view_image():
     if not assignment:
         return "Archivo no encontrado", 404
     
-    # Permisos: supervisor ve todo, cliente solo ve sus propias asignaciones
+    # Permisos: supervisor ve todo, cliente solo ve sus propias asignaciones, ejecutivo ve sus asignaciones
     if role in {ROLE_CLIENTE, ROLE_BOSCH}:
         if assignment.get("client") != username:
+            return "No autorizado", 403
+    elif role == ROLE_EJECUTIVO:
+        # Ejecutivo solo ve archivos de sus folios asignados
+        folio = assignment.get("folio")
+        if folio:
+            my_assignments = [a for a in assignments if a.get("folio") == folio and str(a.get("assigned_to", "")).strip() == username]
+            if not my_assignments:
+                return "No autorizado", 403
+        else:
             return "No autorizado", 403
     elif role != ROLE_SUPERVISOR:
         return "No autorizado", 403

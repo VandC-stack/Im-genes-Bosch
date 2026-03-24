@@ -11,41 +11,37 @@
     <title>Editar solicitud — GEPI</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --yellow: #ECD925;
-            --yellow-dark: #c9b800;
+            --yellow:       #ECD925;
+            --yellow-dark:  #c9b800;
             --yellow-light: #fffef5;
-            --bg: #f0f0f0;
-            --surface: #ffffff;
-            --surface2: #f6f6f6;
-            --border: #e0e0e0;
-            --text: #111111;
-            --text-muted: #666;
-            --text-dim: #aaa;
-            --dark: #1a1a1a;
-            --danger: #cc3333;
-            --success: #2a9d5c;
-            --warning: #d97706;
-            --radius: 14px;
-            --radius-sm: 8px;
+            --bg:           #f0f0f0;
+            --surface:      #ffffff;
+            --surface2:     #f6f6f6;
+            --border:       #e0e0e0;
+            --border2:      #d0d0d0;
+            --text:         #111111;
+            --text-muted:   #666;
+            --text-dim:     #aaa;
+            --dark:         #1a1a1a;
+            --danger:       #cc3333;
+            --success:      #2a9d5c;
+            --warning:      #d97706;
+            --radius:       14px;
+            --radius-sm:    8px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ── TOPBAR ── */
@@ -53,13 +49,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 32px;
+            padding: 0 32px;
+            height: 58px;
             border-bottom: 1px solid var(--border);
             background: var(--surface);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
         }
 
         .topbar-brand {
@@ -76,13 +73,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
         }
 
-        .brand-dot img {
-            width: 16px;
-            height: 16px;
-        }
+        .brand-dot img { width: 16px; height: 16px; }
 
         .brand-name {
             font-family: 'Space Mono', monospace;
@@ -106,7 +99,6 @@
             border-radius: 999px;
             padding: 6px 14px 6px 8px;
             font-size: 13px;
-            color: var(--text);
         }
 
         .user-avatar {
@@ -117,10 +109,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: #000;
         }
+
+        .user-avatar img { width: 16px; height: 16px; }
 
         .logout-link {
             font-size: 13px;
@@ -129,15 +120,13 @@
             transition: color 0.2s;
         }
 
-        .logout-link:hover {
-            color: var(--dark);
-        }
+        .logout-link:hover { color: var(--dark); }
 
-        /* ── PAGE ── */
+        /* ── PAGE LAYOUT ── */
         .page {
-            max-width: 760px;
+            max-width: 820px;
             margin: 0 auto;
-            padding: 36px 24px 60px;
+            padding: 40px 24px 100px;
         }
 
         /* ── BACK LINK ── */
@@ -148,89 +137,80 @@
             font-size: 13px;
             color: var(--text-muted);
             text-decoration: none;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             transition: color 0.2s;
         }
 
-        .back-link:hover {
-            color: var(--dark);
-        }
-
-        .back-link svg {
-            width: 16px;
-            height: 16px;
-        }
+        .back-link:hover { color: var(--dark); }
+        .back-link svg { width: 16px; height: 16px; }
 
         /* ── PAGE HEADER ── */
         .page-header {
-            margin-bottom: 28px;
-        }
-
-        .page-header-inner {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 16px;
             flex-wrap: wrap;
+            margin-bottom: 28px;
         }
 
         .page-title {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 700;
             letter-spacing: -1px;
             line-height: 1.1;
         }
 
-        .page-title span {
-            color: var(--yellow-dark);
-        }
+        .page-title span { color: var(--yellow-dark); }
 
         .page-sub {
             font-size: 14px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 5px;
         }
 
-        /* folio badge */
         .folio-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: #f3e8ff;
-            border: 1px solid #e0d2ff;
+            gap: 7px;
+            background: var(--surface2);
+            border: 1.5px solid var(--border2);
             border-radius: 999px;
-            padding: 6px 14px;
+            padding: 7px 16px;
             font-family: 'Space Mono', monospace;
             font-size: 12px;
             font-weight: 700;
-            color: #6b21a8;
+            color: var(--dark);
             white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 4px;
         }
 
         .folio-badge-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background: #9333ea;
+            background: var(--yellow-dark);
         }
 
         /* ── EDIT MODE BANNER ── */
         .edit-banner {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: #f3e8ff;
-            border-radius: 8px;
-            border: 1px solid #e0d2ff;
-            margin-bottom: 24px;
+            gap: 14px;
+            padding: 14px 18px;
+            background: var(--surface);
+            border: 1.5px solid var(--border2);
+            border-left: 4px solid var(--yellow-dark);
+            border-radius: var(--radius-sm);
+            margin-bottom: 28px;
         }
 
         .edit-banner-icon {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
-            background: #6b21a8;
+            background: var(--yellow);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -240,22 +220,40 @@
         .edit-banner-icon svg {
             width: 16px;
             height: 16px;
-            fill: #fff;
-        }
-
-        .edit-banner-text {
-            flex: 1;
+            fill: #000;
         }
 
         .edit-banner-title {
             font-size: 13px;
             font-weight: 700;
-            color: #6b21a8;
+            color: var(--dark);
         }
 
         .edit-banner-sub {
             font-size: 12px;
-            color: #9333ea;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* ── SECTION DIVIDER ── */
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
         }
 
         /* ── CARD ── */
@@ -264,26 +262,29 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .card-header {
-            padding: 18px 24px;
+            padding: 16px 22px;
             border-bottom: 1px solid var(--border);
             background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .card-title {
-            font-size: 13px;
             font-family: 'Space Mono', monospace;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.7px;
+            letter-spacing: 0.8px;
             color: var(--text-muted);
         }
 
         .card-body {
-            padding: 24px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -293,29 +294,35 @@
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 14px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
         }
 
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
+        .form-group.full { grid-column: 1 / -1; }
 
         .form-group label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--text);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
-            padding: 10px 12px;
+            padding: 10px 13px;
             border: 1.5px solid var(--border);
             border-radius: var(--radius-sm);
             font-family: 'DM Sans', sans-serif;
@@ -329,43 +336,157 @@
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: var(--yellow);
-            box-shadow: 0 0 0 3px var(--yellow-light);
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
         }
 
-        .form-group textarea {
-            resize: vertical;
-        }
+        .form-group textarea { resize: vertical; }
 
         .form-hint {
             font-size: 11px;
             color: var(--text-dim);
+            margin-top: 2px;
         }
+
+        /* ── SERVICE CARDS ── */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .service-option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .service-option input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .service-card {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            text-align: center;
+            background: var(--surface);
+            transition: all 0.18s;
+            user-select: none;
+        }
+
+        .service-card:hover {
+            border-color: var(--border2);
+            background: var(--surface2);
+        }
+
+        .service-option input:checked + .service-card {
+            border-color: var(--yellow-dark);
+            background: var(--yellow-light);
+            box-shadow: 0 0 0 3px rgba(236,217,37,0.2);
+        }
+
+        .service-emoji {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+        }
+
+        .service-name {
+            font-size: 13px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .service-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .service-check {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            background: var(--yellow);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .service-option input:checked ~ .service-check { display: flex; }
+
+        /* ── NORMA LIST ── */
+        .norma-list {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            overflow: auto;
+            max-height: 210px;
+        }
+
+        .norma-item {
+            display: grid;
+            grid-template-columns: 18px minmax(140px, 180px) 1fr;
+            gap: 10px;
+            align-items: start;
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text);
+            cursor: pointer;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+
+        .norma-item:last-child { border-bottom: none; }
+        .norma-item:hover { background: var(--surface2); }
+
+        .norma-item input { margin-top: 3px; cursor: pointer; accent-color: var(--yellow-dark); }
+
+        .norma-code {
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--dark);
+        }
+
+        .norma-desc { color: var(--text-muted); font-size: 12px; }
 
         /* ── IMAGES SECTION ── */
         .images-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--text);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             margin-bottom: 10px;
             display: block;
         }
 
         .images-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
             gap: 8px;
             margin-top: 10px;
         }
 
         .images-empty-state {
-            min-height: 88px;
+            min-height: 72px;
             border: 1.5px dashed var(--border);
             border-radius: var(--radius-sm);
             background: var(--surface2);
-            color: var(--text-muted);
+            color: var(--text-dim);
             font-size: 13px;
-            line-height: 1.5;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -389,7 +510,7 @@
         .image-thumbnail {
             position: relative;
             aspect-ratio: 1;
-            border: 2px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: var(--radius-sm);
             overflow: hidden;
             cursor: pointer;
@@ -398,12 +519,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 26px;
         }
 
         .image-thumbnail:hover {
-            border-color: var(--yellow);
-            box-shadow: 0 0 0 3px var(--yellow-light);
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
         }
 
         .image-thumbnail img {
@@ -414,37 +535,34 @@
 
         .image-remove-btn {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -7px;
+            right: -7px;
             background: var(--danger);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 14px;
+            width: 22px;
+            height: 22px;
+            font-size: 13px;
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
 
-        .image-thumbnail:hover .image-remove-btn {
-            display: flex;
-        }
+        .image-thumbnail:hover .image-remove-btn { display: flex; }
 
         .image-replace-btn {
             position: absolute;
-            bottom: -8px;
-            right: -8px;
+            bottom: -7px;
+            right: -7px;
             background: var(--dark);
             color: #fff;
             border: none;
             border-radius: 50%;
-            width: 26px;
-            height: 26px;
-            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            font-size: 13px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -452,30 +570,27 @@
             transition: all 0.2s;
         }
 
-        .image-replace-btn:hover {
-            background: var(--yellow);
-            color: var(--dark);
-        }
-
-        .image-replace-input {
-            display: none;
-        }
+        .image-replace-btn:hover { background: var(--yellow); color: var(--dark); }
+        .image-replace-input { display: none; }
 
         .image-replace-pending {
-            border-color: var(--yellow);
-            box-shadow: 0 0 0 3px var(--yellow-light);
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 3px rgba(236,217,37,0.18);
         }
 
         /* ── COMENTARIO ── */
-        .comentario-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--danger);
-        }
-
-        .comentario-hint {
+        .comentario-required {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             font-size: 11px;
-            color: var(--text-dim);
+            font-weight: 700;
+            color: var(--danger);
+            background: #fff0f0;
+            border: 1px solid #ffd0d0;
+            border-radius: 4px;
+            padding: 3px 8px;
+            margin-bottom: 6px;
         }
 
         /* ── ACTION BAR ── */
@@ -483,13 +598,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 24px;
+            padding: 16px 22px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             position: sticky;
             bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-top: 4px;
         }
 
         .action-bar-left {
@@ -497,10 +613,7 @@
             color: var(--text-muted);
         }
 
-        .action-bar-right {
-            display: flex;
-            gap: 10px;
-        }
+        .action-bar-right { display: flex; gap: 10px; }
 
         /* ── BUTTONS ── */
         .btn {
@@ -543,8 +656,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 14px;
-            border-radius: 6px;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
             border: 1.5px solid var(--border);
             background: var(--surface);
             color: var(--text);
@@ -568,9 +681,7 @@
             color: #000;
         }
 
-        .action-btn.primary:hover {
-            background: var(--yellow-dark);
-        }
+        .action-btn.primary:hover { background: var(--yellow-dark); }
 
         /* ── TOAST ── */
         .toast {
@@ -587,7 +698,7 @@
             font-weight: 600;
             min-width: 280px;
             max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -600,52 +711,26 @@
             pointer-events: auto;
         }
 
-        .toast.success {
-            background: #1a1a1a;
-            color: #fff;
-            border-left: 4px solid var(--yellow);
-        }
-
-        .toast.error {
-            background: #1a1a1a;
-            color: #fff;
-            border-left: 4px solid #e05555;
-        }
+        .toast.success { background: #1a1a1a; color: #fff; border-left: 4px solid var(--yellow); }
+        .toast.error   { background: #1a1a1a; color: #fff; border-left: 4px solid #e05555; }
 
         .toast-icon {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 17px;
             flex-shrink: 0;
         }
 
-        .toast.success .toast-icon {
-            background: rgba(236, 217, 37, 0.15);
-        }
+        .toast.success .toast-icon { background: rgba(236,217,37,0.15); }
+        .toast.error   .toast-icon { background: rgba(224,85,85,0.15); }
 
-        .toast.error .toast-icon {
-            background: rgba(224, 85, 85, 0.15);
-        }
-
-        .toast-body {
-            flex: 1;
-        }
-
-        .toast-title {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .toast-desc {
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.65;
-        }
+        .toast-body { flex: 1; }
+        .toast-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+        .toast-desc  { font-size: 12px; font-weight: 400; opacity: 0.65; }
 
         .toast-close {
             background: none;
@@ -653,21 +738,20 @@
             color: #fff;
             font-size: 18px;
             cursor: pointer;
-            opacity: 0.5;
+            opacity: 0.45;
             padding: 0 2px;
             transition: opacity 0.2s;
             line-height: 1;
         }
 
-        .toast-close:hover {
-            opacity: 1;
-        }
+        .toast-close:hover { opacity: 1; }
 
-        /* ── LOADING STATE ── */
+        /* ── LOADING ── */
         .loading-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px);
             z-index: 500;
             display: none;
             align-items: center;
@@ -676,9 +760,7 @@
             gap: 14px;
         }
 
-        .loading-overlay.show {
-            display: flex;
-        }
+        .loading-overlay.show { display: flex; }
 
         .spinner {
             width: 36px;
@@ -689,11 +771,7 @@
             animation: spin 0.75s linear infinite;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .loading-text {
             font-size: 13px;
@@ -703,28 +781,17 @@
 
         /* ── RESPONSIVE ── */
         @media (max-width: 600px) {
-            .topbar {
-                padding: 12px 16px;
-            }
-
-            .page {
-                padding: 20px 14px 80px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
+            .topbar { padding: 0 16px; }
+            .page { padding: 24px 14px 100px; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .service-grid { grid-template-columns: 1fr; }
             .action-bar {
                 flex-direction: column;
                 gap: 12px;
                 align-items: stretch;
                 bottom: 16px;
             }
-
-            .action-bar-right {
-                justify-content: flex-end;
-            }
+            .action-bar-right { justify-content: flex-end; }
         }
     </style>
 </head>
@@ -752,70 +819,164 @@
         <!-- Back link -->
         <a href="/dashboard" class="back-link" id="backLink">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                    stroke-linejoin="round" />
+                <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Volver al dashboard
         </a>
 
         <!-- Header -->
         <div class="page-header">
-            <div class="page-header-inner">
-                <div>
-                    <h1 class="page-title">Editar <span>solicitud</span></h1>
-                    <p class="page-sub">Modifica los datos de la solicitud. Se generará un nuevo ciclo al guardar.</p>
-                </div>
-                <div class="folio-badge" id="folioBadge" style="display:none;">
-                    <span class="folio-badge-dot"></span>
-                    <span id="folioDisplay"></span>
-                </div>
+            <div>
+                <h1 class="page-title">Editar <span>solicitud</span></h1>
+                <p class="page-sub">Modifica los datos de la solicitud. Se generará un nuevo ciclo al guardar.</p>
+            </div>
+            <div class="folio-badge" id="folioBadge" style="display:none;">
+                <span class="folio-badge-dot"></span>
+                <span id="folioDisplay"></span>
             </div>
         </div>
 
-        <!-- Banner -->
+        <!-- Edit mode banner -->
         <div class="edit-banner">
             <div class="edit-banner-icon">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                 </svg>
             </div>
-            <div class="edit-banner-text">
-                <div class="edit-banner-title">Modo edición</div>
-                <div class="edit-banner-sub">Los cambios quedarán registrados en el historial de ciclos</div>
+            <div>
+                <div class="edit-banner-title">Modo edición activo</div>
+                <div class="edit-banner-sub">Los cambios quedarán registrados en el historial de ciclos de la solicitud</div>
             </div>
         </div>
 
         <form id="editForm" enctype="multipart/form-data">
 
-            <!-- Card: Datos de la solicitud -->
+            <!-- ── DATOS DE LA SOLICITUD ── -->
+            <span class="section-label">Datos de la solicitud</span>
+
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Datos de la solicitud</span>
-                </div>
                 <div class="card-body">
+                    <input type="hidden" id="editTipoServicioHidden" name="tipo_servicio">
+                    <input type="hidden" id="editNormaHidden" name="norma">
+
                     <div class="form-row">
+                        <!-- Tipo de servicio -->
                         <div class="form-group">
-                            <label for="editTipoServicio">Tipo de servicio</label>
-                            <input type="text" id="editTipoServicio" name="tipo_servicio"
-                                placeholder="Ej. Certificación">
+                            <label>Tipo de servicio</label>
+                            <div class="service-grid">
+                                <label class="service-option">
+                                    <input type="checkbox" id="svc_consultoria" onchange="onEditServiceChange()">
+                                    <div class="service-card">
+                                        <span class="service-emoji"><img src="/static/foco.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-name">Consultoría</span>
+                                        <span class="service-desc">Asesoría técnica y normativa</span>
+                                    </div>
+                                    <div class="service-check">✓</div>
+                                </label>
+                                <label class="service-option">
+                                    <input type="checkbox" id="svc_constancia" onchange="onEditServiceChange()">
+                                    <div class="service-card">
+                                        <span class="service-emoji"><img src="/static/document.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-name">Constancia</span>
+                                        <span class="service-desc">Emisión de constancias y certificados</span>
+                                    </div>
+                                    <div class="service-check">✓</div>
+                                </label>
+                                <label class="service-option">
+                                    <input type="checkbox" id="svc_diseno" onchange="onEditServiceChange()">
+                                    <div class="service-card">
+                                        <span class="service-emoji"><img src="/static/imagen.svg" alt="" style="width:30px;height:30px;"></span>
+                                        <span class="service-name">Diseño</span>
+                                        <span class="service-desc">Revisión y validación de etiquetado</span>
+                                    </div>
+                                    <div class="service-check">✓</div>
+                                </label>
+                            </div>
                         </div>
+
+                        <!-- Normas -->
                         <div class="form-group">
-                            <label for="editNorma">Norma(s)</label>
-                            <input type="text" id="editNorma" name="norma" placeholder="Ej. NOM-051-SCFI">
+                            <label>Norma(s) aplicable(s)</label>
+                            <div class="norma-list" id="editNormaList">
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-004-SE-2021">
+                                    <span class="norma-code">NOM-004-SE-2021</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado de productos textiles, prendas de vestir, sus accesorios y ropa de casa.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-015-SCFI-2007">
+                                    <span class="norma-code">NOM-015-SCFI-2007</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado para juguetes.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-020-SCFI-1997">
+                                    <span class="norma-code">NOM-020-SCFI-1997</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado de cueros, pieles y calzado.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-024-SCFI-2013">
+                                    <span class="norma-code">NOM-024-SCFI-2013</span>
+                                    <span class="norma-desc">Información comercial para empaques de productos electrónicos, eléctricos y electrodomésticos.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-050-SCFI-2004">
+                                    <span class="norma-code">NOM-050-SCFI-2004</span>
+                                    <span class="norma-desc">Información comercial — Etiquetado general de productos.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-051-SCFI/SSA1-2010">
+                                    <span class="norma-code">NOM-051-SCFI/SSA1-2010</span>
+                                    <span class="norma-desc">Especificaciones generales de etiquetado para alimentos y bebidas no alcohólicas preenvasados.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-116-SCFI-2018">
+                                    <span class="norma-code">NOM-116-SCFI-2018</span>
+                                    <span class="norma-desc">Etiquetado de productos comerciales.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-141-SSA1/SCFI-2012">
+                                    <span class="norma-code">NOM-141-SSA1/SCFI-2012</span>
+                                    <span class="norma-desc">Etiquetado para productos cosméticos preenvasados. Etiquetado sanitario y comercial.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-142-SSA1/SCFI-2014">
+                                    <span class="norma-code">NOM-142-SSA1/SCFI-2014</span>
+                                    <span class="norma-desc">Bebidas alcohólicas. Especificaciones sanitarias. Etiquetado sanitario y comercial.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-186-SSA1/SCFI-2013">
+                                    <span class="norma-code">NOM-186-SSA1/SCFI-2013</span>
+                                    <span class="norma-desc">Cacao, chocolate y productos similares. Especificaciones sanitarias y denominación comercial.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-189-SSA1/SCFI-2018">
+                                    <span class="norma-code">NOM-189-SSA1/SCFI-2018</span>
+                                    <span class="norma-desc">Etiquetado y envasado para productos de aseo de uso doméstico.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-199-SCFI-2017">
+                                    <span class="norma-code">NOM-199-SCFI-2017</span>
+                                    <span class="norma-desc">Bebidas alcohólicas — Denominación, especificaciones fisicoquímicas e información comercial.</span>
+                                </label>
+                                <label class="norma-item">
+                                    <input type="checkbox" value="NOM-235-SE-2020">
+                                    <span class="norma-code">NOM-235-SE-2020</span>
+                                    <span class="norma-desc">Especificaciones de etiquetado de productos.</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-row">
+
+                    <!-- Row: SKUs + Medidas + Prioridad -->
+                    <div class="form-row-3">
                         <div class="form-group">
-                            <label for="editNumSkus">Número de SKU's / Ítems / Modelos</label>
+                            <label for="editNumSkus">SKU's / Ítems / Modelos</label>
                             <input type="text" id="editNumSkus" name="num_skus" placeholder="Ej. 12">
                         </div>
                         <div class="form-group">
                             <label for="editMedidas">Medidas superficie</label>
                             <input type="text" id="editMedidas" name="medidas" placeholder="Ej. 10x15 cm">
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="editPrioridad">Prioridad</label>
                             <select id="editPrioridad" name="prioridad">
@@ -824,13 +985,14 @@
                                 <option value="regular">Regular (72h)</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Row: Importador + Marca + País -->
+                    <div class="form-row-3">
                         <div class="form-group">
                             <label for="editImportador">Importador</label>
-                            <input type="text" id="editImportador" name="importador"
-                                placeholder="Nombre del importador">
+                            <input type="text" id="editImportador" name="importador" placeholder="Nombre del importador">
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="editMarca">Marca</label>
                             <input type="text" id="editMarca" name="marca" placeholder="Nombre de la marca">
@@ -840,19 +1002,19 @@
                             <input type="text" id="editPaisOrigen" name="pais_origen" placeholder="Ej. México">
                         </div>
                     </div>
+
+                    <!-- Contenido -->
                     <div class="form-group">
                         <label for="editContenido">Contenido</label>
-                        <textarea id="editContenido" name="contenido" rows="3"
-                            placeholder="Descripción del contenido..."></textarea>
+                        <textarea id="editContenido" name="contenido" rows="3" placeholder="Descripción del contenido..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Card: Imágenes -->
+            <!-- ── IMÁGENES ADJUNTAS ── -->
+            <span class="section-label" style="margin-top: 8px;">Imágenes adjuntas</span>
+
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Imágenes adjuntas</span>
-                </div>
                 <div class="card-body">
                     <div>
                         <span class="images-label">Imágenes actuales</span>
@@ -865,37 +1027,37 @@
                         <span class="images-label">Agregar imágenes nuevas</span>
                         <div class="upload-inline-actions">
                             <button type="button" class="action-btn primary" onclick="triggerEditImageFiles()">
-                                Seleccionar archivos
+                                + Seleccionar archivos
                             </button>
                             <span class="upload-inline-help">JPG, PNG, GIF, WEBP y PDF.</span>
                         </div>
-                        <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf"
-                            style="display: none;">
+                        <input type="file" id="editImageFiles" name="file" multiple accept="image/*,application/pdf" style="display:none;">
                         <div class="images-empty-state" id="newImagesEmpty" style="margin-top:10px;">
                             No has seleccionado archivos nuevos.
                         </div>
-                        <div class="images-grid" id="newImages" style="margin-top: 8px;"></div>
+                        <div class="images-grid" id="newImages" style="margin-top:8px;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card: Comentario de edición -->
+            <!-- ── COMENTARIO DE EDICIÓN ── -->
+            <span class="section-label" style="margin-top: 8px;">Comentario de la edición</span>
+
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Comentario de la edición</span>
-                </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label class="comentario-label" for="editComentario">Comentario *</label>
-                        <span class="comentario-hint">Describe qué cambios realizaste y el motivo.</span>
+                        <span class="comentario-required">* Campo obligatorio</span>
+                        <label for="editComentario" style="color:var(--danger);">Comentario de edición</label>
+                        <span class="form-hint">Describe qué cambios realizaste y el motivo.</span>
                         <textarea id="editComentario" name="comentario_edicion"
-                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" required
-                            style="border-color: var(--danger); margin-top: 6px;"></textarea>
+                            placeholder="Describe qué cambios hiciste y por qué..."
+                            rows="4" required
+                            style="border-color: var(--danger); margin-top:6px;"></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Action bar sticky -->
+            <!-- ── ACTION BAR ── -->
             <div class="action-bar">
                 <span class="action-bar-left">Los cambios generarán un nuevo ciclo en la solicitud.</span>
                 <div class="action-bar-right">
@@ -950,7 +1112,6 @@
            FOLIO DESDE URL
            ===================== */
         function getFolioFromURL() {
-            // Espera una ruta como /editar/FOLIO-123 o ?folio=FOLIO-123
             const path = window.location.pathname;
             const parts = path.split("/").filter(Boolean);
             if (parts.length >= 2 && parts[parts.length - 2] === "editar") {
@@ -978,7 +1139,6 @@
         function populateForm(data) {
             const s = data.solicitud || data;
 
-            // Folio badge
             const folioBadge = document.getElementById("folioBadge");
             const folioDisplay = document.getElementById("folioDisplay");
             if (s.folio) {
@@ -986,9 +1146,17 @@
                 folioBadge.style.display = "inline-flex";
             }
 
-            // Campos
-            setValue("editTipoServicio", s.tipo_servicio);
-            setValue("editNorma", s.norma);
+            const tiposGuardados = (s.tipo_servicio || '').split(/[,;]/).map(t => t.trim().toLowerCase());
+            ['consultoria', 'constancia', 'diseno'].forEach(id => {
+                const el = document.getElementById('svc_' + id);
+                if (el) el.checked = tiposGuardados.includes(id);
+            });
+
+            const normasGuardadas = (s.norma || '').split(/[,;]/).map(n => n.trim().toUpperCase());
+            document.querySelectorAll('#editNormaList input[type="checkbox"]').forEach(cb => {
+                cb.checked = normasGuardadas.includes(cb.value.trim().toUpperCase());
+            });
+
             setValue("editNumSkus", s.num_skus);
             setValue("editMedidas", s.medidas);
             setValue("editPrioridad", s.prioridad);
@@ -997,7 +1165,6 @@
             setValue("editPaisOrigen", s.pais_origen);
             setValue("editContenido", s.contenido);
 
-            // Imágenes previas
             const previasContainer = document.getElementById("previasImages");
             const previasEmpty = document.getElementById("previasImagesEmpty");
             const files = s.archivos || s.files || [];
@@ -1042,7 +1209,6 @@
                             if (!selected) return;
                             const reader = new FileReader();
                             reader.onload = (event) => {
-                                // Eliminar children de texto
                                 while (thumb.firstChild) thumb.removeChild(thumb.firstChild);
                                 thumb.style.backgroundImage = `url('${event.target.result}')`;
                                 thumb.style.backgroundSize = "cover";
@@ -1136,7 +1302,20 @@
         /* =====================
            SUBMIT
            ===================== */
+        function onEditServiceChange() {
+            // Hook para futura lógica
+        }
+
         async function submitEditForm() {
+            const tiposSeleccionados = ['consultoria', 'constancia', 'diseno']
+                .filter(id => document.getElementById('svc_' + id)?.checked);
+            document.getElementById('editTipoServicioHidden').value = tiposSeleccionados.join(', ');
+
+            const normasSeleccionadas = Array.from(
+                document.querySelectorAll('#editNormaList input[type="checkbox"]:checked')
+            ).map(cb => cb.value);
+            document.getElementById('editNormaHidden').value = normasSeleccionadas.join(', ');
+
             const folio = getFolioFromURL();
             if (!folio) {
                 showToast("error", "Error", "Folio no válido");
@@ -1170,7 +1349,6 @@
 
                 showToast("success", "Éxito", `Solicitud actualizada. Nuevo ciclo: ${data.ciclo_nuevo}`);
 
-                // Redirigir al dashboard después de un momento
                 setTimeout(() => {
                     window.location.href = "/dashboard";
                 }, 1800);
@@ -1203,5 +1381,4 @@
     </script>
 
 </body>
-
 </html>

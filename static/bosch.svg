@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="256" r="220" stroke="#000" stroke-width="20"></circle>
+
+  <!-- Inner circle -->
+  <circle cx="256" cy="256" r="180" stroke="#000" stroke-width="20"></circle>
+
+  <!-- Left vertical -->
+  <path d="M180 140v232" stroke="#000" stroke-width="20" stroke-linecap="round"></path>
+
+  <!-- Right vertical -->
+  <path d="M332 140v232" stroke="#000" stroke-width="20" stroke-linecap="round"></path>
+
+  <!-- Top connector -->
+  <path d="M180 180h152" stroke="#000" stroke-width="20" stroke-linecap="round"></path>
+
+  <!-- Bottom connector -->
+  <path d="M180 332h152" stroke="#000" stroke-width="20" stroke-linecap="round"></path>
+
+</svg>
