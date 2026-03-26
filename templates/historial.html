@@ -485,12 +485,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
             flex-shrink: 0;
             position: relative;
             z-index: 1;
             border: 2px solid var(--surface);
             margin-top: 2px;
+        }
+
+        .tl-dot-icon {
+            width: 16px;
+            height: 16px;
+            display: block;
         }
 
         .dot-new {
@@ -584,6 +589,28 @@
             line-height: 1.5;
         }
 
+        .tl-detail-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 6px 10px;
+            margin-top: 6px;
+        }
+
+        .tl-detail-label {
+            font-size: 11px;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: .4px;
+        }
+
+        .tl-detail-value {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
         .tl-event-desc span {
             color: var(--text-muted);
             font-weight: 400;
@@ -619,7 +646,9 @@
         }
 
         .tl-attachment-icon {
-            font-size: 13px;
+            width: 13px;
+            height: 13px;
+            display: block;
         }
 
         /* Empty */
@@ -631,8 +660,9 @@
         }
 
         .tl-empty-icon {
-            font-size: 32px;
-            opacity: .25;
+            width: 32px;
+            height: 32px;
+            opacity: .4;
             margin-bottom: 10px;
         }
 
@@ -835,8 +865,8 @@
                     <div class="card-head">
                         <div class="card-icon"><img src="/static/comentarios.svg" alt=""></div>
                         <div>
-                            <div class="card-head-title">Historial de archivos</div>
-                            <div class="card-head-sub" id="tlSubtitle">Imágenes y archivos del proyecto</div>
+                            <div class="card-head-title">Historial de cambios</div>
+                            <div class="card-head-sub" id="tlSubtitle">Cambios de datos y reemplazos realizados</div>
                         </div>
                     </div>
 
@@ -848,8 +878,8 @@
 
                         <div class="tl-list" id="tlList">
                             <div class="tl-empty" id="tlEmpty" style="display:none;">
-                                <div class="tl-empty-icon">🗂️</div>
-                                No hay archivos registrados aún.
+                                <img src="/static/folder.svg" alt="" class="tl-empty-icon">
+                                No hay cambios relevantes registrados aún.
                             </div>
                         </div>
                     </div>
@@ -895,7 +925,7 @@
                     SOLICITUD = sol;
                     HISTORIAL = (hist.historial || []).sort((a, b) => {
                         const da = parseDate(a.fecha), db = parseDate(b.fecha);
-                        return (da && db) ? da - db : 0;
+                        return (da && db) ? db - da : 0;
                     });
                     renderCycle();
                     renderSummary();
@@ -937,8 +967,8 @@
             const statusBadge = `<span class="badge ${sCls}"><span class="badge-dot"></span>${sLabel}</span>`;
 
             const prioLabel = SOLICITUD.prioridad === "urgente"
-                ? `<span class="badge b-urgente">🔴 Urgente</span>`
-                : `<span class="badge b-regular">🔵 Regular</span>`;
+                ? `<span class="badge b-urgente">Urgente</span>`
+                : `<span class="badge b-regular">Regular</span>`;
 
             const rows = [
                 ["Folio", folio],
@@ -974,27 +1004,20 @@
         }
 
         /* ══════════════════════════════════════
-           TIMELINE — solo archivos/imágenes
+           TIMELINE — solo cambios relevantes
         ══════════════════════════════════════ */
         function renderTimeline() {
             const container = document.getElementById("tlList");
             const empty = document.getElementById("tlEmpty");
 
-            // Filtrar: solo eventos de tipo imagen/archivo nuevo, reemplazo, o actualización de ciclo
-            const fileTypes = ["imagen_nueva", "archivo_nuevo", "imagen_reemplazada", "archivo_reemplazado", "ciclo_actualizado"];
+            // Filtrar: solo reemplazos de archivo/imagen y actualizaciones de datos.
+            const allowedTypes = ["imagen_reemplazada", "archivo_reemplazado", "dato_actualizado"];
             const data = HISTORIAL.filter(h => {
                 const t = (h.tipo || "").toLowerCase();
                 const sub = (h.subtipo || "").toLowerCase();
-                return fileTypes.includes(t) || fileTypes.includes(sub)
-                    || t === "archivo" || t === "imagen"
-                    || (t === "evento" && (
-                        sub.includes("imagen") || sub.includes("archivo") ||
-                        sub.includes("ciclo") ||
-                        (h.texto || "").toLowerCase().includes("imagen") ||
-                        (h.texto || "").toLowerCase().includes("archivo") ||
-                        (h.texto || "").toLowerCase().includes("ciclo") ||
-                        (h.archivos && h.archivos.length > 0)
-                    ));
+                return allowedTypes.includes(t)
+                    || allowedTypes.includes(sub)
+                    || (t === "evento" && (sub.includes("dato_actualizado") || sub.includes("reemplaz")));
             });
 
             document.getElementById("tlCountChip").textContent =
@@ -1017,25 +1040,23 @@
 
                 let dotClass = "dot-new";
                 let badgeClass = "et-new";
-                let badgeLabel = "Archivo nuevo";
-                let dotIcon = "📄";
+                let badgeLabel = "Dato actualizado";
+                let dotIconPath = "/static/icon-edit-darkgray.svg";
 
                 if (tipo.includes("reemplaz") || texto.includes("reemplaz")) {
                     dotClass = "dot-replace"; badgeClass = "et-replace";
-                    badgeLabel = "Reemplazo"; dotIcon = "🔄";
-                } else if (tipo.includes("ciclo") || texto.includes("ciclo")) {
+                    badgeLabel = "Reemplazo"; dotIconPath = "/static/upload.svg";
+                } else if (tipo.includes("dato") || texto.includes("actualiz")) {
                     dotClass = "dot-cycle"; badgeClass = "et-cycle";
-                    badgeLabel = "Nuevo ciclo"; dotIcon = "🔁";
-                } else if (tipo.includes("imagen") || texto.includes("imagen")) {
-                    dotClass = "dot-new"; badgeClass = "et-new";
-                    badgeLabel = "Imagen nueva"; dotIcon = "🖼️";
+                    badgeLabel = "Dato actualizado"; dotIconPath = "/static/icon-edit.svg";
                 }
 
                 const attachHtml = buildAttachments(entry.archivos || []);
+                const detalleHtml = buildEntryDetail(entry);
 
                 return `
                     <div class="tl-item" style="animation-delay:${idx * 0.04}s">
-                        <div class="tl-dot ${dotClass}">${dotIcon}</div>
+                        <div class="tl-dot ${dotClass}"><img src="${dotIconPath}" alt="" class="tl-dot-icon"></div>
                         <div class="tl-body">
                             <div class="tl-meta">
                                 <span class="tl-author">${escHtml(autor)}</span>
@@ -1045,14 +1066,32 @@
                                 <div class="tl-event-top">
                                     <span class="event-type-badge ${badgeClass}">${badgeLabel}</span>
                                 </div>
-                                <div class="tl-event-desc">
-                                    ${escHtml(entry.texto || "")}
-                                </div>
+                                <div class="tl-event-desc">${escHtml(entry.texto || "")}</div>
+                                ${detalleHtml}
                                 ${attachHtml}
                             </div>
                         </div>
                     </div>`;
             }).join("");
+        }
+
+        function buildEntryDetail(entry) {
+            const campo = (entry.campo || "").trim();
+            const anterior = (entry.valor_anterior || "").trim();
+            const nuevo = (entry.valor_nuevo || "").trim();
+            const motivo = (entry.motivo || "").trim() || "Sin motivo capturado";
+
+            if (!campo && !anterior && !nuevo && !motivo) return "";
+
+            return `
+                <div class="tl-detail-grid">
+                    <span class="tl-detail-label">Dato</span>
+                    <span class="tl-detail-value">${escHtml(campo || "No especificado")}</span>
+                    <span class="tl-detail-label">Cambio</span>
+                    <span class="tl-detail-value">${escHtml(anterior || "(vacío)")} -> ${escHtml(nuevo || "(vacío)")}</span>
+                    <span class="tl-detail-label">Motivo</span>
+                    <span class="tl-detail-value">${escHtml(motivo)}</span>
+                </div>`;
         }
 
         function buildAttachments(archivos) {
@@ -1062,9 +1101,9 @@
                 const nombre = a.nombre || "Archivo";
                 const ext = nombre.split(".").pop().toLowerCase();
                 const isImg = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext);
-                const icon = isImg ? "🖼️" : "📎";
+                const iconPath = isImg ? "/static/imagen.svg" : "/static/file.svg";
                 return `<a href="${url}" class="tl-attachment" target="_blank">
-                    <span class="tl-attachment-icon">${icon}</span>${escHtml(nombre)}
+                    <img src="${iconPath}" alt="" class="tl-attachment-icon">${escHtml(nombre)}
                 </a>`;
             }).join("");
             return `<div class="tl-attachments">${chips}</div>`;

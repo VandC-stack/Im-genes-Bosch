@@ -2184,6 +2184,18 @@ def get_solicitud_historial(folio):
     # Agregar entradas del historial
     historial_raw = solicitud.get("historial", [])
     ciclo_tracker = 1
+    campo_labels = {
+        "tipo_servicio": "Tipo de servicio",
+        "nombre_proyecto": "Nombre del proyecto",
+        "norma": "Norma",
+        "num_skus": "SKU / Modelos",
+        "medidas": "Medidas",
+        "prioridad": "Prioridad",
+        "importador": "Importador",
+        "marca": "Marca",
+        "pais_origen": "Pais de origen",
+        "contenido": "Contenido",
+    }
     for idx, entry in enumerate(historial_raw, start=1):
         if entry.get("tipo") == "edicion_cliente":
             ciclo_anterior = normalize_cycle_value(entry.get("ciclo_anterior", ciclo_tracker))
@@ -2195,27 +2207,56 @@ def get_solicitud_historial(folio):
             timestamp = entry.get("timestamp", "")
             fecha_valor = timestamp.replace("T", " ")[:16] if "T" in timestamp else timestamp
 
-            historial_formateado.append({
-                "id": len(historial_formateado),
-                "tipo": "evento",
-                "fecha": fecha_valor,
-                "autor": "Sistema",
-                "rol": "system",
-                "icono": "🔁",
-                "texto": f"Actualización del cliente: ciclo {ciclo_anterior} → ciclo {ciclo_nuevo}",
-                "estatus_anterior": None,
-                "estatus_nuevo": None
-            })
+            autor = entry.get("usuario", "Cliente")
+            motivo = str(entry.get("comentario") or "").strip()
 
-            historial_formateado.append({
-                "id": len(historial_formateado),
-                "tipo": "comentario",
-                "fecha": fecha_valor,
-                "autor": entry.get("usuario", "Cliente"),
-                "rol": "cliente",
-                "texto": entry.get("comentario", ""),
-                "archivos": []
-            })
+            cambios = entry.get("cambios") or {}
+            for campo, detalle in cambios.items():
+                if not isinstance(detalle, dict):
+                    continue
+                etiqueta = campo_labels.get(campo, campo.replace("_", " ").title())
+                viejo = str(detalle.get("viejo") or "").strip() or "(vacio)"
+                nuevo = str(detalle.get("nuevo") or "").strip() or "(vacio)"
+                historial_formateado.append({
+                    "id": len(historial_formateado),
+                    "tipo": "evento",
+                    "subtipo": "dato_actualizado",
+                    "fecha": fecha_valor,
+                    "autor": autor,
+                    "rol": "cliente",
+                    "campo": etiqueta,
+                    "valor_anterior": viejo,
+                    "valor_nuevo": nuevo,
+                    "motivo": motivo,
+                    "texto": f"{etiqueta}: {viejo} -> {nuevo}",
+                    "estatus_anterior": None,
+                    "estatus_nuevo": None
+                })
+
+            for reemplazo in entry.get("imagenes_reemplazadas", []) or []:
+                if not isinstance(reemplazo, dict):
+                    continue
+                anterior = str(
+                    reemplazo.get("anterior")
+                    or reemplazo.get("filename")
+                    or "Imagen anterior"
+                ).strip()
+                nuevo = str(reemplazo.get("nuevo") or reemplazo.get("filename") or "Imagen nueva").strip()
+                historial_formateado.append({
+                    "id": len(historial_formateado),
+                    "tipo": "evento",
+                    "subtipo": "imagen_reemplazada",
+                    "fecha": fecha_valor,
+                    "autor": autor,
+                    "rol": "cliente",
+                    "campo": "Imagen",
+                    "valor_anterior": anterior,
+                    "valor_nuevo": nuevo,
+                    "motivo": motivo,
+                    "texto": f"Imagen reemplazada: {anterior} -> {nuevo}",
+                    "estatus_anterior": None,
+                    "estatus_nuevo": None
+                })
         elif entry.get("tipo") == "comentario":
             archivos = normalize_comment_attachments(entry.get("archivos", []), folio)
             historial_formateado.append({
@@ -2252,7 +2293,12 @@ def get_solicitud_historial(folio):
                 "estatus_nuevo": None
             })
     
-    return jsonify({"historial": historial_formateado})
+    historial_relevante = [
+        h for h in historial_formateado
+        if str(h.get("subtipo") or "").lower() in {"dato_actualizado", "imagen_reemplazada", "archivo_reemplazado"}
+    ]
+
+    return jsonify({"historial": historial_relevante})
 
 
 @app.route("/api/solicitud/<folio>/comentarios", methods=["POST"])
@@ -3766,6 +3812,22 @@ def view_image():
                          assigned_at=assignment.get("assigned_at"),
                          assigned_by=assignment.get("assigned_by"),
                          role=role)
+
+
+@app.errorhandler(403)
+def handle_forbidden(error):
+    return render_template("403.html"), 403
+
+
+@app.errorhandler(404)
+def handle_not_found(error):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def handle_internal_server_error(error):
+    app.logger.exception("Error interno no controlado: %s", error)
+    return render_template("500.html"), 500
 
 
 # =========================

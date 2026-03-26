@@ -796,6 +796,58 @@
             line-height: 1.3;
         }
 
+        .assign-inline-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        body[data-role="admin"] .table-scroll {
+            overflow-x: hidden;
+        }
+
+        body[data-role="admin"] table {
+            min-width: 100%;
+            table-layout: fixed;
+        }
+
+        body[data-role="admin"] th,
+        body[data-role="admin"] td {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        body[data-role="admin"] .td-proyecto {
+            max-width: 190px;
+        }
+
+        body[data-role="admin"] .assign-actions {
+            min-width: 0;
+            gap: 0;
+        }
+
+        body[data-role="admin"] .assign-row {
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        body[data-role="admin"] .assign-row .action-btn {
+            min-width: 88px;
+            height: 30px;
+            padding: 0 8px;
+        }
+
+        body[data-role="admin"] .assign-meta {
+            display: none;
+        }
+
         .action-btn.cert-ready {
             background: #16a34a;
             border-color: #15803d;
@@ -2459,19 +2511,16 @@
                 const pool = compatibleEjecutivos.length ? compatibleEjecutivos : adminEjecutivos;
                 const hasOptions = pool.length > 0;
                 const encodedFolio = encodeURIComponent(s.folio || "");
-                const currentAssigned = s.assigned_to
-                    ? `Actual: <strong>${s.assigned_to}</strong>`
-                    : "Sin asignar";
-                const filterHint = compatibleEjecutivos.length
+                const currentAssigned = s.assigned_to || "Sin asignar";
+                const compatibleHint = compatibleEjecutivos.length
                     ? `Compatibles por norma: ${compatibleEjecutivos.length}`
                     : "Sin filtro por norma";
                 return `
                     <div class="assign-actions" onclick="event.stopPropagation()">
                         <div class="assign-row">
-                            <button class="action-btn primary" onclick="openAssignModalByFolio('${encodedFolio}', event)" ${hasOptions ? "" : "disabled"}>Asignar</button>
+                            <button class="action-btn primary" onclick="openAssignModalByFolio('${encodedFolio}', event)" title="${compatibleHint}" ${hasOptions ? "" : "disabled"}>Asignar</button>
+                            <span class="assign-inline-chip" title="Asignado actualmente">${currentAssigned}</span>
                         </div>
-                        <div class="assign-meta">${currentAssigned}</div>
-                        <div class="assign-meta">${filterHint}</div>
                     </div>
                 `;
             }

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>500 — Error del Servidor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --yellow: #ECD925;
+      --yellow-dark: #c9b800;
+      --yellow-light: #fffef5;
+      --bg: #f0f0f0;
+      --surface: #ffffff;
+      --surface2: #f6f6f6;
+      --border: #e0e0e0;
+      --text: #111111;
+      --text-muted: #666;
+      --text-dim: #aaa;
+      --dark: #1a1a1a;
+      --danger: #cc3333;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .brand-dot {
+      width: 28px; height: 28px;
+      background: var(--yellow);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 10px;
+    }
+
+    .brand-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      padding: 48px 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .icon-wrap {
+      width: 60px; height: 60px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .icon-wrap svg {
+      width: 26px; height: 26px;
+      stroke: var(--danger);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--danger);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .status-pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: var(--danger);
+      border-radius: 50%;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity:1; } 50% { opacity:0; }
+    }
+
+    .error-code {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(4.5rem, 15vw, 7rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .error-code .mid { color: var(--danger); }
+
+    .error-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 10px;
+    }
+
+    .error-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+      max-width: 370px;
+      margin: 0 auto 24px;
+    }
+
+    /* Stack trace */
+    .trace {
+      background: var(--dark);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      text-align: left;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .trace-header {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    .trace-line {
+      display: flex;
+      gap: 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      padding: 3px 0;
+      color: #888;
+    }
+
+    .trace-num { color: #444; min-width: 16px; text-align: right; }
+    .hl { color: #ECD925; }
+    .dim { color: #555; }
+
+    /* Retry bar */
+    .retry-wrap {
+      margin-bottom: 28px;
+    }
+
+    .retry-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 6px;
+    }
+
+    .retry-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .retry-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--yellow-dark), var(--yellow));
+      border-radius: 999px;
+      animation: retryFill 30s linear forwards;
+      width: 0;
+    }
+
+    @keyframes retryFill {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.18s;
+    }
+
+    .btn-primary {
+      background: var(--yellow);
+      color: #111;
+      border: 1px solid var(--yellow-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--yellow-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(201,184,0,0.3);
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: #bbb;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-dot">G</div>
+    <span class="brand-name">GEPI</span>
+  </header>
+
+  <main class="main">
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+
+      <div class="status-pill">Fallo interno del servidor</div>
+
+      <div class="error-code">5<span class="mid">0</span>0</div>
+      <div class="error-title">Error Interno del Servidor</div>
+      <p class="error-desc">
+        Algo salió mal en nuestro servidor. Nuestro equipo fue notificado automáticamente y estamos trabajando en solucionarlo.
+      </p>
+
+      <div class="trace">
+        <div class="trace-header">// stack trace</div>
+        <div class="trace-line">
+          <span class="trace-num">1</span>
+          <span><span class="hl">UnhandledError</span><span class="dim">: Internal server failure</span></span>
+        </div>
+        <div class="trace-line">
+          <span class="trace-num">2</span>
+          <span><span class="dim">at </span><span class="hl">requestHandler</span><span class="dim"> (server.js:142)</span></span>
+        </div>
+        <div class="trace-line">
+          <span class="trace-num">3</span>
+          <span><span class="dim">at </span><span class="hl">middleware</span><span class="dim"> (app.js:58)</span></span>
+        </div>
+        <div class="trace-line">
+          <span class="trace-num">4</span>
+          <span><span class="dim">código: </span><span class="hl">ERR_INTERNAL_0x500</span></span>
+        </div>
+      </div>
+
+      <div class="retry-wrap">
+        <div class="retry-meta">
+          <span>Reintentando en <span id="countdown">30</span>s</span>
+          <span>Auto-retry</span>
+        </div>
+        <div class="retry-track">
+          <div class="retry-fill"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button onclick="location.reload()" class="btn btn-primary">Reintentar ahora</button>
+        <a href="/" class="btn btn-ghost">Ir al inicio</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let s = 30;
+    const el = document.getElementById('countdown');
+    const t = setInterval(() => {
+      s--;
+      el.textContent = s;
+      if (s <= 0) { clearInterval(t); location.reload(); }
+    }, 1000);
+  </script>
+</body>
+</html>
