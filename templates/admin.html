@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración de Usuarios</title>
+    <title>Especialista | Gestión de Usuarios</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -165,22 +165,23 @@
         .btn-outline {
             background: transparent;
             color: var(--text);
-            border: 1.5px solid var(--border);
+            border: 1.5px solid #c0c0c0;
         }
 
         .btn-outline:hover {
-            border-color: #999;
+            border-color: #666;
             background: var(--surface);
         }
 
         .btn-danger {
-            background: rgba(204, 51, 51, .1);
+            background: rgba(204, 51, 51, .08);
             color: var(--danger);
-            border: 1.5px solid rgba(204, 51, 51, .25);
+            border: 1.5px solid rgba(204, 51, 51, .45);
         }
 
         .btn-danger:hover {
             background: rgba(204, 51, 51, .18);
+            border-color: var(--danger);
         }
 
         .btn-sm {
@@ -605,7 +606,7 @@
     <nav class="topbar">
         <div class="topbar-brand">
             <div class="brand-dot"><img src="/static/icon-user.svg" alt=""></div>
-            <span class="brand-name">Admin</span>
+            <span class="brand-name">Especialista</span>
         </div>
         <div class="topbar-right">
             <a href="/dashboard-admin" class="logout-link">← Dashboard</a>
@@ -619,7 +620,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Gestión de <span>usuarios</span></h1>
-                <p class="page-sub">Clientes, ejecutivos y supervisores del sistema</p>
+                <p class="page-sub">Clientes, ejecutivos y especialistas del sistema</p>
             </div>
             <button class="btn btn-yellow" onclick="openCreateModal()">+ Nuevo usuario</button>
         </div>
@@ -633,7 +634,7 @@
                 Ejecutivos <span class="tab-count" id="cnt-ejecutivos">0</span>
             </button>
             <button class="tab-btn" data-tab="supervisores" onclick="switchTab('supervisores', this)">
-                Supervisores <span class="tab-count" id="cnt-supervisores">0</span>
+                Especialistas <span class="tab-count" id="cnt-supervisores">0</span>
             </button>
         </div>
 
@@ -689,7 +690,7 @@
         <div class="tab-panel" id="tab-supervisores">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Supervisores / Administradores</span>
+                    <span class="card-title">Especialistas</span>
                 </div>
                 <div class="table-wrap">
                     <table>
@@ -770,7 +771,7 @@
                     <div class="form-group full" id="normasGroup">
                         <label>Normas asignadas</label>
                         <div class="norma-list" id="normasList"></div>
-                        <span class="norma-help">Aplica solo a ejecutivos y supervisores.</span>
+                        <span class="norma-help">Aplica solo a ejecutivos y especialistas.</span>
                     </div>
                 </div>
 
@@ -994,8 +995,18 @@
             const normas = getSelectedNormas();
             const canEditRole = isEdit && document.getElementById('roleGroup').style.display !== 'none';
 
-            if (!username || (!isEdit && !password) || !folder) {
-                showToast('error', isEdit ? 'Usuario y carpeta son requeridos' : 'Usuario, contraseña y carpeta son requeridos');
+            const isClientRole = role === 'Cliente' || role === 'bosch';
+
+            if (!username) {
+                showToast('error', 'El nombre de usuario es requerido');
+                return;
+            }
+            if (!isEdit && !password) {
+                showToast('error', 'La contraseña es requerida');
+                return;
+            }
+            if (isClientRole && !folder) {
+                showToast('error', 'La ruta de carpeta es requerida para clientes');
                 return;
             }
 

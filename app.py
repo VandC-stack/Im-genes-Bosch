@@ -148,6 +148,7 @@ USERS_FILE = "Users.json"
 HISTORY_FILE = "upload_history.json"
 ASSIGNMENTS_FILE = "assignments.json"
 SERVICE_REQUESTS_FILE = "service_requests.json"
+AUDIT_TRAIL_FILE = "audit_trail.json"
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_EXTENSIONS = IMAGE_EXTENSIONS | {
     "pdf",
@@ -546,6 +547,54 @@ def load_service_requests():
 def save_service_requests(data):
     with open(SERVICE_REQUESTS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def load_audit_trail():
+    """Carga el registro de auditoría."""
+    if not os.path.exists(AUDIT_TRAIL_FILE):
+        return []
+    try:
+        with open(AUDIT_TRAIL_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def save_audit_trail(data):
+    """Guarda el registro de auditoría."""
+    with open(AUDIT_TRAIL_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def log_audit_trail(action: str, user: str, details: Optional[dict] = None):
+    """
+    Registra una acción crítica en el audit trail.
+    
+    Args:
+        action: Tipo de acción (e.g., 'asign_folio', 'change_status', 'create_user')
+        user: Usuario que realizó la acción
+        details: Información adicional sobre la acción
+    """
+    if details is None:
+        details = {}
+    try:
+        audit = load_audit_trail()
+        entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "action": action,
+            "user": str(user or "unknown"),
+            "ip": _get_client_ip(),
+            "details": details
+        }
+        audit.append(entry)
+        save_audit_trail(audit)
+        _security_log.info(
+            "AUDIT | action=%s | user=%s | ip=%s | details=%s",
+            action, user, entry["ip"], json.dumps(details)
+        )
+    except Exception as e:
+        _security_log.error("Error registrando audit trail: %s", str(e))
 
 
 def get_comments_for_assignment(assignment: dict) -> list[dict]:
@@ -1056,16 +1105,63 @@ def is_safe_next(value: Optional[str]) -> bool:
     return bool(value) and value.startswith("/")
 
 
+def _default_post_login_route(role: str) -> str:
+    return url_for("welcome") if role == ROLE_CLIENTE else url_for("index")
+
+
+def _is_next_allowed_for_role(next_url: Optional[str], role: str) -> bool:
+    if not is_safe_next(next_url):
+        return False
+
+    assert next_url is not None
+    restricted_prefixes = {
+        "/admin": {ROLE_SUPERVISOR},
+        "/dashboard-admin": {ROLE_SUPERVISOR},
+        "/dashboard-ejecutivo": {ROLE_EJECUTIVO},
+        "/dashboard": {ROLE_CLIENTE},
+    }
+
+    for prefix, allowed_roles in restricted_prefixes.items():
+        if next_url == prefix or next_url.startswith(prefix + "/"):
+            return role in allowed_roles
+
+    return True
+
+
 # Prevenir caché de páginas protegidas
 @app.after_request
 def add_no_cache_headers(response):
-    """Añade headers para prevenir caché en navegadores"""
+    """Añade headers de cache y seguridad HTTP en todas las respuestas."""
     if 'Cache-Control' not in response.headers:
         # No cachear páginas HTML para prevenir acceso después de logout
         if response.content_type and 'text/html' in response.content_type:
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, private'
             response.headers['Pragma'] = 'no-cache'
             response.headers['Expires'] = '0'
+
+    # Security headers base
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+    response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+
+    # CSP conservadora para reducir XSS sin romper templates existentes.
+    response.headers.setdefault(
+        'Content-Security-Policy',
+        "default-src 'self'; "
+        "base-uri 'self'; "
+        "object-src 'none'; "
+        "frame-ancestors 'self'; "
+        "img-src 'self' data: blob:; "
+        "font-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "connect-src 'self'; "
+        "form-action 'self'"
+    )
+
+    if _is_production_env() and request.is_secure:
+        response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
     return response
 
 
@@ -1269,15 +1365,16 @@ def login():
         # ── 4. Login exitoso ───────────────────────────────────────────────
         _clear_attempts(ip)
         session.regenerate() if hasattr(session, "regenerate") else session.clear() or session.update({})
+        user_role = normalize_role(client.get("role"))
         session["username"] = username
-        session["role"] = normalize_role(client.get("role"))
+        session["role"] = user_role
         _generate_csrf_token()   # nuevo token tras login
 
-        if is_safe_next(next_url):
+        if _is_next_allowed_for_role(next_url, user_role):
             assert next_url is not None
             safe_next_url = next_url
         else:
-            safe_next_url = url_for("welcome") if session["role"] == ROLE_CLIENTE else url_for("index")
+            safe_next_url = _default_post_login_route(user_role)
         return redirect(safe_next_url)
 
     return render_template("login.html", error=None, next=request.args.get("next", ""), csrf_token=csrf_token)
@@ -1393,15 +1490,15 @@ def api_solicitudes():
             return jsonify({"error": "No autorizado"}), 403
 
         tipo_servicio = request.form.get("tipo_servicio", "").strip()
-        nombre_proyecto = request.form.get("nombre_proyecto", "").strip()
+        nombre_proyecto = request.form.get("nombre_proyecto", "").strip()[:80]
         norma = request.form.get("norma", "").strip()
         num_skus = request.form.get("num_skus", "").strip()
         medidas = request.form.get("medidas", "").strip()
         prioridad = request.form.get("prioridad", "").strip()
-        importador = request.form.get("importador", "").strip()
-        marca = request.form.get("marca", "").strip()
-        pais_origen = request.form.get("pais_origen", "").strip()
-        contenido = request.form.get("contenido", "").strip()
+        importador = request.form.get("importador", "").strip()[:80]
+        marca = request.form.get("marca", "").strip()[:80]
+        pais_origen = request.form.get("pais_origen", "").strip()[:80]
+        contenido = request.form.get("contenido", "").strip()[:720]
 
         if not tipo_servicio or not nombre_proyecto or not prioridad:
             return jsonify({"error": "Datos incompletos"}), 400
@@ -1783,16 +1880,16 @@ def edit_solicitud(folio):
     
     # Obtener datos de la edición
     tipo_servicio = request.form.get("tipo_servicio", "").strip()
-    nombre_proyecto = request.form.get("nombre_proyecto", "").strip()
+    nombre_proyecto = request.form.get("nombre_proyecto", "").strip()[:80]
     norma = request.form.get("norma", "").strip()
     num_skus = request.form.get("num_skus", "").strip()
     medidas = request.form.get("medidas", "").strip()
     prioridad = request.form.get("prioridad", "").strip()
-    importador = request.form.get("importador", "").strip()
-    marca = request.form.get("marca", "").strip()
-    pais_origen = request.form.get("pais_origen", "").strip()
-    contenido = request.form.get("contenido", "").strip()
-    comentario_edicion = request.form.get("comentario_edicion", "").strip()
+    importador = request.form.get("importador", "").strip()[:80]
+    marca = request.form.get("marca", "").strip()[:80]
+    pais_origen = request.form.get("pais_origen", "").strip()[:80]
+    contenido = request.form.get("contenido", "").strip()[:720]
+    comentario_edicion = request.form.get("comentario_edicion", "").strip()[:240]
 
     norma_efectiva = norma if norma else str(solicitud.get("norma", "")).strip()
     medidas_efectivas = medidas if medidas else str(solicitud.get("medidas", "")).strip()
@@ -2527,6 +2624,13 @@ def update_solicitud_estatus(folio):
     if req_index is None:
         return jsonify({"error": "Solicitud no encontrada"}), 404
 
+    # Registrar en audit trail
+    log_audit_trail(
+        "change_estatus",
+        username or "unknown",
+        {"folio": folio, "old_status": estatus_anterior, "new_status": nuevo_estatus}
+    )
+
     # Guardar
     requests_data[req_index] = solicitud
     save_service_requests(requests_data)
@@ -2887,6 +2991,13 @@ def add_assignment_action(file_path):
     
     if not assignment:
         return jsonify({"error": "Assignment no encontrado"}), 404
+    
+    # Registrar en audit trail
+    log_audit_trail(
+        "assignment_action",
+        session.get("username") or "unknown",
+        {"file_path": file_path, "action_type": action_type}
+    )
     
     # Crear entrada de historial
     historial = assignment.setdefault("historial_acciones", [])
@@ -3316,6 +3427,13 @@ def assign_folio():
     if not updated:
         return jsonify({"error": "Folio no encontrado"}), 404
 
+    # Registrar en audit trail
+    log_audit_trail(
+        "assign_folio",
+        str(assigned_by or "unknown"),
+        {"folio": folio, "assigned_to": ejecutivo}
+    )
+
     save_assignments(assignments)
     return jsonify({"status": "ok"})
 
@@ -3400,8 +3518,12 @@ def create_user():
     nombre = str(data.get("nombre") or username).strip()
     normalized_role = normalize_role(role)
     
-    if not username or not password or not folder:
-        return jsonify({"error": "Todos los campos son requeridos"}), 400
+    if not username:
+        return jsonify({"error": "El nombre de usuario es requerido"}), 400
+    if not password:
+        return jsonify({"error": "La contraseña es requerida"}), 400
+    if not folder and normalized_role in {ROLE_CLIENTE, ROLE_BOSCH}:
+        return jsonify({"error": "La ruta de carpeta es requerida para clientes"}), 400
     
     config = load_config()
     existing_usernames = {str(item.get("FIRMA") or "").strip().lower() for item in load_users() if item.get("FIRMA")}
@@ -3436,7 +3558,14 @@ def create_user():
             "NORMAS": normas or None,
         })
         save_users(users)
-    
+
+    # Registrar en audit trail
+    log_audit_trail(
+        "create_user",
+        session.get("username") or "unknown",
+        {"username": username, "role": role, "source": "config" if normalized_role in {ROLE_CLIENTE, ROLE_BOSCH} else "users"}
+    )
+
     return jsonify({"status": "ok"})
 
 
@@ -3500,6 +3629,13 @@ def edit_user():
     if not updated:
         return jsonify({"error": "Usuario no encontrado"}), 404
 
+    # Registrar en audit trail
+    log_audit_trail(
+        "edit_user",
+        session.get("username") or "unknown",
+        {"username": username}
+    )
+
     save_users(users)
     return jsonify({"status": "ok"})
 
@@ -3523,6 +3659,13 @@ def delete_user():
     if username in config.get("clients", {}):
         del config["clients"][username]
 
+        # Registrar en audit trail
+        log_audit_trail(
+            "delete_user",
+            session.get("username") or "unknown",
+            {"username": username, "source": "config"}
+        )
+
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
 
@@ -3532,6 +3675,13 @@ def delete_user():
     filtered_users = [user for user in users if str(user.get("FIRMA") or "").strip() != username]
     if len(filtered_users) == len(users):
         return jsonify({"error": "Usuario no encontrado"}), 404
+
+    # Registrar en audit trail
+    log_audit_trail(
+        "delete_user",
+        session.get("username") or "unknown",
+        {"username": username, "source": "users"}
+    )
 
     save_users(filtered_users)
     return jsonify({"status": "ok"})
@@ -3560,6 +3710,13 @@ def update_assignment_status():
     assignment["status"] = new_status
     assignment["status_updated_at"] = datetime.now(timezone.utc).isoformat()
     assignment["status_updated_by"] = username
+
+    # Registrar en audit trail
+    log_audit_trail(
+        "update_assignment_status",
+        username or "unknown",
+        {"file_path": file_path, "new_status": new_status}
+    )
 
     save_assignments(assignments)
 
@@ -3834,6 +3991,11 @@ def handle_internal_server_error(error):
 # MAIN
 # =========================
 if __name__ == "__main__":
+    # Ocultar versión real de Werkzeug/Python en el header Server
+    from werkzeug.serving import WSGIRequestHandler
+    WSGIRequestHandler.server_version = "GEPI"
+    WSGIRequestHandler.sys_version = ""
+
     app.run(
         host="127.0.0.1",
         port=5000,

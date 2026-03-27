@@ -468,6 +468,24 @@
             display: none;
         }
 
+        .char-count {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: right;
+            display: block;
+            margin-top: 2px;
+            transition: color .15s;
+        }
+
+        .char-count.warn {
+            color: #e67e22;
+        }
+
+        .char-count.full {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
         .field-hint {
             font-size: 11px;
             color: var(--text-dim);
@@ -1290,9 +1308,11 @@
                             <span class="required-dot"></span>
                             Nombre del proyecto
                         </label>
-                        <input class="field-input" id="nombreProyecto" type="text"
-                            placeholder="Ej. Actualización etiqueta mermelada fresa 350g" oninput="clearError(this)">
+                        <input class="field-input" id="nombreProyecto" type="text" maxlength="80"
+                            placeholder="Ej. Actualización etiqueta mermelada fresa 350g"
+                            oninput="clearError(this); updateCharCount(this)">
                         <span class="field-error" id="err-nombreProyecto">Campo obligatorio</span>
+                        <span class="char-count" id="cnt-nombreProyecto"></span>
                     </div>
 
                     <!-- Norma -->
@@ -1478,9 +1498,10 @@
                                 <span class="required-dot is-hidden" id="dot-importador"></span>
                                 Importador
                             </label>
-                            <input class="field-input" id="importador" type="text" placeholder="Nombre del importador"
-                                oninput="clearError(this)">
+                            <input class="field-input" id="importador" type="text" maxlength="80"
+                                placeholder="Nombre del importador" oninput="clearError(this); updateCharCount(this)">
                             <span class="field-error" id="err-importador">Campo obligatorio</span>
+                            <span class="char-count" id="cnt-importador"></span>
                         </div>
 
                         <div class="field">
@@ -1488,9 +1509,10 @@
                                 <span class="required-dot is-hidden" id="dot-marca"></span>
                                 Marca
                             </label>
-                            <input class="field-input" id="marca" type="text" placeholder="Nombre de la marca"
-                                oninput="clearError(this)">
+                            <input class="field-input" id="marca" type="text" maxlength="80"
+                                placeholder="Nombre de la marca" oninput="clearError(this); updateCharCount(this)">
                             <span class="field-error" id="err-marca">Campo obligatorio</span>
+                            <span class="char-count" id="cnt-marca"></span>
                         </div>
 
                         <div class="field">
@@ -1498,9 +1520,10 @@
                                 <span class="required-dot is-hidden" id="dot-paisOrigen"></span>
                                 País de origen
                             </label>
-                            <input class="field-input" id="paisOrigen" type="text" placeholder="Ej. México"
-                                oninput="clearError(this)">
+                            <input class="field-input" id="paisOrigen" type="text" maxlength="80"
+                                placeholder="Ej. México" oninput="clearError(this); updateCharCount(this)">
                             <span class="field-error" id="err-paisOrigen">Campo obligatorio</span>
+                            <span class="char-count" id="cnt-paisOrigen"></span>
                         </div>
 
                         <div class="field span-3">
@@ -1508,10 +1531,11 @@
                                 <span class="required-dot is-hidden" id="dot-contenido"></span>
                                 Contenido / Descripción del producto
                             </label>
-                            <textarea class="field-textarea" id="contenido"
+                            <textarea class="field-textarea" id="contenido" maxlength="720"
                                 placeholder="Describe el producto, ingredientes principales, presentación…"
-                                oninput="clearError(this)"></textarea>
+                                oninput="clearError(this); updateCharCount(this)"></textarea>
                             <span class="field-error" id="err-contenido">Campo obligatorio</span>
+                            <span class="char-count" id="cnt-contenido"></span>
                         </div>
                     </div>
                 </div>
@@ -2238,6 +2262,25 @@
         function hideToast() {
             document.getElementById("toast").classList.remove("show");
         }
+
+        /* ── CHAR COUNTERS ── */
+        function updateCharCount(el) {
+            const span = document.getElementById('cnt-' + el.id);
+            if (!span) return;
+            const max = parseInt(el.getAttribute('maxlength'), 10);
+            const left = max - el.value.length;
+            span.textContent = left + '\u00a0/ ' + max;
+            span.classList.remove('warn', 'full');
+            if (left === 0) span.classList.add('full');
+            else if (left <= Math.ceil(max * 0.15)) span.classList.add('warn');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            ['nombreProyecto', 'importador', 'marca', 'paisOrigen', 'contenido'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) updateCharCount(el);
+            });
+        });
     </script>
 
 </body>

@@ -380,6 +380,24 @@
             margin-top: 2px;
         }
 
+        .char-count {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: right;
+            display: block;
+            margin-top: 2px;
+            transition: color .15s;
+        }
+
+        .char-count.warn {
+            color: #e67e22;
+        }
+
+        .char-count.full {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
         /* ── SERVICE CARDS ── */
         .service-grid {
             display: grid;
@@ -1196,24 +1214,30 @@
                     <div class="form-row-3">
                         <div class="form-group">
                             <label for="editImportador">Importador</label>
-                            <input type="text" id="editImportador" name="importador"
-                                placeholder="Nombre del importador">
+                            <input type="text" id="editImportador" name="importador" maxlength="80"
+                                placeholder="Nombre del importador" oninput="updateCharCount(this)">
+                            <span class="char-count" id="cnt-editImportador"></span>
                         </div>
                         <div class="form-group">
                             <label for="editMarca">Marca</label>
-                            <input type="text" id="editMarca" name="marca" placeholder="Nombre de la marca">
+                            <input type="text" id="editMarca" name="marca" maxlength="80"
+                                placeholder="Nombre de la marca" oninput="updateCharCount(this)">
+                            <span class="char-count" id="cnt-editMarca"></span>
                         </div>
                         <div class="form-group">
                             <label for="editPaisOrigen">País de origen</label>
-                            <input type="text" id="editPaisOrigen" name="pais_origen" placeholder="Ej. México">
+                            <input type="text" id="editPaisOrigen" name="pais_origen" maxlength="80"
+                                placeholder="Ej. México" oninput="updateCharCount(this)">
+                            <span class="char-count" id="cnt-editPaisOrigen"></span>
                         </div>
                     </div>
 
                     <!-- Contenido -->
                     <div class="form-group">
                         <label for="editContenido">Contenido</label>
-                        <textarea id="editContenido" name="contenido" rows="3"
-                            placeholder="Descripción del contenido..."></textarea>
+                        <textarea id="editContenido" name="contenido" rows="3" maxlength="720"
+                            placeholder="Descripción del contenido..." oninput="updateCharCount(this)"></textarea>
+                        <span class="char-count" id="cnt-editContenido"></span>
                     </div>
                 </div>
             </div>
@@ -1268,8 +1292,10 @@
                         <label for="editComentario" style="color:var(--danger);">Comentario de edición</label>
                         <span class="form-hint">Describe qué cambios realizaste y el motivo.</span>
                         <textarea id="editComentario" name="comentario_edicion"
-                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" required
-                            style="border-color: var(--danger); margin-top:6px;"></textarea>
+                            placeholder="Describe qué cambios hiciste y por qué..." rows="4" maxlength="240" required
+                            style="border-color: var(--danger); margin-top:6px;"
+                            oninput="updateCharCount(this)"></textarea>
+                        <span class="char-count" id="cnt-editComentario"></span>
                     </div>
                 </div>
             </div>
@@ -1452,6 +1478,7 @@
             const el = document.getElementById(id);
             if (!el || value === undefined || value === null) return;
             el.value = value;
+            if (el.getAttribute('maxlength')) updateCharCount(el);
         }
 
         /* =====================
@@ -1797,6 +1824,18 @@
 
             await populateForm(data);
         });
+
+        /* ── CHAR COUNTERS ── */
+        function updateCharCount(el) {
+            const span = document.getElementById('cnt-' + el.id);
+            if (!span) return;
+            const max = parseInt(el.getAttribute('maxlength'), 10);
+            const left = max - el.value.length;
+            span.textContent = left + '\u00a0/ ' + max;
+            span.classList.remove('warn', 'full');
+            if (left === 0) span.classList.add('full');
+            else if (left <= Math.ceil(max * 0.15)) span.classList.add('warn');
+        }
     </script>
 
 </body>

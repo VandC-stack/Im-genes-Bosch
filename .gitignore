@@ -78,3 +78,4 @@ upload_history.json
 assignments.json
 config.json
 service_requests.json
+audit_trail.json

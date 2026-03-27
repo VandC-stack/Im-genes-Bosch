@@ -2005,7 +2005,7 @@
             </button>
             {% endif %}
             {% if is_admin %}
-            <span class="role-pill admin">Administrador</span>
+            <span class="role-pill admin">Especialista</span>
             {% elif is_ejecutivo %}
             <span class="role-pill ejecutivo">Ejecutivo</span>
             {% endif %}
@@ -2019,16 +2019,16 @@
         <!-- Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">{% if is_admin %}Panel <span>administrativo</span>{% elif is_ejecutivo %}Panel
+                <h1 class="page-title">{% if is_admin %}Panel <span>especialista</span>{% elif is_ejecutivo %}Panel
                     <span>ejecutivo</span>{% else %}Mis <span>proyectos</span>{% endif %}
                 </h1>
                 <p class="page-sub">{% if is_admin %}Vista global de solicitudes para gestión exclusiva del
-                    administrador{% elif is_ejecutivo %}Seguimiento y dictamen de solicitudes asignadas a tu bandeja{%
+                    especialista{% elif is_ejecutivo %}Seguimiento y dictamen de solicitudes asignadas a tu bandeja{%
                     else %}Resumen y seguimiento de todos tus proyectos{% endif %}</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 {% if is_admin %}
-                <a href="/admin" class="btn btn-yellow">Administrar clientes</a>
+                <a href="/admin" class="btn btn-yellow">Gestionar usuarios</a>
                 {% elif is_ejecutivo %}
 
                 {% else %}
@@ -2040,7 +2040,7 @@
 
         {% if is_admin %}
         <div class="admin-banner">
-            <p>Modo administrador activo. Esta vista es exclusiva para el rol admin/supervisor.</p>
+            <p>Modo especialista activo. Esta vista es exclusiva para el rol especialista/supervisor.</p>
         </div>
         {% elif is_ejecutivo %}
         <div class="admin-banner">

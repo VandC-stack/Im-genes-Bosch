@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>403 — Acceso Prohibido</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --yellow: #ECD925;
@@ -39,11 +48,12 @@
       padding: 16px 32px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
-      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
     }
 
     .brand-dot {
-      width: 28px; height: 28px;
+      width: 28px;
+      height: 28px;
       background: var(--yellow);
       border-radius: 6px;
       display: flex;
@@ -74,21 +84,29 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
       padding: 48px 40px;
       max-width: 500px;
       width: 100%;
       text-align: center;
-      animation: fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both;
+      animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     @keyframes fadeUp {
-      from { opacity:0; transform:translateY(18px); }
-      to   { opacity:1; transform:translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .icon-wrap {
-      width: 60px; height: 60px;
+      width: 60px;
+      height: 60px;
       background: #fef2f2;
       border: 1px solid #fecaca;
       border-radius: 14px;
@@ -99,7 +117,8 @@
     }
 
     .icon-wrap svg {
-      width: 26px; height: 26px;
+      width: 26px;
+      height: 26px;
       stroke: var(--danger);
       fill: none;
       stroke-width: 1.8;
@@ -126,14 +145,23 @@
 
     .status-pill::before {
       content: '';
-      width: 5px; height: 5px;
+      width: 5px;
+      height: 5px;
       background: var(--danger);
       border-radius: 50%;
       animation: blink 1.4s ease-in-out infinite;
     }
 
     @keyframes blink {
-      0%,100% { opacity:1; } 50% { opacity:0.3; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
     }
 
     .error-code {
@@ -146,7 +174,9 @@
       margin-bottom: 6px;
     }
 
-    .error-code .mid { color: var(--danger); }
+    .error-code .mid {
+      color: var(--danger);
+    }
 
     .error-title {
       font-size: 1.2rem;
@@ -181,7 +211,9 @@
       font-size: 0.8rem;
     }
 
-    .info-row:last-child { border-bottom: none; }
+    .info-row:last-child {
+      border-bottom: none;
+    }
 
     .info-key {
       font-family: 'Space Mono', monospace;
@@ -191,9 +223,18 @@
       letter-spacing: 0.06em;
     }
 
-    .info-val { font-weight: 600; color: var(--text); }
-    .info-val.red { color: var(--danger); }
-    .info-val.green { color: var(--success); }
+    .info-val {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .info-val.red {
+      color: var(--danger);
+    }
+
+    .info-val.green {
+      color: var(--success);
+    }
 
     .actions {
       display: flex;
@@ -226,7 +267,7 @@
     .btn-primary:hover {
       background: var(--yellow-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(201,184,0,0.3);
+      box-shadow: 0 4px 12px rgba(201, 184, 0, 0.3);
     }
 
     .btn-ghost {
@@ -242,6 +283,7 @@
     }
   </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand-dot">G</div>
@@ -251,7 +293,11 @@
   <main class="main">
     <div class="card">
       <div class="icon-wrap">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><line x1="12" y1="15" x2="12" y2="17"/></svg>
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          <line x1="12" y1="15" x2="12" y2="17" />
+        </svg>
       </div>
 
       <div class="status-pill">Error de autorización</div>
@@ -259,7 +305,8 @@
       <div class="error-code">4<span class="mid">0</span>3</div>
       <div class="error-title">Acceso Prohibido</div>
       <p class="error-desc">
-        Tu sesión es válida, pero no tienes los permisos necesarios para acceder a este recurso. Contacta al administrador si esto es un error.
+        Tu sesión es válida, pero no tienes los permisos necesarios para acceder a este recurso. Contacta al
+        especialista si esto es un error.
       </p>
 
       <div class="info-block">
@@ -277,7 +324,7 @@
         </div>
         <div class="info-row">
           <span class="info-key">Siguiente paso</span>
-          <span class="info-val">Contactar al administrador</span>
+          <span class="info-val">Contactar al especialista</span>
         </div>
       </div>
 
@@ -288,4 +335,5 @@
     </div>
   </main>
 </body>
+
 </html>
